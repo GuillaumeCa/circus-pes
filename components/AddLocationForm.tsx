@@ -35,8 +35,7 @@ export function AddLocationForm({ onCancel, onCreated }: AddLocationFormProps) {
             shardId,
             description,
             location,
-            author: session?.user.id,
-            author_name: session?.user.user_metadata.full_name,
+            user_id: session?.user.id,
           })
           .then(({ error }) => {
             setLoading(false);
@@ -49,9 +48,9 @@ export function AddLocationForm({ onCancel, onCreated }: AddLocationFormProps) {
             onCreated();
           });
       }}
-      className="p-3 mt-2 border border-gray-600 rounded-lg"
+      className="p-4 mt-2 border border-gray-600 rounded-lg"
     >
-      <h2 className="text-xl font-bold">Nouvelle création</h2>
+      <h2 className="text-xl font-bold mb-3">Nouvelle création</h2>
       <div>
         <label
           htmlFor="gameVersion"

@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { useQuery } from "react-query";
+import { getUser, UserRole } from "../model/user";
 
 const supabaseUrl = "https://jcqtutfytxbhaewyxtoh.supabase.co";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY || "";
@@ -11,6 +12,14 @@ export function useAuth() {
     error,
     refetch,
   } = useQuery("session", () => supabase.auth.getSession());
+  const userId = res?.data.session?.user.id;
+  const { data: user } = useQuery(
+    ["user", userId],
+    ({ queryKey: [_, id] }) => getUser(id!),
+    {
+      enabled: !!userId,
+    }
+  );
 
   function logout() {
     supabase.auth.signOut().then(() => {
@@ -18,5 +27,15 @@ export function useAuth() {
     });
   }
 
-  return { session: res?.data.session, logout };
+  function signIn() {
+    supabase.auth.signInWithOAuth({
+      provider: "discord",
+    });
+  }
+
+  function hasWriteAccess() {
+    return [UserRole.ADMIN, UserRole.CONTRIBUTOR].includes(user?.role ?? -1);
+  }
+
+  return { session: res?.data.session, user, hasWriteAccess, logout, signIn };
 }

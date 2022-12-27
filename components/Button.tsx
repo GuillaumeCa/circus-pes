@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cls } from "./cls";
 
 export function DeleteButton({ children, ...props }: ButtonProps) {
@@ -75,6 +76,29 @@ export function AddButton({ children, ...props }: ButtonProps) {
     >
       {children}
     </Button>
+  );
+}
+
+interface LinkButtonProps {
+  children: React.ReactNode;
+  btnType?: ButtonType;
+  href: string;
+}
+
+export function LinkButton({ children, btnType, href }: LinkButtonProps) {
+  return (
+    <Link
+      href={href}
+      className={cls(
+        "flex items-center text-white disabled:cursor-not-allowed disabled:bg-gray-500 focus:ring-2 font-medium rounded-lg text-sm px-3 py-2.5 focus:outline-none",
+        btnType === "primary" &&
+          "bg-rose-700 hover:bg-rose-800 focus:ring-rose-300",
+        btnType === "secondary" &&
+          "bg-gray-800 hover:bg-gray-900 focus:ring-gray-400"
+      )}
+    >
+      {children}
+    </Link>
   );
 }
 
