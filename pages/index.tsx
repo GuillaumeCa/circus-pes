@@ -6,7 +6,7 @@ import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
 import { ItemLocationRow } from "../components/ItemLocationRow";
 import { supabase, useAuth } from "../lib/supabase";
-import { getItems, LocationInfo } from "../model/items";
+import { deleteItem, getItems, LocationInfo } from "../model/items";
 import { UserRole } from "../model/user";
 
 export default function Home() {
@@ -133,6 +133,7 @@ export default function Home() {
                   shard={d.shardId}
                   likes={d.likes_cnt}
                   hasLiked={d.has_liked === 1}
+                  imagePath={d.item_capture_url}
                   date={new Date(d.created_at).toLocaleDateString("fr")}
                   onLike={() => {
                     if (d.has_liked) {
@@ -151,15 +152,7 @@ export default function Home() {
                         .then(() => refetch());
                     }
                   }}
-                  onDelete={() =>
-                    supabase
-                      .from("items")
-                      .delete()
-                      .eq("id", d.id)
-                      .then(() => {
-                        refetch();
-                      })
-                  }
+                  onDelete={() => deleteItem(d).then(() => refetch())}
                 />
               ))}
           </ul>

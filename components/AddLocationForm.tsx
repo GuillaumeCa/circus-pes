@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { supabase, useAuth } from "../lib/supabase";
+import { ItemsEntity } from "../model/items";
 import { Button } from "./Button";
 
 export interface LocationFormInfo {
@@ -19,34 +21,64 @@ export function AddLocationForm({ onCancel, onCreated }: AddLocationFormProps) {
   const [location, setLocation] = useState("");
   const [err, setErr] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+
   const { session } = useAuth();
 
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
+        if (!file) {
+          return;
+        }
+
         setErr(false);
         setLoading(true);
 
-        supabase
+        const { data, error } = await supabase
           .from("items")
-          .insert({
+          .insert<Partial<ItemsEntity>>({
             gameVersion,
             shardId,
             description,
             location,
             user_id: session?.user.id,
           })
-          .then(({ error }) => {
-            setLoading(false);
+          .select<"*", ItemsEntity>()
+          .single();
 
-            if (error) {
-              setErr(true);
-              return;
-            }
+        if (error || !data) {
+          setLoading(false);
+          setErr(true);
+          return;
+        }
 
-            onCreated();
-          });
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${uuidv4()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("items-capture")
+          .upload(filePath, file, { upsert: true });
+
+        await supabase
+          .from("items")
+          .update({
+            item_capture_url: filePath,
+          })
+          .eq("id", data.id);
+
+        if (uploadError) {
+          setErr(true);
+          setLoading(false);
+          supabase.from("items").delete().eq("id", data.id);
+          return;
+        }
+
+        setLoading(false);
+
+        onCreated();
       }}
       className="p-4 mt-2 border border-gray-600 rounded-lg"
     >
@@ -65,11 +97,6 @@ export function AddLocationForm({ onCancel, onCreated }: AddLocationFormProps) {
           placeholder="PTU-3.18"
           onChange={(e) => setGameVersion(e.target.value)}
         />
-        {/* <select id="gameVersion" name="gameVersion">
-            {gameVersions.map((v) => (
-              <option value={v}>{v}</option>
-            ))}
-          </select> */}
       </div>
       <div>
         <label
@@ -85,11 +112,6 @@ export function AddLocationForm({ onCancel, onCreated }: AddLocationFormProps) {
           placeholder="1C-30"
           onChange={(e) => setShardId(e.target.value)}
         />
-        {/* <select id="shardId" name="shardId">
-            {shardIds.map((s) => (
-              <option value={s}>{s}</option>
-            ))}
-          </select> */}
       </div>
       <div>
         <label
@@ -119,6 +141,26 @@ export function AddLocationForm({ onCancel, onCreated }: AddLocationFormProps) {
           name="location"
           placeholder="Lorville"
           onChange={(e) => setLocation(e.target.value)}
+        />
+      </div>
+      <div>
+        <label
+          className="text-xs uppercase font-bold text-gray-400"
+          htmlFor="image"
+        >
+          Image
+        </label>
+        <input
+          className="block w-full text-sm border rounded-lg file:text-gray-300 file:bg-gray-800 file:font-bold hover:file:bg-gray-900 file:border-none file:py-2 file:px-3 file:mr-3 file:cursor-pointer text-gray-400 focus:outline-none bg-gray-600 border-gray-500 placeholder-gray-400 focus:ring-rose-500 focus:border-rose-500"
+          id="image"
+          type="file"
+          onChange={(event) => {
+            if (!event.target.files || event.target.files.length === 0) {
+              return;
+            }
+
+            setFile(event.target.files[0]);
+          }}
         />
       </div>
 

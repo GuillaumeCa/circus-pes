@@ -1,4 +1,6 @@
+import Image from "next/image";
 import { useAuth } from "../lib/supabase";
+import { getItemImageUrl } from "../model/items";
 import { UserRole } from "../model/user";
 
 interface ItemLocationRow {
@@ -10,6 +12,7 @@ interface ItemLocationRow {
   shard: string;
   likes: number;
   hasLiked: boolean;
+  imagePath: string;
 
   onDelete(): void;
   onLike(): void;
@@ -24,13 +27,16 @@ export function ItemLocationRow({
   date,
   likes,
   hasLiked,
+  imagePath,
 
   onDelete,
   onLike,
 }: ItemLocationRow) {
   const { session, user } = useAuth();
+  const itemImageUrl = getItemImageUrl(imagePath);
+
   return (
-    <li className="p-4">
+    <li className="flex flex-col p-4">
       <div className="flex justify-between">
         <div>
           <span
@@ -68,9 +74,23 @@ export function ItemLocationRow({
             )}
         </div>
       </div>
-      <p className="mt-2 text-lg">{description}</p>
 
-      <div className="flex justify-between mt-2">
+      <div className="flex flex-row mt-2">
+        {imagePath && (
+          <div className="mr-4 overflow-hidden rounded-lg shadow-md">
+            <Image
+              width={400}
+              height={400}
+              alt="capture de la création"
+              src={itemImageUrl}
+            />
+          </div>
+        )}
+
+        <p className="text-lg">{description}</p>
+      </div>
+
+      <div className="flex justify-between mt-4">
         <button
           disabled={!session}
           onClick={onLike}
@@ -94,9 +114,8 @@ export function ItemLocationRow({
         </button>
 
         <p className="text-gray-400">
-          Trouvé par{" "}
-          <span className="italic font-bold text-gray-300">{author}</span> le{" "}
-          {date}
+          Par <span className="italic font-bold text-gray-300">{author}</span>{" "}
+          le {date}
         </p>
       </div>
     </li>
