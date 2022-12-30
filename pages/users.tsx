@@ -22,7 +22,7 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
   const [loading, setLoading] = useState(false);
 
   return (
-    <div className="flex flex-col lg:flex-row justify-between space-y-2 lg:space-x-2">
+    <div className="flex flex-col lg:flex-row justify-between w-full">
       <div className="flex space-x-3 items-center">
         <img className="h-10 w-10 rounded-full" src={user.avatar_url} />
         <span className="font-bold">{user.name}</span>
@@ -32,7 +32,7 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
         )}
       </div>
 
-      <div className="flex items-center space-x-3">
+      <div className="flex mt-2 lg:mt-0 items-center space-x-3">
         {user.id === session?.user.id && (
           <span className="font-bold uppercase text-gray-400">
             {formatRole(user.role)}

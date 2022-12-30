@@ -12,6 +12,7 @@ interface LocationFormData {
   shardId: string;
   description: string;
   location: string;
+  image: File | null;
 }
 
 interface AddLocationFormProps {
@@ -47,6 +48,8 @@ const locations = [
   "Comm Array ST3-90",
 ];
 
+const MAX_FILE_SIZE = 5e6;
+
 const locationFormSchema = z.object({
   gameVersion: z
     .string()
@@ -59,6 +62,13 @@ const locationFormSchema = z.object({
     .regex(/[0-9][A-Z]-[0-9]{3}/, "Le format doit être 1A-000"),
   description: z.string().min(1, "Le champ ne doit pas être vide"),
   location: z.string().min(1, "Le champ ne doit pas être vide"),
+  image: z
+    .any()
+    .optional()
+    .refine(
+      (f) => f?.size <= MAX_FILE_SIZE,
+      "L'image est trop grosse, elle doit faire moins de 5 Mo"
+    ),
 });
 
 export function AddLocationForm({
@@ -70,7 +80,6 @@ export function AddLocationForm({
 }: AddLocationFormProps) {
   const [err, setErr] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
 
   const { session } = useAuth();
 
@@ -78,15 +87,16 @@ export function AddLocationForm({
     register,
     handleSubmit,
     reset,
-    clearErrors,
+    resetField,
     setValue,
     watch,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<LocationFormData>({
     resolver: zodResolver(locationFormSchema),
   });
 
   const location = watch("location");
+  const image = watch("image");
 
   const onSubmit = async (formData: LocationFormData) => {
     setErr(false);
@@ -110,14 +120,14 @@ export function AddLocationForm({
       return;
     }
 
-    if (file) {
-      const fileExt = file.name.split(".").pop();
+    if (formData.image) {
+      const fileExt = formData.image.name.split(".").pop();
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("items-capture")
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, formData.image, { upsert: true });
 
       await supabase
         .from("items")
@@ -135,19 +145,12 @@ export function AddLocationForm({
     }
 
     setLoading(false);
-
     reset();
-    setFile(null);
 
     onCreated(data);
   };
 
-  const fileTooBig = file ? file.size > 5e6 : false;
-
-  const invalid = loading || !isValid || fileTooBig;
-
   function handleCancel() {
-    clearErrors();
     onCancel();
   }
 
@@ -264,6 +267,7 @@ export function AddLocationForm({
           id="location"
           className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
           placeholder="Lieu de la création ex: Lorville"
+          autoComplete="off"
           {...register("location")}
         />
         <div className="mt-2 flex flex-wrap items-center">
@@ -297,27 +301,37 @@ export function AddLocationForm({
         >
           Image (optionnel)
         </label>
-        <input
-          className="block w-full text-sm border rounded-lg file:text-gray-300 file:bg-gray-800 file:font-bold hover:file:bg-gray-900 file:border-none file:py-2 file:px-3 file:mr-3 file:cursor-pointer text-gray-400 focus:outline-none bg-gray-600 border-gray-500 placeholder-gray-400 focus:ring-rose-500 focus:border-rose-500"
-          id="image"
-          type="file"
-          accept=".jpg,.jpeg,.png"
-          onChange={(event) => {
-            if (!event.target.files || event.target.files.length === 0) {
-              setFile(null);
-              return;
-            }
-
-            setFile(event.target.files[0]);
-          }}
-        />
+        <div className="flex">
+          <input
+            className="block w-full text-sm border rounded-lg file:text-gray-300 file:bg-gray-800 file:font-bold hover:file:bg-gray-900 file:border-none file:py-2 file:px-3 file:mr-3 file:cursor-pointer text-gray-400 focus:outline-none bg-gray-600 border-gray-500 placeholder-gray-400 focus:ring-rose-500 focus:border-rose-500"
+            id="image"
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            {...register("image")}
+          />
+          {image && (
+            <button
+              type="button"
+              onClick={() => resetField("image")}
+              className="bg-gray-500 p-2 rounded-lg ml-2"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
-      {fileTooBig && file && (
-        <p className="text-red-500 text-sm mt-1">
-          L&apos;image est trop grosse, elle doit faire moins de 5 Mo. Elle fait
-          actuellement {(file.size / 1e6).toFixed(1)} Mo
-        </p>
-      )}
+      <p className="text-red-500 text-sm mt-1">{errors.image?.message}</p>
 
       <div className="flex items-center justify-end space-x-2 mt-3">
         {err && (

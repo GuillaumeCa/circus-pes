@@ -129,15 +129,17 @@ export default function Home() {
       >
         <div className="relative w-full h-full max-w-2xl md:h-auto m-auto">
           <div className="relative bg-gray-700 rounded-lg shadow">
-            <AddLocationForm
-              shardIds={shardIds}
-              gameVersionList={gameVersions}
-              onCancel={() => setShowAddForm(false)}
-              onCreated={(item) => {
-                refetch();
-                setShowAddForm(false);
-              }}
-            />
+            {showAddForm && (
+              <AddLocationForm
+                shardIds={shardIds}
+                gameVersionList={gameVersions}
+                onCancel={() => setShowAddForm(false)}
+                onCreated={(item) => {
+                  refetch();
+                  setShowAddForm(false);
+                }}
+              />
+            )}
           </div>
         </div>
       </div>
