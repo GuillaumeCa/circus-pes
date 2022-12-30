@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { AddLocationForm } from "../components/AddLocationForm";
 import { BaseLayout } from "../components/BaseLayout";
 import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
+import { UserIcon } from "../components/Icons";
 import { ItemLocationRow } from "../components/ItemLocationRow";
 import { supabase, useAuth } from "../lib/supabase";
 import { deleteItem, getItems, LocationInfo } from "../model/items";
@@ -48,6 +49,10 @@ export default function Home() {
       d.gameVersion === gameVersions[gameVersionId]
   );
 
+  useEffect(() => {
+    document.body.style.overflow = showAddForm ? "hidden" : "initial";
+  });
+
   return (
     <BaseLayout>
       <div className="mt-3 flex space-x-2 items-end">
@@ -86,7 +91,8 @@ export default function Home() {
             )}
             {user?.role === UserRole.ADMIN && (
               <LinkButton href="/users" btnType="secondary">
-                Gestions Utilisateurs
+                <UserIcon />
+                <span className="ml-1">Gestions Utilisateurs</span>
               </LinkButton>
             )}
           </>
