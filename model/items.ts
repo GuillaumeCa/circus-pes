@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase";
+import { SortOption } from "../pages";
 
 export interface ItemsEntity {
   id: number;
@@ -26,13 +27,22 @@ export interface LocationInfo {
   created_at: number;
 }
 
-export function getItems() {
-  return supabase.from("items_users_likes").select<"*", LocationInfo>();
+export function getItems(sortOpt: SortOption) {
+  return supabase
+    .from("items_users_likes")
+    .select<"*", LocationInfo>()
+    .order(sortOpt === "recent" ? "created_at" : "likes_cnt", {
+      ascending: false,
+    });
 }
 
 export async function deleteItem(item: ItemsEntity) {
   await supabase.from("items").delete().eq("id", item.id);
-  await supabase.storage.from("items-capture").remove([item.item_capture_url]);
+  if (item.item_capture_url) {
+    await supabase.storage
+      .from("items-capture")
+      .remove([item.item_capture_url]);
+  }
 }
 
 export function getItemImageUrl(imagePath: string) {

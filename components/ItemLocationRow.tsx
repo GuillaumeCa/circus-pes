@@ -7,7 +7,8 @@ interface ItemLocationRow {
   authorId?: string;
   location: string;
   description: string;
-  author: string;
+  author?: string;
+  avatarUrl?: string;
   date: string;
   shard: string;
   likes: number;
@@ -23,6 +24,7 @@ export function ItemLocationRow({
   description,
   authorId,
   author,
+  avatarUrl,
   shard,
   date,
   likes,
@@ -99,7 +101,7 @@ export function ItemLocationRow({
           <span className="mx-2">{likes}</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            fill={hasLiked ? "currentColor" : "none"}
+            fill={hasLiked || !session ? "currentColor" : "none"}
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
@@ -114,8 +116,9 @@ export function ItemLocationRow({
         </button>
 
         <p className="text-gray-400">
-          Par <span className="italic font-bold text-gray-300">{author}</span>{" "}
-          le {date}
+          <img className="inline w-5 h-5 rounded-full" src={avatarUrl} />{" "}
+          <span className="italic font-bold text-gray-300">{author}</span> le{" "}
+          {date}
         </p>
       </div>
     </li>

@@ -3,29 +3,14 @@ import { useQuery } from "react-query";
 import { BaseLayout } from "../components/BaseLayout";
 import { Button } from "../components/Button";
 import { useAuth } from "../lib/supabase";
-import { getUsers, updateRole, User, UserRole } from "../model/user";
-
-function formatRole(role: UserRole) {
-  switch (role) {
-    case UserRole.INVITED:
-      return "Invité";
-    case UserRole.CONTRIBUTOR:
-      return "Contributeur";
-    case UserRole.ADMIN:
-      return "Admin";
-  }
-}
-
-function formatRoleDescription(role: UserRole): string {
-  switch (role) {
-    case UserRole.INVITED:
-      return "Ne peut pas ajouter de créations";
-    case UserRole.CONTRIBUTOR:
-      return "Peut ajouter des créations";
-    case UserRole.ADMIN:
-      return "Peut modifier le rôle des utilisateurs";
-  }
-}
+import {
+  formatRole,
+  formatRoleDescription,
+  getUsers,
+  updateRole,
+  User,
+  UserRole,
+} from "../model/user";
 
 interface UserRowProps {
   user: User;
@@ -101,22 +86,31 @@ export default function Users() {
     error,
     refetch,
   } = useQuery<User[] | null, Error>("users", () => getUsers());
+  const [search, setSearch] = useState("");
 
   return (
     <BaseLayout>
       <h2 className="text-2xl mt-3">Utilisateurs</h2>
       <p className="text-sm text-gray-400">
-        Les utilisateurs avec le rôle invité ne peuvent pas ajouter de
-        créations. Les admin peuvent modifier le rôle des utilisateurs et
-        supprimer toutes les créations.
+        Les utilisateurs avec le rôle invité ne peuvent pas ajouter de créations
+        et peuvent uniquement liker. Les admin peuvent modifier le rôle des
+        utilisateurs et supprimer toutes les créations.
       </p>
+
+      <input
+        placeholder="Rechercher..."
+        className="mt-3 block w-full p-2.5 appearance-none outline-none border text-sm rounded-lg bg-gray-700 focus:bg-gray-600 border-gray-600 placeholder-gray-400 text-white"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
 
       {isLoading && <p>Chargement...</p>}
       {error && <p>Erreur de chargement</p>}
 
       <ul className="mt-3 space-y-2">
         {users
-          ?.sort((a, b) => a.name.localeCompare(b.name))
+          ?.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()))
+          .sort((a, b) => a.name.localeCompare(b.name))
           .map((user) => (
             <li
               key={user.id}
