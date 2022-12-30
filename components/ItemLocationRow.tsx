@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { useAuth } from "../lib/supabase";
 import { getItemImageUrl } from "../model/items";
 import { UserRole } from "../model/user";
@@ -80,12 +81,14 @@ export function ItemLocationRow({
       <div className="flex flex-col lg:flex-row mt-2 space-y-2 lg:space-y-0">
         {imagePath && (
           <div className="mr-4 max-w-md overflow-hidden rounded-lg shadow-md">
-            <Image
-              width={500}
-              height={300}
-              alt="capture de la création"
-              src={itemImageUrl}
-            />
+            <Link href={itemImageUrl} target="_blank">
+              <Image
+                width={500}
+                height={300}
+                alt="capture de la création"
+                src={itemImageUrl}
+              />
+            </Link>
           </div>
         )}
 
