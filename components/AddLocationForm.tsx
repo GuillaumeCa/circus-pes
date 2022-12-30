@@ -314,7 +314,7 @@ export function AddLocationForm({
       </div>
       {fileTooBig && file && (
         <p className="text-red-500 text-sm mt-1">
-          L'image est trop grosse, elle doit faire moins de 5 Mo. Elle fait
+          L&apos;image est trop grosse, elle doit faire moins de 5 Mo. Elle fait
           actuellement {(file.size / 1e6).toFixed(1)} Mo
         </p>
       )}
@@ -322,7 +322,7 @@ export function AddLocationForm({
       <div className="flex items-center justify-end space-x-2 mt-3">
         {err && (
           <p className="text-red-500">
-            Impossible d'ajouter la création, veuillez réessayer
+            Impossible d&apos;ajouter la création, veuillez réessayer
           </p>
         )}
         <Button type="button" btnType="secondary" onClick={handleCancel}>
