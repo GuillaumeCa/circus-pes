@@ -12,7 +12,7 @@ interface LocationFormData {
   shardId: string;
   description: string;
   location: string;
-  image: File | null;
+  image: FileList;
 }
 
 interface AddLocationFormProps {
@@ -65,10 +65,9 @@ const locationFormSchema = z.object({
   image: z
     .any()
     .optional()
-    .refine(
-      (f) => f?.size <= MAX_FILE_SIZE,
-      "L'image est trop grosse, elle doit faire moins de 5 Mo"
-    ),
+    .refine((f: FileList) => {
+      return f.length > 0 && f[0].size <= MAX_FILE_SIZE;
+    }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
 });
 
 export function AddLocationForm({
@@ -120,14 +119,14 @@ export function AddLocationForm({
       return;
     }
 
-    if (formData.image) {
-      const fileExt = formData.image.name.split(".").pop();
+    if (formData.image[0]) {
+      const fileExt = formData.image[0].name.split(".").pop();
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("items-capture")
-        .upload(filePath, formData.image, { upsert: true });
+        .upload(filePath, formData.image[0], { upsert: true });
 
       await supabase
         .from("items")
