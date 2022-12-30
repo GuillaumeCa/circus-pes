@@ -177,6 +177,7 @@ export default function Home() {
         {items && error && (
           <p>Erreur de chargement, veuillez recharger la page</p>
         )}
+        {itemsFiltered?.length === 0 && <p>Aucune création</p>}
 
         {items && (
           <ul className="space-y-2 bg-gray-600 rounded-lg divide-y-[1px] divide-gray-700">

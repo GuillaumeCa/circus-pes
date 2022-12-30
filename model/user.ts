@@ -11,6 +11,7 @@ export interface User {
   name: string;
   avatar_url: string;
   role: UserRole;
+  name_id: string;
 }
 
 const USER_TABLE = "users";

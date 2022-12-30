@@ -26,6 +26,7 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
       <div className="flex space-x-3 items-center">
         <img className="h-10 w-10 rounded-full" src={user.avatar_url} />
         <span className="font-bold">{user.name}</span>
+        <span className="text-sm text-gray-500">{user.name_id}</span>
         {user.id === session?.user.id && (
           <span className="font-bold text-rose-600">Moi</span>
         )}
