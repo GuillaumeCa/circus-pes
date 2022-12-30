@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 select {
-  @apply appearance-none select-none outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-rose-500 focus:border-rose-500 block pr-8 pl-4 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-rose-500 dark:focus:border-rose-500;
+  @apply appearance-none select-none outline-none border text-sm rounded-lg block pr-8 pl-4 p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500;
 
   background-image: linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
     background-position: calc(100% - 20px) calc(1px + 50%),calc(100% - 16px) calc(1px + 50%);

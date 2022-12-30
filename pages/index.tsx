@@ -107,7 +107,7 @@ export default function Home() {
         )}
       >
         <div className="relative w-full h-full max-w-2xl md:h-auto m-auto">
-          <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+          <div className="relative bg-gray-700 rounded-lg shadow">
             <AddLocationForm
               shardIds={shardIds}
               gameVersionList={gameVersions}
