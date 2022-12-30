@@ -19,8 +19,8 @@ export function BaseLayout({ children }: BaseLayoutProps) {
           href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎪</text></svg>"
         />
       </Head>
-      <main className="p-8 text-gray-200">
-        <div className="max-w-3xl mx-auto">
+      <main className="p-3 md:p-8 text-gray-200">
+        <div className="max-w-5xl mx-auto">
           <div>
             <div className="flex justify-between items-start">
               <Link href="/">
@@ -53,7 +53,7 @@ export function BaseLayout({ children }: BaseLayoutProps) {
                 </div>
               )}
             </div>
-            <p className="text-gray-400 text-sm mt-2">
+            <p className="text-gray-400 max-w-xl text-sm mt-2">
               Bienvenue sur le guide du cirque ! Le test ultime de la
               persistence dans Star Citizen. Ici vous pourrez explorer toutes
               les créations de la communautée.

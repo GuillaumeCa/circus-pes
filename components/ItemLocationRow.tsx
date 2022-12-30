@@ -77,12 +77,12 @@ export function ItemLocationRow({
         </div>
       </div>
 
-      <div className="flex flex-row mt-2">
+      <div className="flex flex-col lg:flex-row mt-2 space-y-2 lg:space-y-0">
         {imagePath && (
-          <div className="mr-4 overflow-hidden rounded-lg shadow-md">
+          <div className="mr-4 max-w-md overflow-hidden rounded-lg shadow-md">
             <Image
-              width={400}
-              height={400}
+              width={500}
+              height={300}
               alt="capture de la création"
               src={itemImageUrl}
             />

@@ -55,7 +55,25 @@ export default function Home() {
 
   return (
     <BaseLayout>
-      <div className="mt-3 flex space-x-2 items-end">
+      {session && (
+        <div className="mt-2 flex space-x-2 justify-end">
+          {hasWriteAccess() && (
+            <AddButton
+              disabled={showAddForm}
+              onClick={() => setShowAddForm(true)}
+            >
+              Nouvelle création
+            </AddButton>
+          )}
+          {user?.role === UserRole.ADMIN && (
+            <LinkButton href="/users" btnType="secondary">
+              <UserIcon />
+              <span className="ml-1">Gestions Utilisateurs</span>
+            </LinkButton>
+          )}
+        </div>
+      )}
+      <div className="mt-3 flex justify-between">
         <div>
           <label
             htmlFor="gameVersion"
@@ -79,78 +97,8 @@ export default function Home() {
             ))}
           </select>
         </div>
-        {session && (
-          <>
-            {hasWriteAccess() && (
-              <AddButton
-                disabled={showAddForm}
-                onClick={() => setShowAddForm(true)}
-              >
-                Nouvelle création
-              </AddButton>
-            )}
-            {user?.role === UserRole.ADMIN && (
-              <LinkButton href="/users" btnType="secondary">
-                <UserIcon />
-                <span className="ml-1">Gestions Utilisateurs</span>
-              </LinkButton>
-            )}
-          </>
-        )}
-      </div>
 
-      <div
-        aria-hidden="true"
-        className={cls(
-          "fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 md:h-full bg-black/70",
-          showAddForm ? "flex" : "hidden"
-        )}
-      >
-        <div className="relative w-full h-full max-w-2xl md:h-auto m-auto">
-          <div className="relative bg-gray-700 rounded-lg shadow">
-            <AddLocationForm
-              shardIds={shardIds}
-              gameVersionList={gameVersions}
-              onCancel={() => setShowAddForm(false)}
-              onCreated={(item) => {
-                refetch();
-                setShowAddForm(false);
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 flex justify-between">
-        <div>
-          <p className="uppercase font-bold text-xs text-gray-400">Shards</p>
-          <div className="mt-1 flex flex-wrap">
-            <button
-              onClick={() => setSelectedShard("")}
-              className={cls(
-                "rounded-lg px-2 py-1 font-bold mr-2 mb-2",
-                selectedShard === "" ? "bg-rose-700" : "bg-gray-500"
-              )}
-            >
-              Toutes
-            </button>
-            {shardIds.map((shardId) => (
-              <button
-                key={shardId}
-                onClick={() =>
-                  setSelectedShard(selectedShard === shardId ? "" : shardId)
-                }
-                className={cls(
-                  "rounded-lg px-2 py-1 font-bold mr-2 mb-2",
-                  selectedShard === shardId ? "bg-rose-700" : "bg-gray-500"
-                )}
-              >
-                {shardId}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-end">
+        <div className="flex p-2 items-end">
           <button
             className={cls(
               "rounded-l-lg px-2 py-1 font-bold border-r border-gray-600",
@@ -170,6 +118,55 @@ export default function Home() {
             Favoris
           </button>
         </div>
+      </div>
+
+      <div
+        aria-hidden="true"
+        className={cls(
+          "fixed inset-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto h-full bg-black/70",
+          showAddForm ? "flex" : "hidden"
+        )}
+      >
+        <div className="relative w-full h-full max-w-2xl md:h-auto m-auto">
+          <div className="relative bg-gray-700 rounded-lg shadow">
+            <AddLocationForm
+              shardIds={shardIds}
+              gameVersionList={gameVersions}
+              onCancel={() => setShowAddForm(false)}
+              onCreated={(item) => {
+                refetch();
+                setShowAddForm(false);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <p className="uppercase mt-4 font-bold text-xs text-gray-400">Shards</p>
+      <div className="mt-1 flex flex-wrap">
+        <button
+          onClick={() => setSelectedShard("")}
+          className={cls(
+            "rounded-lg px-2 py-1 font-bold mr-2 mb-2",
+            selectedShard === "" ? "bg-rose-700" : "bg-gray-500"
+          )}
+        >
+          Toutes
+        </button>
+        {shardIds.map((shardId) => (
+          <button
+            key={shardId}
+            onClick={() =>
+              setSelectedShard(selectedShard === shardId ? "" : shardId)
+            }
+            className={cls(
+              "rounded-lg px-2 py-1 font-bold mr-2 mb-2",
+              selectedShard === shardId ? "bg-rose-700" : "bg-gray-500"
+            )}
+          >
+            {shardId}
+          </button>
+        ))}
       </div>
 
       <div className="mt-4">

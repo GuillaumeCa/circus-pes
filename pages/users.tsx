@@ -22,7 +22,7 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
   const [loading, setLoading] = useState(false);
 
   return (
-    <>
+    <div className="flex flex-col lg:flex-row justify-between space-y-2 lg:space-x-2">
       <div className="flex space-x-3 items-center">
         <img className="h-10 w-10 rounded-full" src={user.avatar_url} />
         <span className="font-bold">{user.name}</span>
@@ -76,7 +76,7 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
             )
           )}
       </div>
-    </>
+    </div>
   );
 }
 
