@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "react-query";
 import { BaseLayout } from "../components/BaseLayout";
 import { Button } from "../components/Button";
+import { LoadIcon } from "../components/Icons";
 import { useAuth } from "../lib/supabase";
 import {
   formatRole,
@@ -32,49 +33,38 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
         )}
       </div>
 
-      <div className="flex mt-2 lg:mt-0 items-center space-x-3">
-        {user.id === session?.user.id && (
-          <span className="font-bold uppercase text-gray-400">
-            {formatRole(user.role)}
-          </span>
-        )}
-
-        {loading && (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6 animate-spin"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-            />
-          </svg>
-        )}
-
-        {user.id !== session?.user.id &&
-          [UserRole.INVITED, UserRole.CONTRIBUTOR, UserRole.ADMIN].map(
-            (role) => (
-              <Button
-                title={formatRoleDescription(role)}
-                onClick={() => {
-                  setLoading(true);
-                  updateRole(user.id, role).then(() => {
-                    onUpdateRole();
-                    setLoading(false);
-                  });
-                }}
-                key={role}
-                disabled={role === user.role}
-              >
-                {formatRole(role)}
-              </Button>
-            )
+      <div className="mt-2 lg:mt-0">
+        <span className="block text-xs uppercase font-bold text-gray-400">
+          Rôle
+        </span>
+        <div className="flex mt-1 items-center space-x-3">
+          {user.id === session?.user.id && (
+            <span className="font-bold uppercase text-gray-300">
+              {formatRole(user.role)}
+            </span>
           )}
+
+          {loading && <LoadIcon />}
+          {user.id !== session?.user.id &&
+            [UserRole.INVITED, UserRole.CONTRIBUTOR, UserRole.ADMIN].map(
+              (role) => (
+                <Button
+                  title={formatRoleDescription(role)}
+                  onClick={() => {
+                    setLoading(true);
+                    updateRole(user.id, role).then(() => {
+                      onUpdateRole();
+                      setLoading(false);
+                    });
+                  }}
+                  key={role}
+                  disabled={role === user.role}
+                >
+                  {formatRole(role)}
+                </Button>
+              )
+            )}
+        </div>
       </div>
     </div>
   );
