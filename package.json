@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "supabase:init": "npx supabase init",
+    "supabase:start": "source supabase/.env && npx supabase start",
+    "supabase:stop": "npx supabase stop"
   },
   "dependencies": {
     "@hookform/resolvers": "^2.9.10",
