@@ -13,7 +13,7 @@ interface LocationFormData {
   shardId: string;
   description: string;
   location: string;
-  image: FileList;
+  image: FileList | null;
 }
 
 interface AddLocationFormProps {
@@ -67,7 +67,7 @@ const locationFormSchema = z.object({
     .any()
     .optional()
     .refine((f: FileList) => {
-      return f.length > 0 && f[0].size <= MAX_FILE_SIZE;
+      return !f || (f.length > 0 && f[0].size <= MAX_FILE_SIZE);
     }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
 });
 
@@ -93,6 +93,9 @@ export function AddLocationForm({
     formState: { errors },
   } = useForm<LocationFormData>({
     resolver: zodResolver(locationFormSchema),
+    defaultValues: {
+      image: null,
+    },
   });
 
   const location = watch("location");
@@ -120,7 +123,7 @@ export function AddLocationForm({
       return;
     }
 
-    if (formData.image[0]) {
+    if (formData.image) {
       const fileExt = formData.image[0].name.split(".").pop();
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`;
