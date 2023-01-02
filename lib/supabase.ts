@@ -2,9 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { useQuery } from "react-query";
 import { getUser, UserRole } from "../model/users";
 
-const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  "https://jcqtutfytxbhaewyxtoh.supabase.co";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY || "";
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
