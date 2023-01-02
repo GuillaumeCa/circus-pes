@@ -12,6 +12,7 @@
     "supabase:stop": "npx supabase stop"
   },
   "dependencies": {
+    "@heroicons/react": "^2.0.13",
     "@hookform/resolvers": "^2.9.10",
     "@supabase/supabase-js": "^2.2.2",
     "@types/node": "18.11.17",

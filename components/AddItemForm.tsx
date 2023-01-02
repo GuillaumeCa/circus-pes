@@ -4,17 +4,11 @@ import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { supabase, useAuth } from "../lib/supabase";
-import { ItemsEntity } from "../model/items";
+import { itemFormSchema, ItemsEntity, LOCATIONS } from "../model/items";
 import { Button } from "./Button";
 import { XMarkIcon } from "./Icons";
 
-interface LocationFormData {
-  gameVersion: string;
-  shardId: string;
-  description: string;
-  location: string;
-  image: FileList | null;
-}
+type LocationFormData = z.infer<typeof itemFormSchema>;
 
 interface AddLocationFormProps {
   gameVersionList: string[];
@@ -24,54 +18,7 @@ interface AddLocationFormProps {
   onCreated(item: ItemsEntity): void;
 }
 
-const locations = [
-  "Microtech",
-  "Port Tressler",
-  "Calliope",
-  "Clio",
-  "Euterpe",
-  "Hurston",
-  "Everus Harbor",
-  "Comm Array ST1-61",
-  "Arial",
-  "Aberdeen",
-  "Magda",
-  "Ita",
-  "Crusader",
-  "Port Olisar",
-  "Cellin",
-  "Daymar",
-  "Yela",
-  "ArcCorp",
-  "Baijini Point",
-  "Lyria",
-  "Wala",
-  "Comm Array ST3-90",
-];
-
-const MAX_FILE_SIZE = 5e6;
-
-const locationFormSchema = z.object({
-  gameVersion: z
-    .string()
-    .regex(
-      /PTU.[0-9]+|LIVE-3.18/,
-      "Le format doit être PTU.00000 ou LIVE-3.18"
-    ),
-  shardId: z
-    .string()
-    .regex(/[0-9][A-Z]-[0-9]{3}/, "Le format doit être 1A-000"),
-  description: z.string().min(1, "Le champ ne doit pas être vide"),
-  location: z.string().min(1, "Le champ ne doit pas être vide"),
-  image: z
-    .any()
-    .optional()
-    .refine((f: FileList) => {
-      return !f || (f.length > 0 && f[0].size <= MAX_FILE_SIZE);
-    }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
-});
-
-export function AddLocationForm({
+export function AddItemForm({
   gameVersionList,
   shardIds,
 
@@ -80,6 +27,7 @@ export function AddLocationForm({
 }: AddLocationFormProps) {
   const [err, setErr] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showShardInfo, setShowShardInfo] = useState(false);
 
   const { session } = useAuth();
 
@@ -92,13 +40,12 @@ export function AddLocationForm({
     watch,
     formState: { errors },
   } = useForm<LocationFormData>({
-    resolver: zodResolver(locationFormSchema),
+    resolver: zodResolver(itemFormSchema),
     defaultValues: {
-      image: null,
+      image: undefined,
     },
   });
 
-  const location = watch("location");
   const image = watch("image");
 
   const onSubmit = async (formData: LocationFormData) => {
@@ -208,12 +155,55 @@ export function AddLocationForm({
           htmlFor="shardId"
           className="text-xs uppercase font-bold text-gray-400"
         >
-          Shard
+          Shard{" "}
+          <button
+            type="button"
+            title="Afficher/masquer l'aide"
+            onClick={() => setShowShardInfo(!showShardInfo)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="inline w-4 h-4 align-text-bottom"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+              />
+            </svg>
+          </button>
         </label>
+
+        {showShardInfo && (
+          <div className="border border-gray-600 bg-gray-800 p-2 rounded-lg">
+            <p className="text-sm text-gray-400 leading-6">
+              Pour récupérer l'identifiant de la shard sur laquelle vous êtes,
+              appuyez sur la touche à gauche du 1 puis tapez{" "}
+              <span className="bg-gray-600 font-mono text-gray-400 px-1 py-0.5 rounded">
+                r_DisplayInfo 3
+              </span>{" "}
+              et cherchez l'identifiant en face de ShardId. L'identifiant sera
+              sous la forme{" "}
+              <span className="bg-gray-600 font-mono break-all text-gray-400 px-1 py-0.5 rounded">
+                eptu_use1c_sc_alpha_318x_8319689_game_740
+              </span>{" "}
+              et il faudra par ex renseigner pour cet identifiant{" "}
+              <span className="bg-gray-600 font-mono text-gray-400 px-2 py-0.5 rounded">
+                USE1C-740
+              </span>{" "}
+              dans le champs suivant.
+            </p>
+          </div>
+        )}
+
         <input
           id="shardId"
-          className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
-          placeholder="ID de la shard au format: 1C-130"
+          className="mt-2 appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
+          placeholder="Identifiant de la shard"
           {...register("shardId")}
         />
         <div className="flex space-x-2 mt-2">
@@ -242,6 +232,7 @@ export function AddLocationForm({
           id="description"
           className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
           placeholder="Décrivez votre création en quelques mots.."
+          maxLength={255}
           {...register("description")}
         />
         <p className="text-red-500 text-sm mt-1">
@@ -255,35 +246,13 @@ export function AddLocationForm({
         >
           Lieu
         </label>
-        <input
-          id="location"
-          className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
-          placeholder="Lieu de la création ex: Lorville"
-          autoComplete="off"
-          {...register("location")}
-        />
-        <div className="mt-2 flex flex-wrap items-center">
-          {locations
-            .filter((l) => {
-              return (
-                location &&
-                l.toLowerCase().startsWith(location.toLowerCase()) &&
-                l !== location
-              );
-            })
-            .slice(0, 5)
-            .map((l) => (
-              <div key={l} className="mr-2 mb-2">
-                <Button type="button" onClick={() => setValue("location", l)}>
-                  {l}
-                </Button>
-              </div>
-            ))}
-          {location &&
-            locations.filter((l) =>
-              l.toLowerCase().startsWith(location.toLowerCase())
-            ).length > 5 && <p>et plus...</p>}
-        </div>
+        <select id="location" className="w-full" {...register("location")}>
+          {LOCATIONS.map((l) => (
+            <option key={l} value={l}>
+              {l}
+            </option>
+          ))}
+        </select>
         <p className="text-red-500 text-sm mt-1">{errors.location?.message}</p>
       </div>
       <div>
@@ -291,7 +260,7 @@ export function AddLocationForm({
           className="text-xs uppercase font-bold text-gray-400"
           htmlFor="image"
         >
-          Image (optionnel)
+          Image
         </label>
         <div className="flex">
           <input
@@ -301,7 +270,7 @@ export function AddLocationForm({
             accept=".jpg,.jpeg,.png"
             {...register("image")}
           />
-          {image && (
+          {(image?.length ?? 0) > 0 && (
             <button
               type="button"
               onClick={() => resetField("image")}
@@ -312,7 +281,9 @@ export function AddLocationForm({
           )}
         </div>
       </div>
-      <p className="text-red-500 text-sm mt-1">{errors.image?.message}</p>
+      <p className="text-red-500 text-sm mt-1">
+        {errors.image?.message?.toString()}
+      </p>
 
       <div className="flex items-center justify-end space-x-2 mt-3">
         {err && (

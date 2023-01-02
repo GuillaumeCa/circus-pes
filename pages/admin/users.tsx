@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "react-query";
-import { BaseLayout } from "../components/BaseLayout";
-import { Button } from "../components/Button";
-import { LoadIcon } from "../components/Icons";
-import { useAuth } from "../lib/supabase";
+import { Button } from "../../components/Button";
+import { LoadIcon } from "../../components/Icons";
+import { AdminLayout } from "../../components/layouts/AdminLayout";
+import { useAuth } from "../../lib/supabase";
 import {
   formatRole,
   formatRoleDescription,
@@ -11,7 +11,7 @@ import {
   updateRole,
   User,
   UserRole,
-} from "../model/user";
+} from "../../model/users";
 
 interface UserRowProps {
   user: User;
@@ -80,8 +80,7 @@ export default function Users() {
   const [search, setSearch] = useState("");
 
   return (
-    <BaseLayout>
-      <h2 className="text-2xl mt-3">Utilisateurs</h2>
+    <AdminLayout title="Utilisateurs">
       <p className="text-sm text-gray-400">
         Les utilisateurs avec le rôle invité ne peuvent pas ajouter de créations
         et peuvent uniquement liker. Les admin peuvent modifier le rôle des
@@ -111,6 +110,6 @@ export default function Users() {
             </li>
           ))}
       </ul>
-    </BaseLayout>
+    </AdminLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { useQuery } from "react-query";
-import { getUser, UserRole } from "../model/user";
+import { getUser, UserRole } from "../model/users";
 
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||

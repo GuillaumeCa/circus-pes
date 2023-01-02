@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "../lib/supabase";
 import { getItemImageUrl } from "../model/items";
-import { UserRole } from "../model/user";
+import { UserRole } from "../model/users";
 import { TrashIcon } from "./Icons";
 
 interface ItemLocationRow {

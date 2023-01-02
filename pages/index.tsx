@@ -1,14 +1,15 @@
+import { CogIcon } from "@heroicons/react/24/outline";
+import { GetStaticProps } from "next";
 import { useEffect, useState } from "react";
-import { useQuery } from "react-query";
-import { AddLocationForm } from "../components/AddLocationForm";
-import { BaseLayout } from "../components/BaseLayout";
+import { dehydrate, QueryClient, useQuery } from "react-query";
+import { AddItemForm } from "../components/AddItemForm";
 import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
-import { UserIcon } from "../components/Icons";
 import { ItemLocationRow } from "../components/ItemLocationRow";
+import { BaseLayout } from "../components/layouts/BaseLayout";
 import { supabase, useAuth } from "../lib/supabase";
 import { deleteItem, getItems, LocationInfo } from "../model/items";
-import { UserRole } from "../model/user";
+import { UserRole } from "../model/users";
 
 export type SortOption = "recent" | "favorite";
 
@@ -66,10 +67,12 @@ export default function Home() {
             </AddButton>
           )}
           {user?.role === UserRole.ADMIN && (
-            <LinkButton href="/users" btnType="secondary">
-              <UserIcon />
-              <span className="ml-1">Gestions Utilisateurs</span>
-            </LinkButton>
+            <>
+              <LinkButton href="/admin/items" btnType="secondary">
+                <CogIcon className="h-6 w-6" />
+                <span className="ml-1">Admin</span>
+              </LinkButton>
+            </>
           )}
         </div>
       )}
@@ -163,7 +166,7 @@ export default function Home() {
         <div className="relative w-full h-full max-w-2xl md:h-auto m-auto">
           <div className="relative bg-gray-700 rounded-lg shadow">
             {showAddForm && (
-              <AddLocationForm
+              <AddItemForm
                 shardIds={shardIds}
                 gameVersionList={gameVersions}
                 onCancel={() => setShowAddForm(false)}
@@ -213,37 +216,37 @@ export default function Home() {
 
         {items && (
           <ul className="space-y-2 bg-gray-600 rounded-lg divide-y-[1px] divide-gray-700">
-            {itemsFiltered?.map((d, i) => (
+            {itemsFiltered?.map((item) => (
               <ItemLocationRow
-                key={i}
-                location={d.location}
-                description={d.description}
-                authorId={d.users_id}
-                author={d.users_name}
-                avatarUrl={d.users_avatar_url}
-                shard={d.shardId}
-                likes={d.likes_cnt}
-                hasLiked={d.has_liked === 1}
-                imagePath={d.item_capture_url}
-                date={new Date(d.created_at).toLocaleDateString("fr")}
+                key={item.id}
+                location={item.location}
+                description={item.description}
+                authorId={item.users_id}
+                author={item.users_name}
+                avatarUrl={item.users_avatar_url}
+                shard={item.shardId}
+                likes={item.likes_cnt}
+                hasLiked={item.has_liked === 1}
+                imagePath={item.item_capture_url}
+                date={new Date(item.created_at).toLocaleDateString("fr")}
                 onLike={() => {
-                  if (d.has_liked) {
+                  if (item.has_liked) {
                     supabase
                       .from("likes")
                       .delete()
-                      .match({ user_id: session?.user.id, item_id: d.id })
+                      .match({ user_id: session?.user.id, item_id: item.id })
                       .then(() => refetch());
                   } else {
                     supabase
                       .from("likes")
                       .insert({
                         user_id: session?.user.id,
-                        item_id: d.id,
+                        item_id: item.id,
                       })
                       .then(() => refetch());
                   }
                 }}
-                onDelete={() => deleteItem(d).then(() => refetch())}
+                onDelete={() => deleteItem(item).then(() => refetch())}
               />
             ))}
           </ul>
@@ -252,3 +255,22 @@ export default function Home() {
     </BaseLayout>
   );
 }
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery(["items", "recent"], async () => {
+    const { data, error } = await getItems("recent");
+    if (error) {
+      throw new Error("Failed to fetch items: " + error.message);
+    }
+    return data;
+  });
+
+  return {
+    props: {
+      dehydratedState: dehydrate(queryClient),
+    },
+    revalidate: 60 * 60, // refresh at most every 1h,
+  };
+};

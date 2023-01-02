@@ -1,8 +1,8 @@
 import Head from "next/head";
 import Link from "next/link";
-import { useAuth } from "../lib/supabase";
-import { UserButton } from "./Button";
-import { GithubIcon } from "./Icons";
+import { useAuth } from "../../lib/supabase";
+import { UserButton } from "../Button";
+import { GithubIcon } from "../Icons";
 
 interface BaseLayoutProps {
   children: React.ReactNode;
@@ -65,7 +65,7 @@ export function BaseLayout({ children }: BaseLayoutProps) {
         </div>
       </main>
 
-      <footer className="text-center text-gray-400">
+      <footer className="text-center m-6 text-gray-400">
         <Link
           href="https://github.com/GuillaumeCa/circus-pes"
           target="_blank"
