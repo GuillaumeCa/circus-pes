@@ -181,13 +181,13 @@ export function AddItemForm({
         {showShardInfo && (
           <div className="border border-gray-600 bg-gray-800 p-2 rounded-lg">
             <p className="text-sm text-gray-400 leading-6">
-              Pour récupérer l'identifiant de la shard sur laquelle vous êtes,
-              appuyez sur la touche à gauche du 1 puis tapez{" "}
+              Pour récupérer l&apos;identifiant de la shard sur laquelle vous
+              êtes, appuyez sur la touche à gauche du 1 puis tapez{" "}
               <span className="bg-gray-600 font-mono text-gray-400 px-1 py-0.5 rounded">
                 r_DisplayInfo 3
               </span>{" "}
-              et cherchez l'identifiant en face de ShardId. L'identifiant sera
-              sous la forme{" "}
+              et cherchez l&apos;identifiant en face de ShardId.
+              L&apos;identifiant sera sous la forme{" "}
               <span className="bg-gray-600 font-mono break-all text-gray-400 px-1 py-0.5 rounded">
                 eptu_use1c_sc_alpha_318x_8319689_game_740
               </span>{" "}
