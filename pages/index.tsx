@@ -7,7 +7,7 @@ import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
 import { ItemLocationRow } from "../components/ItemLocationRow";
 import { BaseLayout } from "../components/layouts/BaseLayout";
-import { supabase, useAuth } from "../lib/supabase";
+import { useAuth } from "../lib/supabase";
 import { deleteItem, getItems, LocationInfo } from "../model/items";
 import { UserRole } from "../model/users";
 
@@ -219,6 +219,7 @@ export default function Home() {
             {itemsFiltered?.map((item) => (
               <ItemLocationRow
                 key={item.id}
+                id={item.id}
                 location={item.location}
                 description={item.description}
                 authorId={item.users_id}
@@ -230,21 +231,7 @@ export default function Home() {
                 imagePath={item.item_capture_url}
                 date={new Date(item.created_at).toLocaleDateString("fr")}
                 onLike={() => {
-                  if (item.has_liked) {
-                    supabase
-                      .from("likes")
-                      .delete()
-                      .match({ user_id: session?.user.id, item_id: item.id })
-                      .then(() => refetch());
-                  } else {
-                    supabase
-                      .from("likes")
-                      .insert({
-                        user_id: session?.user.id,
-                        item_id: item.id,
-                      })
-                      .then(() => refetch());
-                  }
+                  refetch();
                 }}
                 onDelete={() => deleteItem(item).then(() => refetch())}
               />

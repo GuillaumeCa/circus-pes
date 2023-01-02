@@ -2,10 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "../lib/supabase";
 import { getItemImageUrl } from "../model/items";
+import { likeItem, unlikeItem } from "../model/likes";
 import { UserRole } from "../model/users";
 import { TrashIcon } from "./Icons";
 
 interface ItemLocationRow {
+  id: number;
   authorId?: string;
   location: string;
   description: string;
@@ -22,6 +24,7 @@ interface ItemLocationRow {
 }
 
 export function ItemLocationRow({
+  id,
   location,
   description,
   authorId,
@@ -38,6 +41,16 @@ export function ItemLocationRow({
 }: ItemLocationRow) {
   const { session, user } = useAuth();
   const itemImageUrl = getItemImageUrl(imagePath);
+
+  function handleLike() {
+    if (session) {
+      if (hasLiked) {
+        unlikeItem(session.user.id, id).then(() => onLike());
+      } else {
+        likeItem(session.user.id, id).then(() => onLike());
+      }
+    }
+  }
 
   return (
     <li className="flex flex-col p-4">
@@ -86,7 +99,7 @@ export function ItemLocationRow({
       <div className="flex justify-between mt-4">
         <button
           disabled={!session}
-          onClick={onLike}
+          onClick={handleLike}
           className="flex px-1 py-1 text-gray-200 disabled:bg-gray-700 bg-gray-700 hover:bg-gray-800 rounded-md"
         >
           <span className="mx-2">{likes}</span>
