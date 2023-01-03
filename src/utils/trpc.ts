@@ -1,5 +1,6 @@
 import { httpBatchLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
+import SuperJSON from "superjson";
 import type { AppRouter } from "../server/routers/_app";
 
 function getBaseUrl() {
@@ -22,6 +23,7 @@ function getBaseUrl() {
 export const trpc = createTRPCNext<AppRouter>({
   config({ ctx }) {
     return {
+      transformer: SuperJSON,
       links: [
         httpBatchLink({
           /**
@@ -34,7 +36,11 @@ export const trpc = createTRPCNext<AppRouter>({
       /**
        * @link https://tanstack.com/query/v4/docs/reference/QueryClient
        **/
-      // queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
+      queryClientConfig: {
+        defaultOptions: {
+          queries: { staleTime: 60, refetchOnWindowFocus: true },
+        },
+      },
     };
   },
   /**

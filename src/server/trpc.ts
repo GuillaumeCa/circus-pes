@@ -1,11 +1,74 @@
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
+import SuperJSON from "superjson";
+import { UserRole } from "../model/users";
+import { Context } from "./context";
 
-// Avoid exporting the entire t-object
-// since it's not very descriptive.
-// For instance, the use of a t variable
-// is common in i18n libraries.
-const t = initTRPC.create();
+const t = initTRPC.context<Context>().create({
+  transformer: SuperJSON,
+});
 
-// Base router and procedure helpers
+const withOptionalAuth = t.middleware(({ next, ctx }) => {
+  return next({
+    ctx: {
+      session: ctx.session,
+    },
+  });
+});
+
+const isAuthed = t.middleware(({ next, ctx }) => {
+  if (!ctx.session?.user?.email) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+    });
+  }
+  return next({
+    ctx: {
+      // Infers the `session` as non-nullable
+      session: ctx.session,
+    },
+  });
+});
+
+export const withRoles = (roles: UserRole[]) =>
+  t.middleware(({ next, ctx: { session } }) => {
+    const role = session?.user?.role;
+    if (!role || !roles.includes(role)) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+      });
+    }
+
+    return next({
+      ctx: {
+        // Infers the `session` as non-nullable
+        session,
+      },
+    });
+  });
+
+export const middleware = t.middleware;
 export const router = t.router;
-export const procedure = t.procedure;
+
+/**
+ * public procedure (optional auth)
+ */
+export const publicProcedure = t.procedure.use(withOptionalAuth);
+
+/**
+ * Protected procedure (auth required)
+ */
+export const protectedProcedure = t.procedure.use(isAuthed);
+
+/**
+ * Allow only user with roles that can write
+ */
+export const writeProcedure = protectedProcedure.use(
+  withRoles([UserRole.CONTRIBUTOR, UserRole.ADMIN])
+);
+
+/**
+ * Allow only admin user
+ */
+export const adminProcedure = protectedProcedure.use(
+  withRoles([UserRole.ADMIN])
+);

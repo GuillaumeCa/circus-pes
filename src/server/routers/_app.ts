@@ -1,19 +1,19 @@
-import { z } from "zod";
-import { procedure, router } from "../trpc";
+import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+import { router } from "../trpc";
+import { itemRouter } from "./item";
+import { patchVersionRouter } from "./patch-version";
+import { storageRouter } from "./storage";
+import { userRouter } from "./user";
 
 export const appRouter = router({
-  hello: procedure
-    .input(
-      z.object({
-        text: z.string(),
-      })
-    )
-    .query(({ input }) => {
-      return {
-        greeting: `hello ${input.text}`,
-      };
-    }),
+  item: itemRouter,
+  patchVersion: patchVersionRouter,
+  user: userRouter,
+  storage: storageRouter,
 });
 
 // export type definition of API
 export type AppRouter = typeof appRouter;
+
+export type RouterOutput = inferRouterOutputs<AppRouter>;
+export type RouterInput = inferRouterInputs<AppRouter>;

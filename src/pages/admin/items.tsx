@@ -1,21 +1,28 @@
-import { useQuery } from "react-query";
+import { useState } from "react";
 import { Button } from "../../components/Button";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
-import { getItemImageUrl, getItems, LocationInfo } from "../../model/items";
+import { LocationInfo } from "../../server/routers/item";
+import { STORAGE_BASE_URL } from "../../utils/config";
+import { trpc } from "../../utils/trpc";
 
 function ItemMgtRow({ item }: { item: LocationInfo }) {
-  const itemImageUrl = getItemImageUrl(item.item_capture_url);
+  // const itemImageUrl = getItemImageUrl(item.item_capture_url);
 
   return (
     <li key={item.id} className="p-3 flex justify-between">
       <div className="flex items-start">
-        <img className="rounded-lg shadow-md" src={itemImageUrl} width={200} />
+        {item.image && (
+          <img
+            className="rounded-lg shadow-md"
+            src={STORAGE_BASE_URL + item.image}
+            width={200}
+          />
+        )}
         <p className="ml-2">{item.description}</p>
         <span>{item.shardId}</span>
         <span>{item.location}</span>
         <span>
-          De {item.users_name} le{" "}
-          {new Date(item.created_at).toLocaleDateString()}
+          De {item.userName} le {new Date(item.createdAt).toLocaleDateString()}
         </span>
       </div>
       <div className="flex items-center space-x-2">
@@ -27,20 +34,46 @@ function ItemMgtRow({ item }: { item: LocationInfo }) {
 }
 
 export default function ItemsManagement() {
+  const [patchVersionId, setPatchVersionId] = useState(0);
+  const { data: patchVersions } = trpc.patchVersion.getPatchVersions.useQuery();
+  const selectedPatchId = patchVersions?.[patchVersionId];
+
   const {
     data: items,
     error,
     refetch,
-  } = useQuery<LocationInfo[], Error>(["items", "recent"], async () => {
-    const { data, error } = await getItems("recent");
-    if (error) {
-      throw new Error("Failed to fetch items: " + error.message);
+  } = trpc.item.getItems.useQuery(
+    { sortBy: "recent", patchVersion: selectedPatchId?.id ?? "" },
+    {
+      enabled: !!selectedPatchId,
     }
-    return data;
-  });
+  );
 
   return (
     <AdminLayout title="Gestion des publications">
+      <label
+        htmlFor="gameVersion"
+        className="text-xs uppercase font-bold text-gray-400"
+      >
+        Version
+      </label>
+      <select
+        id="gameVersion"
+        value={patchVersionId}
+        onChange={(e) => {
+          setPatchVersionId(parseInt(e.target.value, 10));
+        }}
+      >
+        {patchVersions && patchVersions?.length === 0 && (
+          <option disabled>Aucune</option>
+        )}
+        {patchVersions?.map((v, i) => (
+          <option key={v.id} value={i}>
+            {v.name}
+          </option>
+        ))}
+      </select>
+
       <div className="mt-4">
         {!items && <p>Chargement...</p>}
         {items && error && (

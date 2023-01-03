@@ -1,13 +1,12 @@
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useAuth } from "../lib/supabase";
-import { getItemImageUrl } from "../model/items";
-import { likeItem, unlikeItem } from "../model/likes";
 import { UserRole } from "../model/users";
+import { trpc } from "../utils/trpc";
 import { TrashIcon } from "./Icons";
 
 interface ItemLocationRow {
-  id: number;
+  id: string;
   authorId?: string;
   location: string;
   description: string;
@@ -17,7 +16,7 @@ interface ItemLocationRow {
   shard: string;
   likes: number;
   hasLiked: boolean;
-  imagePath: string;
+  imagePath?: string;
 
   onDelete(): void;
   onLike(): void;
@@ -39,17 +38,21 @@ export function ItemLocationRow({
   onDelete,
   onLike,
 }: ItemLocationRow) {
-  const { session, user } = useAuth();
-  const itemImageUrl = getItemImageUrl(imagePath);
+  const { data, status } = useSession();
+  const { mutateAsync: deleteItem } = trpc.item.deleteItem.useMutation();
+  const { mutateAsync: likeItem } = trpc.item.like.useMutation();
+  const { mutateAsync: unLikeItem } = trpc.item.unLike.useMutation();
 
   function handleLike() {
-    if (session) {
-      if (hasLiked) {
-        unlikeItem(session.user.id, id).then(() => onLike());
-      } else {
-        likeItem(session.user.id, id).then(() => onLike());
-      }
+    if (hasLiked) {
+      unLikeItem(id).then(() => onLike());
+    } else {
+      likeItem(id).then(() => onLike());
     }
+  }
+
+  function handleDelete() {
+    deleteItem(id).then(() => onDelete());
   }
 
   return (
@@ -70,9 +73,10 @@ export function ItemLocationRow({
           </span>
         </div>
         <div>
-          {session &&
-            (authorId === user?.id || user?.role === UserRole.ADMIN) && (
-              <button title="Supprimer" onClick={onDelete}>
+          {data &&
+            (authorId === data.user?.id ||
+              data.user?.role === UserRole.ADMIN) && (
+              <button title="Supprimer" onClick={handleDelete}>
                 <TrashIcon />
               </button>
             )}
@@ -82,12 +86,12 @@ export function ItemLocationRow({
       <div className="flex flex-col lg:flex-row mt-2 space-y-2 lg:space-y-0">
         {imagePath && (
           <div className="mr-4 max-w-md overflow-hidden rounded-lg shadow-md">
-            <Link href={itemImageUrl} target="_blank">
+            <Link href={imagePath} target="_blank">
               <Image
                 width={500}
                 height={300}
                 alt="capture de la création"
-                src={itemImageUrl}
+                src={imagePath}
               />
             </Link>
           </div>
@@ -98,14 +102,16 @@ export function ItemLocationRow({
 
       <div className="flex justify-between mt-4">
         <button
-          disabled={!session}
+          disabled={status === "unauthenticated"}
           onClick={handleLike}
           className="flex px-1 py-1 text-gray-200 disabled:bg-gray-700 bg-gray-700 hover:bg-gray-800 rounded-md"
         >
           <span className="mx-2">{likes}</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            fill={hasLiked || !session ? "currentColor" : "none"}
+            fill={
+              hasLiked || status === "unauthenticated" ? "currentColor" : "none"
+            }
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"

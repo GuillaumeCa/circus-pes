@@ -3,6 +3,10 @@ import {
   RectangleStackIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { UserRole } from "../../model/users";
 import { LinkButton } from "../Button";
 import { BaseLayout } from "./BaseLayout";
 
@@ -12,6 +16,18 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children, title }: AdminLayoutProps) {
+  const { data, status } = useSession();
+  const { replace } = useRouter();
+
+  useEffect(() => {
+    if (
+      status === "unauthenticated" ||
+      (data && data.user.role !== UserRole.ADMIN)
+    ) {
+      replace("/");
+    }
+  }, [data, status]);
+
   return (
     <BaseLayout>
       <div className="mt-2 flex space-x-2">

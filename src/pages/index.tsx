@@ -1,53 +1,56 @@
 import { CogIcon } from "@heroicons/react/24/outline";
 import { GetStaticProps } from "next";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { dehydrate, QueryClient, useQuery } from "react-query";
+import { dehydrate, QueryClient } from "react-query";
 import { AddItemForm } from "../components/AddItemForm";
 import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
 import { ItemLocationRow } from "../components/ItemLocationRow";
 import { BaseLayout } from "../components/layouts/BaseLayout";
-import { useAuth } from "../lib/supabase";
-import { deleteItem, getItems, LocationInfo } from "../model/items";
+import { getItems } from "../model/items";
 import { UserRole } from "../model/users";
+import { ItemRouterInput } from "../server/routers/item";
+import { STORAGE_BASE_URL } from "../utils/config";
+import { trpc } from "../utils/trpc";
 
-export type SortOption = "recent" | "favorite";
+export type SortOption = ItemRouterInput["getItems"]["sortBy"];
 
 export default function Home() {
   const [gameVersionId, setGameVersion] = useState(0);
   const [selectedShard, setSelectedShard] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
-  const { session, user, hasWriteAccess } = useAuth();
+  const { data, status } = useSession();
   const [sortOpt, setSortOpt] = useState<SortOption>("recent");
+  const { data: patchVersions } = trpc.patchVersion.getPatchVersions.useQuery();
+  const selectedPatchId = patchVersions?.[gameVersionId];
 
   const {
     data: items,
     error,
     refetch,
-  } = useQuery<LocationInfo[], Error>(["items", sortOpt], async () => {
-    const { data, error } = await getItems(sortOpt);
-    if (error) {
-      throw new Error("Failed to fetch items: " + error.message);
+  } = trpc.item.getItems.useQuery(
+    {
+      patchVersion: selectedPatchId?.id ?? "",
+      sortBy: "recent",
+    },
+    {
+      enabled: !!selectedPatchId,
     }
-    return data;
-  });
-
-  const gameVersions = Array.from(
-    new Set(items?.map((i) => i.gameVersion) ?? [])
   );
 
   const shardIds = Array.from(
     new Set(
       items
-        ?.filter((i) => i.gameVersion === gameVersions[gameVersionId])
+        ?.filter((i) => i.patchVersion === patchVersions?.[gameVersionId]?.name)
         .map((i) => i.shardId) ?? []
     )
   );
 
   const itemsFiltered = items?.filter(
-    (d) =>
-      (selectedShard === "" || d.shardId === selectedShard) &&
-      d.gameVersion === gameVersions[gameVersionId]
+    (i) =>
+      (selectedShard === "" || i.shardId === selectedShard) &&
+      i.patchVersion === patchVersions?.[gameVersionId]?.name
   );
 
   useEffect(() => {
@@ -56,9 +59,9 @@ export default function Home() {
 
   return (
     <BaseLayout>
-      {session && (
+      {status === "authenticated" && (
         <div className="mt-2 flex space-x-2 justify-end">
-          {hasWriteAccess() && (
+          {data && (
             <AddButton
               disabled={showAddForm}
               onClick={() => setShowAddForm(true)}
@@ -66,7 +69,7 @@ export default function Home() {
               Nouvelle création
             </AddButton>
           )}
-          {user?.role === UserRole.ADMIN && (
+          {data.user?.role === UserRole.ADMIN && (
             <>
               <LinkButton href="/admin/items" btnType="secondary">
                 <CogIcon className="h-6 w-6" />
@@ -92,10 +95,12 @@ export default function Home() {
               setSelectedShard("");
             }}
           >
-            {gameVersions.length === 0 && <option disabled>Aucune</option>}
-            {gameVersions.map((v, i) => (
-              <option key={v} value={i}>
-                {v}
+            {patchVersions && patchVersions?.length === 0 && (
+              <option disabled>Aucune</option>
+            )}
+            {patchVersions?.map((v, i) => (
+              <option key={v.id} value={i}>
+                {v.name}
               </option>
             ))}
           </select>
@@ -132,9 +137,9 @@ export default function Home() {
             <button
               className={cls(
                 "rounded-r-lg px-2 py-1 font-bold",
-                sortOpt === "favorite" ? "bg-rose-700" : "bg-gray-500"
+                sortOpt === "like" ? "bg-rose-700" : "bg-gray-500"
               )}
-              onClick={() => setSortOpt("favorite")}
+              onClick={() => setSortOpt("like")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -165,12 +170,12 @@ export default function Home() {
       >
         <div className="relative w-full h-full max-w-2xl md:h-auto m-auto">
           <div className="relative bg-gray-700 rounded-lg shadow">
-            {showAddForm && (
+            {showAddForm && patchVersions && (
               <AddItemForm
                 shardIds={shardIds}
-                gameVersionList={gameVersions}
+                patchVersionList={patchVersions}
                 onCancel={() => setShowAddForm(false)}
-                onCreated={(item) => {
+                onCreated={() => {
                   refetch();
                   setShowAddForm(false);
                 }}
@@ -222,18 +227,22 @@ export default function Home() {
                 id={item.id}
                 location={item.location}
                 description={item.description}
-                authorId={item.users_id}
-                author={item.users_name}
-                avatarUrl={item.users_avatar_url}
+                authorId={item.userId}
+                author={item.userName}
+                avatarUrl={item.userImage}
                 shard={item.shardId}
-                likes={item.likes_cnt}
-                hasLiked={item.has_liked === 1}
-                imagePath={item.item_capture_url}
-                date={new Date(item.created_at).toLocaleDateString("fr")}
+                likes={item.likesCount}
+                hasLiked={item.hasLiked === 1}
+                imagePath={
+                  item.image ? STORAGE_BASE_URL + item.image : undefined
+                }
+                date={new Date(item.createdAt).toLocaleDateString("fr")}
                 onLike={() => {
                   refetch();
                 }}
-                onDelete={() => deleteItem(item).then(() => refetch())}
+                onDelete={() => {
+                  refetch();
+                }}
               />
             ))}
           </ul>

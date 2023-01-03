@@ -1,42 +1,73 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { supabase, useAuth } from "../lib/supabase";
-import { itemFormSchema, ItemsEntity, LOCATIONS } from "../model/items";
+import { LOCATIONS } from "../model/items";
+import { PatchVersionRouterOutput } from "../server/routers/patch-version";
+import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
 import { XMarkIcon } from "./Icons";
 
 type LocationFormData = z.infer<typeof itemFormSchema>;
 
 interface AddLocationFormProps {
-  gameVersionList: string[];
+  patchVersionList: PatchVersionRouterOutput["getPatchVersions"];
   shardIds: string[];
 
   onCancel(): void;
-  onCreated(item: ItemsEntity): void;
+  onCreated(): void;
 }
 
+const MAX_IMAGE_FILE_SIZE = 5e6; // 5M bytes
+
+export const itemFormSchema = z.object({
+  gameVersion: z.string(),
+  shardId: z
+    .string()
+    .regex(
+      /(US|EU|AP)(E|S|W)[0-9][A-Z]-[0-9]{3}/,
+      "L'identifiant doit être au format EUE1A-000"
+    ),
+  description: z
+    .string()
+    .min(1, "Le champ ne doit pas être vide")
+    .max(255, "La description ne doit pas dépasser 255 caractères"),
+  location: z.string().min(1, "Le champ ne doit pas être vide"),
+  image:
+    typeof window === "undefined"
+      ? z.null()
+      : z
+          .instanceof(FileList, { message: "Une image est requise" })
+          .refine((f: FileList) => {
+            return f && f.length > 0 && f[0].size <= MAX_IMAGE_FILE_SIZE;
+          }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
+});
+
 export function AddItemForm({
-  gameVersionList,
+  patchVersionList,
   shardIds,
 
   onCancel,
   onCreated,
 }: AddLocationFormProps) {
-  const [err, setErr] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [showShardInfo, setShowShardInfo] = useState(false);
+  const {
+    mutateAsync: createItem,
+    isError,
+    isLoading,
+  } = trpc.item.createItem.useMutation();
 
-  const { session } = useAuth();
+  const { mutateAsync: getPresignedUrl } =
+    trpc.storage.presignedUrl.useMutation();
+
+  const { mutateAsync: setItemImage } = trpc.item.setItemImage.useMutation();
 
   const {
     register,
     handleSubmit,
     reset,
-    resetField,
     setValue,
+    resetField,
     watch,
     formState: { errors },
   } = useForm<LocationFormData>({
@@ -49,55 +80,73 @@ export function AddItemForm({
   const image = watch("image");
 
   const onSubmit = async (formData: LocationFormData) => {
-    setErr(false);
-    setLoading(true);
-
-    const { data, error } = await supabase
-      .from("items")
-      .insert<Partial<ItemsEntity>>({
-        gameVersion: formData.gameVersion,
-        shardId: formData.shardId,
+    const file = formData.image!.item(0)!;
+    try {
+      const createdItem = await createItem({
         description: formData.description,
         location: formData.location,
-        user_id: session?.user.id,
-      })
-      .select<"*", ItemsEntity>()
-      .single();
+        patchId: formData.gameVersion,
+        shardId: formData.shardId,
+      });
+      if (createdItem) {
+        const key = `${createdItem.id}-${file.name}`;
+        const url = await getPresignedUrl(key);
 
-    if (error || !data) {
-      setLoading(false);
-      setErr(true);
-      return;
-    }
-
-    if (formData.image) {
-      const fileExt = formData.image[0].name.split(".").pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("items-capture")
-        .upload(filePath, formData.image[0], { upsert: true });
-
-      await supabase
-        .from("items")
-        .update({
-          item_capture_url: filePath,
-        })
-        .eq("id", data.id);
-
-      if (uploadError) {
-        setErr(true);
-        setLoading(false);
-        supabase.from("items").delete().eq("id", data.id);
-        return;
+        const res = await fetch(url, {
+          method: "PUT",
+          body: file,
+        });
+        if (!res.ok) {
+          throw new Error("failed to upload image");
+        }
+        await setItemImage({ itemId: createdItem.id, image: key });
       }
-    }
 
-    setLoading(false);
-    reset();
+      reset();
+      onCreated();
+    } catch (error) {}
 
-    onCreated(data);
+    // setErr(false);
+    // setLoading(true);
+    // const { data, error } = await supabase
+    //   .from("items")
+    //   .insert<Partial<ItemsEntity>>({
+    //     gameVersion: formData.gameVersion,
+    //     shardId: formData.shardId,
+    //     description: formData.description,
+    //     location: formData.location,
+    //     user_id: session?.user.id,
+    //   })
+    //   .select<"*", ItemsEntity>()
+    //   .single();
+    // if (error || !data) {
+    //   setLoading(false);
+    //   setErr(true);
+    //   return;
+    // }
+    // if (formData.image) {
+    //   const fileExt = formData.image[0].name.split(".").pop();
+    //   const fileName = `${uuidv4()}.${fileExt}`;
+    //   const filePath = `${fileName}`;
+    //   const { error: uploadError } = await supabase.storage
+    //     .from("items-capture")
+    //     .upload(filePath, formData.image[0], { upsert: true });
+    //   await supabase
+    //     .from("items")
+    //     .update({
+    //       item_capture_url: filePath,
+    //     })
+    //     .eq("id", data.id);
+    //   if (uploadError) {
+    //     setErr(true);
+    //     setLoading(false);
+    //     supabase.from("items").delete().eq("id", data.id);
+    //     return;
+    //   }
+    // }
+    // setLoading(false);
+    // reset();
+    // onCreated(data);
   };
 
   function handleCancel() {
@@ -126,26 +175,37 @@ export function AddItemForm({
         >
           Version
         </label>
-        <input
+        <select
+          id="gameVersion"
+          className="w-full"
+          {...register("gameVersion")}
+        >
+          {patchVersionList.map((pv) => (
+            <option key={pv.id} value={pv.id}>
+              {pv.name}
+            </option>
+          ))}
+        </select>
+        {/* <input
           id="gameVersion"
           className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
           placeholder="Version du patch au format PTU.version ou LIVE-3.18"
           autoFocus
           {...register("gameVersion")}
-        />
-        <div className="flex space-x-2 mt-2">
-          {gameVersionList.map((gv) => (
+        /> */}
+        {/* <div className="flex space-x-2 mt-2">
+          {patchVersionList.map((pv) => (
             <Button
-              key={gv}
+              key={pv.id}
               type="button"
               onClick={() =>
-                setValue("gameVersion", gv, { shouldValidate: false })
+                setValue("gameVersion", pv.id, { shouldValidate: false })
               }
             >
-              {gv}
+              {pv.name}
             </Button>
           ))}
-        </div>
+        </div> */}
         <p className="text-red-500 text-sm mt-1">
           {errors.gameVersion?.message}
         </p>
@@ -268,6 +328,21 @@ export function AddItemForm({
             id="image"
             type="file"
             accept=".jpg,.jpeg,.png"
+            // onChange={async (e) => {
+            //   if (!e.target.files || e.target.files.length === 0) {
+            //     return;
+            //   }
+            //   const file = e.target.files[0];
+
+            //   const key = `${uuid()}-${file.name}`;
+            //   const url = await getPresignedUrl(key);
+
+            //   const res = await fetch(url, {
+            //     method: "PUT",
+            //     body: file,
+            //   });
+            //   setValue("image", key);
+            // }}
             {...register("image")}
           />
           {(image?.length ?? 0) > 0 && (
@@ -281,12 +356,12 @@ export function AddItemForm({
           )}
         </div>
       </div>
-      <p className="text-red-500 text-sm mt-1">
+      {/* <p className="text-red-500 text-sm mt-1">
         {errors.image?.message?.toString()}
-      </p>
+      </p> */}
 
       <div className="flex items-center justify-end space-x-2 mt-3">
-        {err && (
+        {isError && (
           <p className="text-red-500">
             Impossible d&apos;ajouter la création, veuillez réessayer
           </p>
@@ -294,7 +369,7 @@ export function AddItemForm({
         <Button type="button" btnType="secondary" onClick={handleCancel}>
           Annuler
         </Button>
-        <Button type="submit">{loading ? "Chargement..." : "Ajouter"}</Button>
+        <Button type="submit">{isLoading ? "Chargement..." : "Ajouter"}</Button>
       </div>
     </form>
   );

@@ -1,34 +1,35 @@
+import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { useQuery } from "react-query";
 import { Button } from "../../components/Button";
 import { LoadIcon } from "../../components/Icons";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
-import { useAuth } from "../../lib/supabase";
 import {
   formatRole,
   formatRoleDescription,
-  getUsers,
   updateRole,
-  User,
   UserRole,
 } from "../../model/users";
+import { UserRouterOutput } from "../../server/routers/user";
+import { trpc } from "../../utils/trpc";
 
 interface UserRowProps {
-  user: User;
+  user: UserRouterOutput["getUsers"][0];
   onUpdateRole(): void;
 }
 
 function UserRow({ user, onUpdateRole }: UserRowProps) {
-  const { session } = useAuth();
+  const { data, status } = useSession();
   const [loading, setLoading] = useState(false);
 
   return (
     <div className="flex flex-col lg:flex-row justify-between w-full">
       <div className="flex space-x-3 items-center">
-        <img className="h-10 w-10 rounded-full" src={user.avatar_url} />
-        <span className="font-bold">{user.name}</span>
-        <span className="text-sm text-gray-500">{user.name_id}</span>
-        {user.id === session?.user.id && (
+        <img className="h-10 w-10 rounded-full" src={user.image ?? ""} />
+        <span className="font-bold">
+          {user.name}
+          <span className="text-sm text-gray-500">#{user.discriminator}</span>
+        </span>
+        {user.id === data?.user.id && (
           <span className="font-bold text-rose-600">Moi</span>
         )}
       </div>
@@ -38,14 +39,14 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
           Rôle
         </span>
         <div className="flex mt-1 items-center space-x-3">
-          {user.id === session?.user.id && (
+          {user.id === data?.user.id && (
             <span className="font-bold uppercase text-gray-300">
-              {formatRole(user.role)}
+              {user.role && formatRole(user.role)}
             </span>
           )}
 
           {loading && <LoadIcon />}
-          {user.id !== session?.user.id &&
+          {user.id !== data?.user.id &&
             [UserRole.INVITED, UserRole.CONTRIBUTOR, UserRole.ADMIN].map(
               (role) => (
                 <Button
@@ -76,7 +77,8 @@ export default function Users() {
     isLoading,
     error,
     refetch,
-  } = useQuery<User[] | null, Error>("users", () => getUsers());
+  } = trpc.user.getUsers.useQuery();
+
   const [search, setSearch] = useState("");
 
   return (
@@ -99,8 +101,8 @@ export default function Users() {
 
       <ul className="mt-3 space-y-2">
         {users
-          ?.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()))
-          .sort((a, b) => a.name.localeCompare(b.name))
+          ?.filter((u) => u.name?.toLowerCase().includes(search.toLowerCase()))
+          .sort((a, b) => a.name?.localeCompare(b.name ?? "") ?? 0)
           .map((user) => (
             <li
               key={user.id}

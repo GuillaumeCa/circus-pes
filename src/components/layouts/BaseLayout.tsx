@@ -1,6 +1,6 @@
+import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
-import { useAuth } from "../../lib/supabase";
 import { UserButton } from "../Button";
 import { GithubIcon } from "../Icons";
 
@@ -8,7 +8,8 @@ interface BaseLayoutProps {
   children: React.ReactNode;
 }
 export function BaseLayout({ children }: BaseLayoutProps) {
-  const { session, logout, signIn } = useAuth();
+  const { data, status } = useSession();
+
   return (
     <>
       <Head>
@@ -27,19 +28,21 @@ export function BaseLayout({ children }: BaseLayoutProps) {
               <Link href="/">
                 <h1 className="text-3xl font-bold">🎪 Circus PES</h1>
               </Link>
-              {!session && (
+              {status === "unauthenticated" && (
                 <div>
-                  <UserButton onClick={signIn}>Connexion</UserButton>
+                  <UserButton onClick={() => signIn("discord")}>
+                    Connexion
+                  </UserButton>
                 </div>
               )}
-              {session && (
+              {status === "authenticated" && (
                 <div className="flex items-center">
                   <div className="mr-2">
                     <span className="uppercase text-sm font-bold text-gray-300">
-                      {session.user.user_metadata.full_name}
+                      {data.user?.name}
                     </span>
                     <button
-                      onClick={logout}
+                      onClick={() => signOut()}
                       className="block text-sm bg-gray-500 hover:bg-gray-400 px-2 rounded text-gray-700"
                     >
                       Déconnexion
@@ -47,7 +50,7 @@ export function BaseLayout({ children }: BaseLayoutProps) {
                   </div>
                   <img
                     className="rounded-full h-10 w-10"
-                    src={session.user.user_metadata.avatar_url}
+                    src={data.user?.image ?? ""}
                     width={30}
                     height={30}
                   />
