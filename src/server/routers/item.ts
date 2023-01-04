@@ -160,7 +160,7 @@ export const itemRouter = router({
             location,
             shardId,
             userId: ctx.session.user.id,
-            public: false,
+            public: ctx.session.user.role === UserRole.ADMIN, // make item public by default only for admins
           },
           select: {
             id: true,
