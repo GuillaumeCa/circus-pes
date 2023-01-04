@@ -53,6 +53,7 @@ CREATE TABLE "item" (
     "location" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "public" BOOLEAN NOT NULL DEFAULT false,
+    "image" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT NOT NULL,
     "patchVersionId" TEXT NOT NULL,

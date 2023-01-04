@@ -76,7 +76,11 @@ export const itemRouter = router({
       left join "user" u on u.id = i."userId"
       where i."patchVersionId" = ${input.patchVersion}
       group by (i.id, u.id, pv.id)
-      order by ${input.sortBy === "recent" ? "i.createdAt" : "likesCount"} asc
+      order by ${
+        input.sortBy === "recent"
+          ? Prisma.sql`i."createdAt"`
+          : Prisma.sql`"likesCount"`
+      } asc
     `;
 
         return res;

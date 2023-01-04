@@ -25,11 +25,12 @@ export default function Home() {
   const {
     data: items,
     error,
+    isLoading,
     refetch,
   } = trpc.item.getItems.useQuery(
     {
       patchVersion: selectedPatchId?.id ?? "",
-      sortBy: "recent",
+      sortBy: sortOpt,
     },
     {
       enabled: !!selectedPatchId,
@@ -44,11 +45,12 @@ export default function Home() {
     )
   );
 
-  const itemsFiltered = items?.filter(
-    (i) =>
-      (selectedShard === "" || i.shardId === selectedShard) &&
-      i.patchVersion === patchVersions?.[gameVersionId]?.name
-  );
+  const itemsFiltered =
+    items?.filter(
+      (i) =>
+        (selectedShard === "" || i.shardId === selectedShard) &&
+        i.patchVersion === patchVersions?.[gameVersionId]?.name
+    ) ?? [];
 
   useEffect(() => {
     document.body.style.overflow = showAddForm ? "hidden" : "initial";
@@ -210,11 +212,11 @@ export default function Home() {
       </div>
 
       <div className="mt-4">
-        {!items && <p>Chargement...</p>}
-        {items && error && (
-          <p>Erreur de chargement, veuillez recharger la page</p>
+        {selectedPatchId && isLoading && <p>Chargement...</p>}
+        {error && <p>Erreur de chargement, veuillez recharger la page</p>}
+        {(!selectedPatchId || itemsFiltered.length === 0) && (
+          <p className="text-gray-400">Aucune création</p>
         )}
-        {itemsFiltered?.length === 0 && <p>Aucune création</p>}
 
         {items && (
           <ul className="space-y-2 bg-gray-600 rounded-lg divide-y-[1px] divide-gray-700">

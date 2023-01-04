@@ -31,6 +31,10 @@ export default NextAuth({
     }),
   ],
 
+  pages: {
+    signIn: "/",
+  },
+
   callbacks: {
     async session({ session, user }) {
       session.user.role = user.role ?? 0; // Add role value to user object so it is passed along with session
