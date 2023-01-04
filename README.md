@@ -4,29 +4,48 @@
 
 Prerequisites:
 
-- Docker
+- Postgres DB
+- Discord oauth credentials
+- Minio credentials
 - node+npm
 
-Setup Supabase (only first time)
+Install dependencies
 
-- Add `.env` file in the supabase folder with values from discord for auth:
-
-```
-export DISCORD_CLIENT_ID=<client id>
-export DISCORD_CLIENT_SECRET=<client secret>
-```
-
-- Add `.env.local` and add the anon key from the local supabase server and the supabase url
-
-```
-NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
-NEXT_PUBLIC_SUPABASE_KEY=<anon key>
+```bash
+npm install
+# or
+yarn install
 ```
 
-Start local supabase services
+Setup Prisma
 
+- Add `.env` file at the root of the project and add the postgres url:
+
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/circus-pes
 ```
-npm run supabase:start
+
+- To init the Postgres database with the migrations files:
+
+```bash
+npx prisma migrate dev
+```
+
+Setup Discord, Minio and auth
+
+- Add `.env.local` and copy the following lines into it:
+
+```bash
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=<secret to generate>
+
+DISCORD_ID=<client id>
+DISCORD_SECRET=<client secret>
+
+NEXT_PUBLIC_MINIO_ENDPOINT=storage.circuspes.fr
+MINIO_ACCESS_KEY=<access key>
+MINIO_SECRET_KEY=<secret key>
+
 ```
 
 Run the development server for nextjs:
@@ -38,9 +57,3 @@ yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-To stop local supabase services:
-
-```
-npm run supabase:stop
-```

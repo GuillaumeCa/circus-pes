@@ -1,0 +1,100 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("account")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  discriminator String?
+  role          Int?    @default(0)
+  Item          Item[]
+  Like          Like[]
+
+  @@map("user")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_token")
+}
+
+model Item {
+  id             String       @id @default(cuid())
+  patchVersion   PatchVersion @relation(fields: [patchVersionId], references: [id])
+  shardId        String
+  location       String
+  description    String       @db.Text
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  public         Boolean      @default(false)
+  image          String?
+  createdAt      DateTime     @default(now())
+  userId         String
+  patchVersionId String
+  likes          Like[]
+
+  @@map("item")
+}
+
+model PatchVersion {
+  id      String  @id @default(cuid())
+  name    String
+  visible Boolean @default(true)
+  Item    Item[]
+
+  @@map("patch_version")
+}
+
+model Like {
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  userId String
+  itemId String
+
+  @@id([userId, itemId])
+  @@map("like")
+}
