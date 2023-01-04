@@ -1,18 +1,15 @@
 import { CogIcon } from "@heroicons/react/24/outline";
-import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { dehydrate, QueryClient } from "react-query";
 import { AddItemForm } from "../components/AddItemForm";
 import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
 import { ItemLocationRow } from "../components/ItemLocationRow";
 import { BaseLayout } from "../components/layouts/BaseLayout";
-import { getItems } from "../model/items";
-import { UserRole } from "../model/users";
 import { ItemRouterInput } from "../server/routers/item";
 import { STORAGE_BASE_URL } from "../utils/config";
 import { trpc } from "../utils/trpc";
+import { UserRole } from "../utils/user";
 
 export type SortOption = ItemRouterInput["getItems"]["sortBy"];
 
@@ -252,21 +249,22 @@ export default function Home() {
   );
 }
 
-export const getStaticProps: GetStaticProps = async (context) => {
-  const queryClient = new QueryClient();
+// TODO: setup for trpc
+// export const getStaticProps: GetStaticProps = async (context) => {
+//   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery(["items", "recent"], async () => {
-    const { data, error } = await getItems("recent");
-    if (error) {
-      throw new Error("Failed to fetch items: " + error.message);
-    }
-    return data;
-  });
+//   await queryClient.prefetchQuery(["items", "recent"], async () => {
+//     const { data, error } = await getItems("recent");
+//     if (error) {
+//       throw new Error("Failed to fetch items: " + error.message);
+//     }
+//     return data;
+//   });
 
-  return {
-    props: {
-      dehydratedState: dehydrate(queryClient),
-    },
-    revalidate: 60 * 60, // refresh at most every 1h,
-  };
-};
+//   return {
+//     props: {
+//       dehydratedState: dehydrate(queryClient),
+//     },
+//     revalidate: 60 * 60, // refresh at most every 1h,
+//   };
+// };

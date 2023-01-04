@@ -2,8 +2,8 @@ import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { minioClient } from "../../lib/minio";
-import { UserRole } from "../../model/users";
 import { IMAGE_BUCKET_NAME } from "../../utils/config";
+import { UserRole } from "../../utils/user";
 import {
   protectedProcedure,
   publicProcedure,

@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { LOCATIONS } from "../model/items";
 import { PatchVersionRouterOutput } from "../server/routers/patch-version";
 import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
@@ -19,6 +18,47 @@ interface AddLocationFormProps {
 }
 
 const MAX_IMAGE_FILE_SIZE = 5e6; // 5M bytes
+
+export const LOCATIONS = [
+  "Crusader",
+  "Cellin",
+  "Yela",
+  "Daymar",
+  "CRU-L1",
+  "CRU-L2",
+  "CRU-L3",
+  "CRU-L4",
+  "CRU-L5",
+  "Hurston",
+  "Ita",
+  "Aberdeen",
+  "Arial",
+  "Magda",
+  "HUR-L1",
+  "HUR-L2",
+  "HUR-L3",
+  "HUR-L4",
+  "HUR-L5",
+  "ArCorp",
+  "Wala",
+  "Lyria",
+  "ARC-L1",
+  "ARC-L2",
+  "ARC-L3",
+  "ARC-L4",
+  "ARC-L5",
+  "Microtech",
+  "Calliope",
+  "Clio",
+  "Euterpe",
+  "MIC-L1",
+  "MIC-L2",
+  "MIC-L3",
+  "MIC-L4",
+  "MIC-L5",
+  "Aaron Halo",
+  "Stanton",
+];
 
 export const itemFormSchema = z.object({
   gameVersion: z.string(),
@@ -105,48 +145,6 @@ export function AddItemForm({
       reset();
       onCreated();
     } catch (error) {}
-
-    // setErr(false);
-    // setLoading(true);
-    // const { data, error } = await supabase
-    //   .from("items")
-    //   .insert<Partial<ItemsEntity>>({
-    //     gameVersion: formData.gameVersion,
-    //     shardId: formData.shardId,
-    //     description: formData.description,
-    //     location: formData.location,
-    //     user_id: session?.user.id,
-    //   })
-    //   .select<"*", ItemsEntity>()
-    //   .single();
-    // if (error || !data) {
-    //   setLoading(false);
-    //   setErr(true);
-    //   return;
-    // }
-    // if (formData.image) {
-    //   const fileExt = formData.image[0].name.split(".").pop();
-    //   const fileName = `${uuidv4()}.${fileExt}`;
-    //   const filePath = `${fileName}`;
-    //   const { error: uploadError } = await supabase.storage
-    //     .from("items-capture")
-    //     .upload(filePath, formData.image[0], { upsert: true });
-    //   await supabase
-    //     .from("items")
-    //     .update({
-    //       item_capture_url: filePath,
-    //     })
-    //     .eq("id", data.id);
-    //   if (uploadError) {
-    //     setErr(true);
-    //     setLoading(false);
-    //     supabase.from("items").delete().eq("id", data.id);
-    //     return;
-    //   }
-    // }
-    // setLoading(false);
-    // reset();
-    // onCreated(data);
   };
 
   function handleCancel() {

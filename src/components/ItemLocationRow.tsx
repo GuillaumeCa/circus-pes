@@ -1,8 +1,8 @@
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { UserRole } from "../model/users";
 import { trpc } from "../utils/trpc";
+import { UserRole } from "../utils/user";
 import { TrashIcon } from "./Icons";
 
 interface ItemLocationRow {

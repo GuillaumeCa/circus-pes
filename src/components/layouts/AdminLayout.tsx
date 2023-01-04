@@ -6,7 +6,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { UserRole } from "../../model/users";
+import { UserRole } from "../../utils/user";
 import { LinkButton } from "../Button";
 import { BaseLayout } from "./BaseLayout";
 

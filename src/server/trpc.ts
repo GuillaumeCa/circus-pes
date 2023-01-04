@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import SuperJSON from "superjson";
-import { UserRole } from "../model/users";
+import { UserRole } from "../utils/user";
 import { Context } from "./context";
 
 const t = initTRPC.context<Context>().create({

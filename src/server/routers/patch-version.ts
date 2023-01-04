@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { UserRole } from "../../model/users";
+import { UserRole } from "../../utils/user";
 import { adminProcedure, publicProcedure, router } from "../trpc";
 import { RouterOutput } from "./_app";
 

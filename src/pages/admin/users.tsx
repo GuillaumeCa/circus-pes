@@ -3,14 +3,9 @@ import { useState } from "react";
 import { Button } from "../../components/Button";
 import { LoadIcon } from "../../components/Icons";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
-import {
-  formatRole,
-  formatRoleDescription,
-  updateRole,
-  UserRole,
-} from "../../model/users";
 import { UserRouterOutput } from "../../server/routers/user";
 import { trpc } from "../../utils/trpc";
+import { formatRole, formatRoleDescription, UserRole } from "../../utils/user";
 
 interface UserRowProps {
   user: UserRouterOutput["getUsers"][0];
@@ -19,6 +14,7 @@ interface UserRowProps {
 
 function UserRow({ user, onUpdateRole }: UserRowProps) {
   const { data, status } = useSession();
+  const { mutateAsync: updateRole } = trpc.user.updateRole.useMutation();
   const [loading, setLoading] = useState(false);
 
   return (
@@ -53,7 +49,7 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
                   title={formatRoleDescription(role)}
                   onClick={() => {
                     setLoading(true);
-                    updateRole(user.id, role).then(() => {
+                    updateRole({ userId: user.id, role }).then(() => {
                       onUpdateRole();
                       setLoading(false);
                     });
