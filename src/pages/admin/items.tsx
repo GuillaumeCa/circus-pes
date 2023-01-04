@@ -1,3 +1,4 @@
+import { TrashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../../components/Button";
@@ -15,6 +16,7 @@ function ItemMgtRow({
 }) {
   const { mutateAsync: updateVisibility } =
     trpc.item.updateVisibility.useMutation();
+  const { mutateAsync: deleteItem } = trpc.item.deleteItem.useMutation();
 
   return (
     <li key={item.id} className="p-3 flex justify-between">
@@ -77,6 +79,17 @@ function ItemMgtRow({
             Bloquer
           </Button>
         )}
+
+        <Button
+          icon={<TrashIcon className="w-5 h-5" />}
+          onClick={async () => {
+            await deleteItem(item.id);
+            onUpdate();
+          }}
+          btnType="secondary"
+        >
+          Supprimer
+        </Button>
       </div>
     </li>
   );
