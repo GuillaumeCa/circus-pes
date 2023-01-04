@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AddItemForm } from "../components/AddItemForm";
 import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
-import { ItemLocationRow } from "../components/ItemLocationRow";
+import { ItemRow } from "../components/ItemRow";
 import { BaseLayout } from "../components/layouts/BaseLayout";
 import { ItemRouterInput } from "../server/routers/item";
 import { STORAGE_BASE_URL } from "../utils/config";
@@ -221,7 +221,7 @@ export default function Home() {
         {items && (
           <ul className="space-y-2 bg-gray-600 rounded-lg divide-y-[1px] divide-gray-700">
             {itemsFiltered?.map((item) => (
-              <ItemLocationRow
+              <ItemRow
                 key={item.id}
                 id={item.id}
                 location={item.location}
@@ -236,6 +236,7 @@ export default function Home() {
                   item.image ? STORAGE_BASE_URL + item.image : undefined
                 }
                 date={new Date(item.createdAt).toLocaleDateString("fr")}
+                isPublic={item.public}
                 onLike={() => {
                   refetch();
                 }}

@@ -35,7 +35,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
           <InboxArrowDownIcon className="h-6 w-6" />
           <span className="ml-1">Publications</span>
         </LinkButton>
-        <LinkButton href="/admin/game-versions" btnType="secondary">
+        <LinkButton href="/admin/patch-versions" btnType="secondary">
           <RectangleStackIcon className="h-6 w-6" />
           <span className="ml-1">Versions</span>
         </LinkButton>

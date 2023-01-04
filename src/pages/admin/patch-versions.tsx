@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Button } from "../../components/Button";
-import { TrashIcon } from "../../components/Icons";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { trpc } from "../../utils/trpc";
 
-export default function GameVersions() {
+export default function PatchVersions() {
   const {
-    data: gameVersions,
+    data: patchVersions,
     isLoading,
     refetch,
   } = trpc.patchVersion.getPatchVersions.useQuery();
-  const { mutateAsync } = trpc.patchVersion.createPatchVersion.useMutation();
+  const { mutateAsync: create } = trpc.patchVersion.create.useMutation();
+  const { mutateAsync: updateVisibility } =
+    trpc.patchVersion.updateVisibility.useMutation();
+
   const [patchName, setPatchName] = useState("");
 
   return (
@@ -24,7 +26,7 @@ export default function GameVersions() {
         />
         <Button
           onClick={async () => {
-            await mutateAsync({ name: patchName });
+            await create({ name: patchName });
             setPatchName("");
             refetch();
           }}
@@ -33,21 +35,40 @@ export default function GameVersions() {
         </Button>
       </div>
       {isLoading && <p>Chargement...</p>}
-      {gameVersions && (
+      {patchVersions && (
         <ul className="mt-3 space-y-2">
-          {gameVersions.map((v) => (
+          {patchVersions.map((v) => (
             <li
               key={v.id}
               className="flex items-center justify-between p-3 bg-gray-600 rounded-lg"
             >
               <span className="font-bold text-lg">{v.name}</span>
-              <div className="flex space-x-2">
-                <span className="block">
-                  Visible: {v.visible ? "Oui" : "Non"}
-                </span>
-                <button>
+              <div className="flex">
+                <div className="flex items-center">
+                  <label
+                    htmlFor="visible"
+                    className="uppercase text-sm text-gray-400 font-bold"
+                  >
+                    Visible
+                  </label>
+                  <input
+                    id="visible"
+                    type="checkbox"
+                    checked={v.visible}
+                    onChange={async (e) => {
+                      const checked = e.target.checked;
+                      await updateVisibility({
+                        id: v.id,
+                        visible: checked,
+                      });
+                      refetch();
+                    }}
+                    className="form-checkbox cursor-pointer ml-2 rounded text-rose-600 focus:ring-rose-600 bg-gray-500"
+                  />
+                </div>
+                {/* <button className="ml-8">
                   <TrashIcon />
-                </button>
+                </button> */}
               </div>
             </li>
           ))}

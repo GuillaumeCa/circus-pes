@@ -1,3 +1,4 @@
+import { ClockIcon } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,12 +18,13 @@ interface ItemLocationRow {
   likes: number;
   hasLiked: boolean;
   imagePath?: string;
+  isPublic: boolean;
 
   onDelete(): void;
   onLike(): void;
 }
 
-export function ItemLocationRow({
+export function ItemRow({
   id,
   location,
   description,
@@ -34,6 +36,7 @@ export function ItemLocationRow({
   likes,
   hasLiked,
   imagePath,
+  isPublic,
 
   onDelete,
   onLike,
@@ -58,19 +61,27 @@ export function ItemLocationRow({
   return (
     <li className="flex flex-col p-4">
       <div className="flex justify-between">
-        <div>
-          <span
+        <div className="flex items-center">
+          <p
             title="Lieu"
             className="bg-rose-700 px-3 py-1 rounded-full uppercase font-bold text-sm"
           >
             {location}
-          </span>
-          <span
+          </p>
+          <p
             title="ID de Shard"
-            className="ml-2 text-sm font-bold bg-gray-700 p-1 rounded-md"
+            className="ml-2 text-sm font-bold bg-gray-700 py-1 px-2 rounded-md"
           >
             {shard}
-          </span>
+          </p>
+          {!isPublic && (
+            <div className="inline-flex items-center ml-2 bg-gray-500 p-1 px-2 rounded-md">
+              <ClockIcon className="w-4 h-4" />
+              <span className="ml-1 text-sm uppercase font-bold">
+                En validation
+              </span>
+            </div>
+          )}
         </div>
         <div>
           {data &&

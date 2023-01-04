@@ -5,6 +5,7 @@ import { minioClient } from "../../lib/minio";
 import { IMAGE_BUCKET_NAME } from "../../utils/config";
 import { UserRole } from "../../utils/user";
 import {
+  adminProcedure,
   protectedProcedure,
   publicProcedure,
   router,
@@ -25,9 +26,51 @@ export interface LocationInfo {
   likesCount: number;
   hasLiked?: number;
   createdAt: number;
+  public: boolean;
 }
 
 export type ItemRouterInput = RouterInput["item"];
+
+function getItemsQuery(
+  patchVersionId: string,
+  sortBy: "recent" | "like",
+  userId?: string,
+  filterPublic?: boolean
+) {
+  return prisma!.$queryRaw<LocationInfo[]>`
+  select 
+    i.id,
+    pv.name as "patchVersion",
+    i.description,
+    i.location,
+    i."shardId",
+    i.public,
+    i."createdAt",
+    i."userId",
+    i.image,
+    u.image as "userImage",
+    u.name as "userName",
+    count(l."itemId")::int as "likesCount"
+    ${
+      userId
+        ? Prisma.sql`, (select count(*)::int from "like" l1 where l1."itemId" = i.id and l1."userId" = ${userId}) as "hasLiked"`
+        : Prisma.empty
+    }
+  from item i
+  left join patch_version pv on pv.id = i."patchVersionId"
+  left join "like" l on l."itemId" = i.id
+  left join "user" u on u.id = i."userId"
+  where i."patchVersionId" = ${patchVersionId} ${
+    filterPublic === undefined
+      ? Prisma.empty
+      : Prisma.sql`and (i.public = ${filterPublic} or (i."userId" = ${userId} and i.public = false))`
+  }
+  group by (i.id, u.id, pv.id)
+  order by ${
+    sortBy === "recent" ? Prisma.sql`i."createdAt"` : Prisma.sql`"likesCount"`
+  } asc
+`;
+}
 
 export const itemRouter = router({
   getItems: publicProcedure
@@ -51,39 +94,41 @@ export const itemRouter = router({
         }
 
         const userId = ctx.session?.user?.id;
-        const res = await prisma!.$queryRaw<LocationInfo[]>`
-      select 
-        i.id,
-        pv.name as "patchVersion",
-        i.description,
-        i.location,
-        i."shardId",
-        i.public,
-        i."createdAt",
-        i."userId",
-        i.image,
-        u.image as "userImage",
-        u.name as "userName",
-        count(l."itemId")::int as "likesCount"
-        ${
-          userId
-            ? Prisma.sql`, (select count(*)::int from "like" l1 where l1."itemId" = i.id and l1."userId" = ${userId}) as "hasLiked"`
-            : Prisma.empty
-        }
-      from item i
-      left join patch_version pv on pv.id = i."patchVersionId"
-      left join "like" l on l."itemId" = i.id
-      left join "user" u on u.id = i."userId"
-      where i."patchVersionId" = ${input.patchVersion}
-      group by (i.id, u.id, pv.id)
-      order by ${
-        input.sortBy === "recent"
-          ? Prisma.sql`i."createdAt"`
-          : Prisma.sql`"likesCount"`
-      } asc
-    `;
+        return getItemsQuery(input.patchVersion, input.sortBy, userId, true);
+      } catch (e) {
+        console.error("could not query items", e);
+      }
+    }),
 
-        return res;
+  getAllItems: adminProcedure
+    .input(
+      z.object({
+        patchVersion: z.string(),
+        sortBy: z.enum(["recent", "like"]),
+        public: z.boolean().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const versionCount = await prisma?.patchVersion.count({
+          where: { id: input.patchVersion },
+        });
+
+        if (!versionCount) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "invalid patch version: " + input.patchVersion,
+          });
+        }
+
+        const userId = ctx.session?.user?.id;
+
+        return getItemsQuery(
+          input.patchVersion,
+          input.sortBy,
+          userId,
+          input.public
+        );
       } catch (e) {
         console.error("could not query items", e);
       }
@@ -239,4 +284,22 @@ export const itemRouter = router({
       });
     }
   ),
+
+  updateVisibility: adminProcedure
+    .input(
+      z.object({
+        itemId: z.string(),
+        public: z.boolean(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await prisma?.item.update({
+        data: {
+          public: input.public,
+        },
+        where: {
+          id: input.itemId,
+        },
+      });
+    }),
 });

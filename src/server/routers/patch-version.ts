@@ -29,7 +29,7 @@ export const patchVersionRouter = router({
     });
   }),
 
-  createPatchVersion: adminProcedure
+  create: adminProcedure
     .input(
       z.object({
         name: z.string(),
@@ -40,6 +40,24 @@ export const patchVersionRouter = router({
         data: {
           name,
           visible: true,
+        },
+      });
+    }),
+
+  updateVisibility: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        visible: z.boolean(),
+      })
+    )
+    .mutation(async ({ input: { visible, id } }) => {
+      await prisma?.patchVersion.update({
+        data: {
+          visible,
+        },
+        where: {
+          id,
         },
       });
     }),
