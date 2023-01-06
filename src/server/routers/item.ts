@@ -4,6 +4,7 @@ import { z } from "zod";
 import { minioClient } from "../../lib/minio";
 import { IMAGE_BUCKET_NAME } from "../../utils/config";
 import { UserRole } from "../../utils/user";
+import type { MyPrismaClient } from "../db/client";
 import {
   adminProcedure,
   protectedProcedure,
@@ -32,12 +33,13 @@ export interface LocationInfo {
 export type ItemRouterInput = RouterInput["item"];
 
 function getItemsQuery(
+  prismaClient: MyPrismaClient,
   patchVersionId: string,
   sortBy: "recent" | "like",
   userId?: string,
   filterPublic?: boolean
 ) {
-  return prisma!.$queryRaw<LocationInfo[]>`
+  return prismaClient.$queryRaw<LocationInfo[]>`
   select 
     i.id,
     pv.name as "patchVersion",
@@ -82,7 +84,7 @@ export const itemRouter = router({
     )
     .query(async ({ ctx, input }) => {
       try {
-        const versionCount = await prisma?.patchVersion.count({
+        const versionCount = await ctx.prisma.patchVersion.count({
           where: { id: input.patchVersion },
         });
 
@@ -94,7 +96,13 @@ export const itemRouter = router({
         }
 
         const userId = ctx.session?.user?.id;
-        return getItemsQuery(input.patchVersion, input.sortBy, userId, true);
+        return getItemsQuery(
+          ctx.prisma,
+          input.patchVersion,
+          input.sortBy,
+          userId,
+          true
+        );
       } catch (e) {
         console.error("could not query items", e);
       }
@@ -110,7 +118,7 @@ export const itemRouter = router({
     )
     .query(async ({ ctx, input }) => {
       try {
-        const versionCount = await prisma?.patchVersion.count({
+        const versionCount = await ctx.prisma.patchVersion.count({
           where: { id: input.patchVersion },
         });
 
@@ -124,6 +132,7 @@ export const itemRouter = router({
         const userId = ctx.session?.user?.id;
 
         return getItemsQuery(
+          ctx.prisma,
           input.patchVersion,
           input.sortBy,
           userId,
@@ -153,7 +162,7 @@ export const itemRouter = router({
     )
     .mutation(
       async ({ input: { description, patchId, location, shardId }, ctx }) => {
-        return await prisma?.item.create({
+        return await ctx.prisma?.item.create({
           data: {
             description,
             patchVersionId: patchId,
@@ -176,45 +185,34 @@ export const itemRouter = router({
         image: z.string(),
       })
     )
-    .mutation(
-      async ({
-        input,
-        ctx: {
-          session: { user },
-        },
-      }) => {
-        if (user.role === UserRole.INVITED) {
-          throw new TRPCError({ code: "FORBIDDEN" });
-        }
-
-        const item = await prisma!.item.findFirst({
-          where: { id: input.itemId, userId: user.id },
-        });
-
-        if (!item) {
-          console.error("could not find the item to update");
-          throw new TRPCError({ code: "NOT_FOUND" });
-        }
-
-        await prisma?.item.update({
-          data: {
-            image: input.image,
-          },
-          where: {
-            id: input.itemId,
-          },
-        });
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.session.user.role === UserRole.INVITED) {
+        throw new TRPCError({ code: "FORBIDDEN" });
       }
-    ),
 
-  deleteItem: writeProcedure.input(z.string()).mutation(
-    async ({
-      input: id,
-      ctx: {
-        session: { user },
-      },
-    }) => {
-      return await prisma?.$transaction(async (tx) => {
+      const item = await ctx.prisma.item.findFirst({
+        where: { id: input.itemId, userId: ctx.session.user.id },
+      });
+
+      if (!item) {
+        console.error("could not find the item to update");
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      await ctx.prisma.item.update({
+        data: {
+          image: input.image,
+        },
+        where: {
+          id: input.itemId,
+        },
+      });
+    }),
+
+  deleteItem: writeProcedure
+    .input(z.string())
+    .mutation(async ({ input: id, ctx }) => {
+      return await ctx.prisma.$transaction(async (tx) => {
         const item = await tx.item.findFirst({ where: { id } });
         if (!item) {
           throw new TRPCError({
@@ -223,7 +221,10 @@ export const itemRouter = router({
           });
         }
 
-        if (user.role === UserRole.CONTRIBUTOR && item?.userId !== user.id) {
+        if (
+          ctx.session.user.role === UserRole.CONTRIBUTOR &&
+          item?.userId !== ctx.session.user.id
+        ) {
           console.error(
             "user with role contributor can only delete their item"
           );
@@ -248,42 +249,31 @@ export const itemRouter = router({
 
         return deletedItem;
       });
-    }
-  ),
+    }),
 
-  like: protectedProcedure.input(z.string()).mutation(
-    async ({
-      input: itemId,
-      ctx: {
-        session: { user },
-      },
-    }) => {
-      return await prisma?.like.create({
+  like: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ input: itemId, ctx }) => {
+      return await ctx.prisma.like.create({
         data: {
-          userId: user.id,
+          userId: ctx.session.user.id,
           itemId,
         },
       });
-    }
-  ),
+    }),
 
-  unLike: protectedProcedure.input(z.string()).mutation(
-    async ({
-      input: itemId,
-      ctx: {
-        session: { user },
-      },
-    }) => {
-      return await prisma?.like.delete({
+  unLike: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ input: itemId, ctx }) => {
+      return await ctx.prisma.like.delete({
         where: {
           userId_itemId: {
-            userId: user.id,
+            userId: ctx.session.user.id,
             itemId,
           },
         },
       });
-    }
-  ),
+    }),
 
   updateVisibility: adminProcedure
     .input(
@@ -292,8 +282,8 @@ export const itemRouter = router({
         public: z.boolean(),
       })
     )
-    .mutation(async ({ input }) => {
-      await prisma?.item.update({
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.item.update({
         data: {
           public: input.public,
         },

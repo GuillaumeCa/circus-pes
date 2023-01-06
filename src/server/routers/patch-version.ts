@@ -10,7 +10,7 @@ export const patchVersionRouter = router({
   getPatchVersions: publicProcedure.query(({ ctx }) => {
     const isAdmin = ctx.session?.user.role === UserRole.ADMIN;
 
-    return prisma!.patchVersion.findMany({
+    return ctx.prisma.patchVersion.findMany({
       select: {
         id: true,
         name: true,
@@ -35,8 +35,8 @@ export const patchVersionRouter = router({
         name: z.string(),
       })
     )
-    .mutation(async ({ input: { name } }) => {
-      await prisma?.patchVersion.create({
+    .mutation(async ({ input: { name }, ctx }) => {
+      await ctx.prisma.patchVersion.create({
         data: {
           name,
           visible: true,
@@ -51,8 +51,8 @@ export const patchVersionRouter = router({
         visible: z.boolean(),
       })
     )
-    .mutation(async ({ input: { visible, id } }) => {
-      await prisma?.patchVersion.update({
+    .mutation(async ({ ctx, input: { visible, id } }) => {
+      await ctx.prisma.patchVersion.update({
         data: {
           visible,
         },

@@ -1,6 +1,7 @@
 import type { inferAsyncReturnType } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { getSession } from "next-auth/react";
+import { prisma } from "./db/client";
 
 /**
  * Creates context for an incoming request
@@ -11,6 +12,7 @@ export async function createContext(opts: CreateNextContextOptions) {
 
   return {
     session,
+    prisma,
   };
 }
 
