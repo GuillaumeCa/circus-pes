@@ -7,7 +7,10 @@ declare global {
 export const prisma =
   global.prisma ||
   new PrismaClient({
-    log: ["query"],
+    log:
+      process.env.NODE_ENV === "development"
+        ? ["query", "error", "warn"]
+        : ["error"],
   });
 
 export type MyPrismaClient = typeof prisma;
