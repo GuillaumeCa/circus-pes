@@ -25,7 +25,7 @@ export default NextAuth({
           image: profile.image_url,
           discriminator: profile.discriminator,
           emailVerified: null,
-          role: 0,
+          role: 1,
         };
       },
     }),
