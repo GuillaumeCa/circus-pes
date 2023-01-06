@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { PatchVersionRouterOutput } from "../server/routers/patch-version";
@@ -90,7 +89,6 @@ export function AddItemForm({
   onCancel,
   onCreated,
 }: AddLocationFormProps) {
-  const [showShardInfo, setShowShardInfo] = useState(false);
   const {
     mutateAsync: createItem,
     isError,
@@ -213,50 +211,28 @@ export function AddItemForm({
           htmlFor="shardId"
           className="text-xs uppercase font-bold text-gray-400"
         >
-          Shard{" "}
-          <button
-            type="button"
-            title="Afficher/masquer l'aide"
-            onClick={() => setShowShardInfo(!showShardInfo)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="inline w-4 h-4 align-text-bottom"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
-              />
-            </svg>
-          </button>
+          Shard
         </label>
 
-        {showShardInfo && (
-          <div className="border border-gray-600 bg-gray-800 p-2 rounded-lg">
-            <p className="text-sm text-gray-400 leading-6">
-              Pour récupérer l&apos;identifiant de la shard sur laquelle vous
-              êtes, appuyez sur la touche à gauche du 1 puis tapez{" "}
-              <span className="bg-gray-600 font-mono text-gray-400 px-1 py-0.5 rounded">
-                r_DisplayInfo 3
-              </span>{" "}
-              et cherchez l&apos;identifiant en face de ShardId.
-              L&apos;identifiant sera sous la forme{" "}
-              <span className="bg-gray-600 font-mono break-all text-gray-400 px-1 py-0.5 rounded">
-                eptu_use1c_sc_alpha_318x_8319689_game_740
-              </span>{" "}
-              et il faudra par ex renseigner pour cet identifiant{" "}
-              <span className="bg-gray-600 font-mono text-gray-400 px-2 py-0.5 rounded">
-                USE1C-740
-              </span>{" "}
-              dans le champs suivant.
-            </p>
-          </div>
-        )}
+        <div className="border border-gray-600 bg-gray-800 p-2 rounded-lg">
+          <p className="text-sm text-gray-400 leading-6">
+            Pour récupérer l&apos;identifiant de la shard sur laquelle vous
+            êtes, appuyez sur la touche à gauche du 1 puis tapez{" "}
+            <span className="bg-gray-600 font-mono text-gray-400 px-1 py-0.5 rounded">
+              r_DisplayInfo 3
+            </span>{" "}
+            et cherchez l&apos;identifiant en face de ShardId.
+            L&apos;identifiant sera sous la forme{" "}
+            <span className="bg-gray-600 font-mono break-all text-gray-400 px-1 py-0.5 rounded">
+              eptu_use1c_sc_alpha_318x_8319689_game_740
+            </span>{" "}
+            et il faudra par ex renseigner pour cet identifiant{" "}
+            <span className="bg-gray-600 font-mono text-gray-400 px-2 py-0.5 rounded">
+              USE1C-740
+            </span>{" "}
+            dans le champs suivant.
+          </p>
+        </div>
 
         <input
           id="shardId"
