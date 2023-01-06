@@ -114,28 +114,32 @@ export default function ItemsManagement() {
 
   return (
     <AdminLayout title="Gestion des publications">
-      <label
-        htmlFor="gameVersion"
-        className="text-xs uppercase font-bold text-gray-400"
-      >
-        Version
-      </label>
-      <select
-        id="gameVersion"
-        value={patchVersionId}
-        onChange={(e) => {
-          setPatchVersionId(parseInt(e.target.value, 10));
-        }}
-      >
-        {patchVersions && patchVersions?.length === 0 && (
-          <option disabled>Aucune</option>
-        )}
-        {patchVersions?.map((v, i) => (
-          <option key={v.id} value={i}>
-            {v.name}
-          </option>
-        ))}
-      </select>
+      <div className="flex space-x-2 items-end">
+        <div>
+          <label
+            htmlFor="gameVersion"
+            className="text-xs uppercase font-bold text-gray-400"
+          >
+            Version
+          </label>
+          <select
+            id="gameVersion"
+            value={patchVersionId}
+            onChange={(e) => {
+              setPatchVersionId(parseInt(e.target.value, 10));
+            }}
+          >
+            {patchVersions && patchVersions?.length === 0 && (
+              <option disabled>Aucune</option>
+            )}
+            {patchVersions?.map((v, i) => (
+              <option key={v.id} value={i}>
+                {v.name} {!v.visible ? "(Archivé)" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       <div className="mt-4">
         {!items && <p>Chargement...</p>}

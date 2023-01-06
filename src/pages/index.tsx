@@ -99,7 +99,7 @@ export default function Home() {
             )}
             {patchVersions?.map((v, i) => (
               <option key={v.id} value={i}>
-                {v.name}
+                {v.name} {!v.visible ? "(Archivé)" : ""}
               </option>
             ))}
           </select>
