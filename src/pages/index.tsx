@@ -60,7 +60,7 @@ export default function Home() {
     <BaseLayout>
       {status === "authenticated" && (
         <div className="mt-2 flex space-x-2 justify-end">
-          {data && (
+          {data.user.role !== UserRole.INVITED && (
             <AddButton
               disabled={showAddForm}
               onClick={() => setShowAddForm(true)}
@@ -68,7 +68,7 @@ export default function Home() {
               Nouvelle création
             </AddButton>
           )}
-          {data.user?.role === UserRole.ADMIN && (
+          {data.user.role === UserRole.ADMIN && (
             <>
               <LinkButton href="/admin/items" btnType="secondary">
                 <CogIcon className="h-6 w-6" />
