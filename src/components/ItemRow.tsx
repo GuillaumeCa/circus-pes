@@ -96,7 +96,7 @@ export function ItemRow({
 
       <div className="flex flex-col lg:flex-row mt-2 space-y-2 lg:space-y-0">
         {imagePath && (
-          <div className="mr-4 max-w-md overflow-hidden rounded-lg shadow-md">
+          <div className="mr-4 w-full lg:w-auto lg:min-w-fit max-w-md overflow-hidden rounded-lg shadow-md">
             <Link href={imagePath} target="_blank">
               <Image
                 width={500}
@@ -108,7 +108,7 @@ export function ItemRow({
           </div>
         )}
 
-        <p className="text-lg">{description}</p>
+        <p className="w-full lg:w-auto text-lg">{description}</p>
       </div>
 
       <div className="flex justify-between mt-4">

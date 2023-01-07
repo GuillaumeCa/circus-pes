@@ -21,16 +21,18 @@ function ItemMgtRow({
 
   return (
     <li key={item.id} className="p-3 flex justify-between">
-      <div className="flex items-center">
-        {item.image && (
-          <Link href={STORAGE_BASE_URL + item.image} target="_blank">
-            <img
-              className="rounded-lg shadow-md"
-              src={STORAGE_BASE_URL + item.image}
-              width={200}
-            />
-          </Link>
-        )}
+      <div className="flex items-start">
+        <div className="min-w-fit">
+          {item.image && (
+            <Link href={STORAGE_BASE_URL + item.image} target="_blank">
+              <img
+                className="rounded-lg shadow-md"
+                src={STORAGE_BASE_URL + item.image}
+                width={200}
+              />
+            </Link>
+          )}
+        </div>
         <div className="ml-2 flex flex-col h-full">
           <div className="flex space-x-3">
             <span
@@ -101,7 +103,8 @@ export default function ItemsManagement() {
   const [filterPublic, setFilterPublic] = useState<
     "all" | "public" | "private"
   >("all");
-  const { data: patchVersions } = trpc.patchVersion.getPatchVersions.useQuery();
+  const { data: patchVersions } =
+    trpc.patchVersion.getAllPatchVersions.useQuery();
 
   const selectedPatchId = patchVersions?.[patchVersionId];
 
@@ -150,7 +153,7 @@ export default function ItemsManagement() {
             )}
             {patchVersions?.map((v, i) => (
               <option key={v.id} value={i}>
-                {v.name} {!v.visible ? "(Archivé)" : ""}
+                {v.name} {!v.visible && " (Archivé)"}
               </option>
             ))}
           </select>

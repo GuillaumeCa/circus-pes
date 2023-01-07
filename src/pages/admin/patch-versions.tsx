@@ -8,7 +8,7 @@ export default function PatchVersions() {
     data: patchVersions,
     isLoading,
     refetch,
-  } = trpc.patchVersion.getPatchVersions.useQuery();
+  } = trpc.patchVersion.getAllPatchVersions.useQuery();
   const { mutateAsync: create } = trpc.patchVersion.create.useMutation();
   const { mutateAsync: updateVisibility } =
     trpc.patchVersion.updateVisibility.useMutation();

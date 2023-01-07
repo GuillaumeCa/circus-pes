@@ -11,9 +11,11 @@ export function TabBar<T extends React.Key>({
   selectedItem,
   items,
   className = "",
+  type = "primary",
   onSelect,
 }: {
   className?: string;
+  type?: "primary" | "secondary";
   selectedItem: T;
   items: TabBarItem<T>[];
   onSelect(item: T): void;
@@ -27,7 +29,11 @@ export function TabBar<T extends React.Key>({
             i === 0 && "rounded-l-lg",
             i === items.length - 1 && "rounded-r-lg",
             "px-2 py-1 font-bold border-r border-gray-600",
-            selectedItem === item.key ? "bg-rose-700" : "bg-gray-500"
+            selectedItem === item.key
+              ? type === "primary"
+                ? "bg-rose-700"
+                : "bg-gray-800"
+              : "bg-gray-500"
           )}
           onClick={() => onSelect(item.key)}
         >

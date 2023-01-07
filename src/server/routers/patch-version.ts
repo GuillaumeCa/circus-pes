@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { UserRole } from "../../utils/user";
 import { adminProcedure, publicProcedure, router } from "../trpc";
 import { RouterOutput } from "./_app";
 
@@ -8,24 +7,37 @@ export type PatchVersionRouterOutput = RouterOutput["patchVersion"];
 
 export const patchVersionRouter = router({
   getPatchVersions: publicProcedure.query(({ ctx }) => {
-    const isAdmin = ctx.session?.user.role === UserRole.ADMIN;
-
     return ctx.prisma.patchVersion.findMany({
       select: {
         id: true,
         name: true,
-        visible: isAdmin,
       },
-      orderBy: {
-        visible: Prisma.SortOrder.desc,
+      orderBy: [
+        {
+          name: Prisma.SortOrder.desc,
+        },
+      ],
+      where: {
+        visible: true,
       },
-      where: isAdmin
-        ? undefined
-        : {
-            visible: {
-              equals: true,
-            },
-          },
+    });
+  }),
+
+  getAllPatchVersions: adminProcedure.query(({ ctx }) => {
+    return ctx.prisma.patchVersion.findMany({
+      select: {
+        id: true,
+        name: true,
+        visible: true,
+      },
+      orderBy: [
+        {
+          visible: Prisma.SortOrder.desc,
+        },
+        {
+          name: Prisma.SortOrder.desc,
+        },
+      ],
     });
   }),
 

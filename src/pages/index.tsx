@@ -9,6 +9,7 @@ import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
 import { ItemRow } from "../components/ItemRow";
 import { BaseLayout } from "../components/layouts/BaseLayout";
+import { Modal } from "../components/Modal";
 import { TabBar } from "../components/TabBar";
 import { createStaticContext } from "../server/context";
 import { ItemRouterInput } from "../server/routers/item";
@@ -28,7 +29,7 @@ export default function Home() {
   const { data: patchVersions, isLoading: isLoadingVersions } =
     trpc.patchVersion.getPatchVersions.useQuery();
   const selectedPatchId = patchVersions?.[gameVersionId];
-
+  console.log(patchVersions);
   const {
     data: items,
     error,
@@ -106,7 +107,7 @@ export default function Home() {
             )}
             {patchVersions?.map((v, i) => (
               <option key={v.id} value={i}>
-                {v.name} {!v.visible ? "(Archivé)" : ""}
+                {v.name}
               </option>
             ))}
           </select>
@@ -138,29 +139,19 @@ export default function Home() {
         </div>
       </div>
 
-      <div
-        aria-hidden="true"
-        className={cls(
-          "fixed inset-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto h-full bg-black/70",
-          showAddForm ? "flex" : "hidden"
+      <Modal open={showAddForm}>
+        {showAddForm && patchVersions && (
+          <AddItemForm
+            shardIds={shardIds}
+            patchVersionList={patchVersions}
+            onCancel={() => setShowAddForm(false)}
+            onCreated={() => {
+              refetch();
+              setShowAddForm(false);
+            }}
+          />
         )}
-      >
-        <div className="relative w-full h-full max-w-2xl md:h-auto m-auto">
-          <div className="relative bg-gray-700 rounded-lg shadow">
-            {showAddForm && patchVersions && (
-              <AddItemForm
-                shardIds={shardIds}
-                patchVersionList={patchVersions}
-                onCancel={() => setShowAddForm(false)}
-                onCreated={() => {
-                  refetch();
-                  setShowAddForm(false);
-                }}
-              />
-            )}
-          </div>
-        </div>
-      </div>
+      </Modal>
 
       <p className="uppercase mt-4 font-bold text-xs text-gray-400">Shards</p>
       <div className="mt-1 flex flex-wrap">
@@ -246,7 +237,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     transformer: SuperJSON, // optional - adds superjson serialization
   });
 
-  await ssg.patchVersion.getPatchVersions.prefetch();
+  // await ssg.patchVersion.getPatchVersions.prefetch();
   const patch = await ssg.patchVersion.getPatchVersions.fetch();
   if (patch.length > 0) {
     await ssg.item.getItems.prefetch({
