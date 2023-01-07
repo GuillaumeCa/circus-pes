@@ -16,4 +16,11 @@ export async function createContext(opts: CreateNextContextOptions) {
   };
 }
 
+export async function createStaticContext() {
+  return {
+    session: null,
+    prisma,
+  };
+}
+
 export type Context = inferAsyncReturnType<typeof createContext>;

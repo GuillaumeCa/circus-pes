@@ -116,6 +116,7 @@ export default function ItemsManagement() {
     data: items,
     error,
     refetch,
+    isLoading,
   } = trpc.item.getAllItems.useQuery(
     {
       sortBy: "recent",
@@ -177,14 +178,18 @@ export default function ItemsManagement() {
       </div>
 
       <div className="mt-4">
-        {!items && <p>Chargement...</p>}
+        {isLoading && <p className="text-gray-400">Chargement...</p>}
         {items && error && (
-          <p>Erreur de chargement, veuillez recharger la page</p>
+          <p className="text-gray-400">
+            Erreur de chargement, veuillez recharger la page
+          </p>
         )}
-        {items?.length === 0 && <p>Aucune création</p>}
+        {!isLoading && items?.length === 0 && (
+          <p className="text-gray-400">Aucune création</p>
+        )}
 
         {items && (
-          <ul className="space-y-2 overflow-hidden bg-gray-600 rounded-lg divide-y-[1px] divide-gray-700">
+          <ul className="space-y-2 overflow-hidden bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
             {items?.map((item) => (
               <ItemMgtRow
                 key={item.id}

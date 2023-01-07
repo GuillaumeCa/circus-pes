@@ -1,13 +1,18 @@
 import { ClockIcon, CogIcon, HeartIcon } from "@heroicons/react/24/outline";
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import SuperJSON from "superjson";
 import { AddItemForm } from "../components/AddItemForm";
 import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
 import { ItemRow } from "../components/ItemRow";
 import { BaseLayout } from "../components/layouts/BaseLayout";
 import { TabBar } from "../components/TabBar";
+import { createStaticContext } from "../server/context";
 import { ItemRouterInput } from "../server/routers/item";
+import { appRouter } from "../server/routers/_app";
 import { STORAGE_BASE_URL } from "../utils/config";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
@@ -20,13 +25,14 @@ export default function Home() {
   const [showAddForm, setShowAddForm] = useState(false);
   const { data, status } = useSession();
   const [sortOpt, setSortOpt] = useState<SortOption>("recent");
-  const { data: patchVersions } = trpc.patchVersion.getPatchVersions.useQuery();
+  const { data: patchVersions, isLoading: isLoadingVersions } =
+    trpc.patchVersion.getPatchVersions.useQuery();
   const selectedPatchId = patchVersions?.[gameVersionId];
 
   const {
     data: items,
     error,
-    isLoading,
+    isLoading: isLoadingItems,
     refetch,
   } = trpc.item.getItems.useQuery(
     {
@@ -184,14 +190,22 @@ export default function Home() {
       </div>
 
       <div className="mt-4">
-        {selectedPatchId && isLoading && <p>Chargement...</p>}
-        {error && <p>Erreur de chargement, veuillez recharger la page</p>}
-        {(!selectedPatchId || itemsFiltered.length === 0) && (
-          <p className="text-gray-400">Aucune création</p>
+        {(isLoadingItems || isLoadingVersions) && (
+          <p className="text-gray-400">Chargement...</p>
         )}
+        {error && (
+          <p className="text-gray-400">
+            Erreur de chargement, veuillez recharger la page
+          </p>
+        )}
+        {!isLoadingItems &&
+          !isLoadingVersions &&
+          (!selectedPatchId || itemsFiltered.length === 0) && (
+            <p className="text-gray-400">Aucune création</p>
+          )}
 
         {items && (
-          <ul className="space-y-2 bg-gray-600 rounded-lg divide-y-[1px] divide-gray-700">
+          <ul className="space-y-2 bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
             {itemsFiltered?.map((item) => (
               <ItemRow
                 key={item.id}
@@ -225,21 +239,26 @@ export default function Home() {
 }
 
 // TODO: setup for trpc
-// export const getStaticProps: GetStaticProps = async (context) => {
-//   const queryClient = new QueryClient();
+export const getStaticProps: GetStaticProps = async (context) => {
+  const ssg = await createProxySSGHelpers({
+    router: appRouter,
+    ctx: await createStaticContext(),
+    transformer: SuperJSON, // optional - adds superjson serialization
+  });
 
-//   await queryClient.prefetchQuery(["items", "recent"], async () => {
-//     const { data, error } = await getItems("recent");
-//     if (error) {
-//       throw new Error("Failed to fetch items: " + error.message);
-//     }
-//     return data;
-//   });
+  await ssg.patchVersion.getPatchVersions.prefetch();
+  const patch = await ssg.patchVersion.getPatchVersions.fetch();
+  if (patch.length > 0) {
+    await ssg.item.getItems.prefetch({
+      sortBy: "recent",
+      patchVersion: patch[0].id,
+    });
+  }
 
-//   return {
-//     props: {
-//       dehydratedState: dehydrate(queryClient),
-//     },
-//     revalidate: 60 * 60, // refresh at most every 1h,
-//   };
-// };
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+    },
+    revalidate: 60 * 60, // refresh at most every 1h,
+  };
+};
