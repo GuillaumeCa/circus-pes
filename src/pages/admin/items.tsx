@@ -20,30 +20,33 @@ function ItemMgtRow({
   const { mutateAsync: deleteItem } = trpc.item.deleteItem.useMutation();
 
   return (
-    <li key={item.id} className="p-3 flex justify-between">
-      <div className="flex items-start">
+    <li
+      key={item.id}
+      className="p-2 lg:p-3 flex flex-col lg:flex-row justify-between"
+    >
+      <div className="flex flex-col-reverse lg:flex-row items-start">
         <div className="min-w-fit">
           {item.image && (
             <Link href={STORAGE_BASE_URL + item.image} target="_blank">
               <img
-                className="rounded-lg shadow-md"
+                className="rounded-lg shadow-md w-full lg:w-52"
                 src={STORAGE_BASE_URL + item.image}
                 width={200}
               />
             </Link>
           )}
         </div>
-        <div className="ml-2 flex flex-col h-full">
-          <div className="flex space-x-3">
+        <div className="ml-0 lg:ml-2 flex flex-col h-full">
+          <div className="flex space-x-3 flex-wrap text-sm">
             <span
               title="Lieu"
-              className="bg-rose-700 px-3 py-1 rounded-full uppercase font-bold text-sm"
+              className="bg-rose-700 px-3 py-1 rounded-full uppercase font-bold"
             >
               {item.location}
             </span>
             <span
               title="ID de Shard"
-              className="text-sm font-bold bg-gray-700 p-1 rounded-md"
+              className="font-bold bg-gray-700 p-1 rounded-md"
             >
               {item.shardId}
             </span>
@@ -61,7 +64,7 @@ function ItemMgtRow({
           <p className="p-2">{item.description}</p>
         </div>
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex mt-2 lg:mt-0 items-center justify-end lg:justify-start space-x-2">
         {!item.public ? (
           <Button
             onClick={async () => {
@@ -133,7 +136,7 @@ export default function ItemsManagement() {
 
   return (
     <AdminLayout title="Gestion des publications">
-      <div className="flex space-x-2 items-end justify-between">
+      <div className="flex space-y-2 lg:space-x-2 flex-col lg:flex-row  items-start lg:items-end justify-between">
         <div>
           <label
             htmlFor="gameVersion"
