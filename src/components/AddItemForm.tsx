@@ -192,7 +192,7 @@ export function AddItemForm({
         >
           {patchVersionList.map((pv) => (
             <option key={pv.id} value={pv.id}>
-              {pv.name} {!pv.visible ? "(Archivé)" : ""}
+              {pv.name}
             </option>
           ))}
         </select>
