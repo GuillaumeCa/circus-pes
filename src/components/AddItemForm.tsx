@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { PatchVersionRouterOutput } from "../server/routers/patch-version";
+import { MAX_IMAGE_UPLOAD_SIZE, MIN_IMAGE_UPLOAD_SIZE } from "../utils/config";
 import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
 import { XMarkIcon } from "./Icons";
@@ -16,8 +17,6 @@ interface AddLocationFormProps {
   onCancel(): void;
   onCreated(): void;
 }
-
-const MAX_IMAGE_FILE_SIZE = 5e6; // 5M bytes
 
 export const LOCATIONS = [
   "Crusader",
@@ -87,7 +86,12 @@ export const itemFormSchema = z.object({
             );
           }, "Le fichier n'est pas une image au format valide: jpeg, jpg ou png")
           .refine((f: FileList) => {
-            return f && f.length > 0 && f[0].size <= MAX_IMAGE_FILE_SIZE;
+            return (
+              f &&
+              f.length > 0 &&
+              f[0].size >= MIN_IMAGE_UPLOAD_SIZE &&
+              f[0].size <= MAX_IMAGE_UPLOAD_SIZE
+            );
           }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
 });
 
@@ -99,11 +103,11 @@ export function AddItemForm({
   onCreated,
 }: AddLocationFormProps) {
   const [loading, setLoading] = useState(false);
-  const { mutateAsync: createItem, isError } =
-    trpc.item.createItem.useMutation();
+  const [error, setError] = useState(false);
+  const { mutateAsync: createItem } = trpc.item.createItem.useMutation();
 
-  const { mutateAsync: getPresignedUrl } =
-    trpc.storage.presignedUrl.useMutation();
+  const { mutateAsync: getImageUploadUrl } =
+    trpc.item.imageUploadUrl.useMutation();
 
   const { mutateAsync: setItemImage } = trpc.item.setItemImage.useMutation();
 
@@ -132,8 +136,15 @@ export function AddItemForm({
 
   const onSubmit = async (formData: LocationFormData) => {
     setLoading(true);
+
+    setError(false);
     const file = formData.image!.item(0)!;
     try {
+      const ext = file.type.split("/")[1];
+      if (!ext || !["jpg", "jpeg", "png"].includes(ext)) {
+        throw new Error("invalid file type: " + file.type);
+      }
+
       const createdItem = await createItem({
         description: formData.description,
         location: formData.location,
@@ -141,13 +152,24 @@ export function AddItemForm({
         shardId: formData.shardId,
       });
       if (createdItem) {
-        const key = `${createdItem.id}-${file.name}`;
-        const url = await getPresignedUrl(key);
-
-        const res = await fetch(url, {
-          method: "PUT",
-          body: file,
+        const postPolicyResult = await getImageUploadUrl({
+          itemId: createdItem.id,
+          ext: ext as "jpeg" | "jpg" | "png",
         });
+
+        const formData = new FormData();
+        for (let key in postPolicyResult.formData) {
+          formData.append(key, postPolicyResult.formData[key]);
+        }
+        formData.append("file", file);
+
+        const res = await fetch(postPolicyResult.postURL, {
+          method: "POST",
+          body: formData,
+        });
+
+        const key = postPolicyResult.formData["key"];
+
         if (!res.ok) {
           throw new Error("failed to upload image");
         }
@@ -156,7 +178,9 @@ export function AddItemForm({
 
       reset();
       onCreated();
-    } catch (error) {}
+    } catch (error) {
+      setError(true);
+    }
     setLoading(false);
   };
 
@@ -316,7 +340,7 @@ export function AddItemForm({
       <p className="text-red-500 text-sm mt-1">{errors.image?.message}</p>
 
       <div className="flex items-center justify-end space-x-2 mt-3">
-        {isError && (
+        {error && (
           <p className="text-red-500">
             Impossible d&apos;ajouter la création, veuillez réessayer
           </p>

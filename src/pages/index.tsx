@@ -29,7 +29,6 @@ export default function Home() {
   const { data: patchVersions, isLoading: isLoadingVersions } =
     trpc.patchVersion.getPatchVersions.useQuery();
   const selectedPatchId = patchVersions?.[gameVersionId];
-  console.log(patchVersions);
   const {
     data: items,
     error,

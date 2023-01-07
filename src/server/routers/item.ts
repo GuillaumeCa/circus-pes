@@ -1,9 +1,16 @@
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { fileTypeStream } from "file-type";
 import { z } from "zod";
 import { minioClient } from "../../lib/minio";
-import { IMAGE_BUCKET_NAME } from "../../utils/config";
+import {
+  IMAGE_BUCKET_NAME,
+  MAX_IMAGE_UPLOAD_SIZE,
+  MIN_IMAGE_UPLOAD_SIZE,
+  PRESIGNED_UPLOAD_IMAGE_EXPIRATION_DURATION,
+} from "../../utils/config";
 import { UserRole } from "../../utils/user";
+
 import type { MyPrismaClient } from "../db/client";
 import {
   adminProcedure,
@@ -198,6 +205,53 @@ export const itemRouter = router({
       }
     ),
 
+  imageUploadUrl: writeProcedure
+    .input(
+      z.object({
+        itemId: z.string(),
+        ext: z.enum(["jpg", "jpeg", "png"]),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const item = await ctx.prisma.item.findFirst({
+        where: { id: input.itemId },
+      });
+      if (!item) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "cannot find item",
+        });
+      }
+
+      if (item.image) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "image already exist",
+        });
+      }
+      const policy = minioClient.newPostPolicy();
+      policy.setBucket(IMAGE_BUCKET_NAME);
+      policy.setKey(`${input.itemId}.${input.ext}`);
+
+      var expires = new Date();
+      expires.setSeconds(PRESIGNED_UPLOAD_IMAGE_EXPIRATION_DURATION); // expires in 2min
+      policy.setExpires(expires);
+
+      policy.setContentTypeStartsWith("image/");
+      policy.setContentLengthRange(
+        MIN_IMAGE_UPLOAD_SIZE,
+        MAX_IMAGE_UPLOAD_SIZE
+      ); // up to 5MB
+
+      // return await minioClient.presignedPutObject(
+      //   IMAGE_BUCKET_NAME,
+      //   key,
+      //   2 * 60
+      // );
+
+      return await minioClient.presignedPostPolicy(policy);
+    }),
+
   setItemImage: writeProcedure
     .input(
       z.object({
@@ -223,6 +277,24 @@ export const itemRouter = router({
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "image already exist",
+        });
+      }
+
+      const readableStream = await minioClient.getPartialObject(
+        IMAGE_BUCKET_NAME,
+        input.image,
+        0,
+        100
+      );
+
+      const fileType = (await fileTypeStream(readableStream)).fileType;
+      if (!fileType || !["jpg", "jpeg", "png"].includes(fileType.ext)) {
+        await minioClient.removeObject(IMAGE_BUCKET_NAME, input.image);
+        await ctx.prisma.item.delete({ where: { id: input.itemId } });
+
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "invalid file type",
         });
       }
 
