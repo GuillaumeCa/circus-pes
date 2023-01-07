@@ -79,6 +79,13 @@ export const itemFormSchema = z.object({
       : z
           .instanceof(FileList, { message: "Une image est requise" })
           .refine((f: FileList) => {
+            return (
+              f &&
+              f.length > 0 &&
+              ["image/jpg", "image/jpeg", "image/png"].includes(f[0].type)
+            );
+          }, "Le fichier n'est pas une image au format valide: jpeg, jpg ou png")
+          .refine((f: FileList) => {
             return f && f.length > 0 && f[0].size <= MAX_IMAGE_FILE_SIZE;
           }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
 });
