@@ -22,6 +22,7 @@ export const LOCATIONS = [
   "Crusader",
   "Cellin",
   "Yela",
+  "Grim Hex",
   "Daymar",
   "CRU-L1",
   "CRU-L2",
@@ -226,7 +227,7 @@ export function AddItemForm({
           placeholder="Identifiant de la shard"
           {...register("shardId")}
         />
-        <div className="flex space-x-2 mt-2">
+        <div className="flex space-x-2 mt-2 items-center">
           {shardsFiltered.slice(0, 4).map((shard) => (
             <Button
               key={shard}
@@ -238,7 +239,9 @@ export function AddItemForm({
               {shard}
             </Button>
           ))}
-          {shardsFiltered.length > 4 && <p>Et plus..</p>}
+          {shardsFiltered.length > 4 && (
+            <p className="text-gray-400">Et plus..</p>
+          )}
         </div>
         <p className="text-red-500 text-sm mt-1">{errors.shardId?.message}</p>
       </div>
