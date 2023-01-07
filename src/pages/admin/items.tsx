@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../../components/Button";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
+import { TabBar } from "../../components/TabBar";
 import { LocationInfo } from "../../server/routers/item";
 import { STORAGE_BASE_URL } from "../../utils/config";
 import { trpc } from "../../utils/trpc";
@@ -97,16 +98,30 @@ function ItemMgtRow({
 
 export default function ItemsManagement() {
   const [patchVersionId, setPatchVersionId] = useState(0);
+  const [filterPublic, setFilterPublic] = useState<
+    "all" | "public" | "private"
+  >("all");
   const { data: patchVersions } = trpc.patchVersion.getPatchVersions.useQuery();
 
   const selectedPatchId = patchVersions?.[patchVersionId];
+
+  let isPublic: boolean | undefined;
+  if (filterPublic === "private") {
+    isPublic = false;
+  } else if (filterPublic === "public") {
+    isPublic = true;
+  }
 
   const {
     data: items,
     error,
     refetch,
   } = trpc.item.getAllItems.useQuery(
-    { sortBy: "recent", patchVersion: selectedPatchId?.id ?? "" },
+    {
+      sortBy: "recent",
+      patchVersion: selectedPatchId?.id ?? "",
+      public: isPublic,
+    },
     {
       enabled: !!selectedPatchId,
     }
@@ -114,7 +129,7 @@ export default function ItemsManagement() {
 
   return (
     <AdminLayout title="Gestion des publications">
-      <div className="flex space-x-2 items-end">
+      <div className="flex space-x-2 items-end justify-between">
         <div>
           <label
             htmlFor="gameVersion"
@@ -138,6 +153,26 @@ export default function ItemsManagement() {
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <TabBar
+            items={[
+              {
+                key: "all",
+                label: "Tout",
+              },
+              {
+                key: "public",
+                label: "Validé",
+              },
+              {
+                key: "private",
+                label: "En attente",
+              },
+            ]}
+            selectedItem={filterPublic}
+            onSelect={(item) => setFilterPublic(item)}
+          />
         </div>
       </div>
 

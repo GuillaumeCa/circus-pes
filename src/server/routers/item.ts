@@ -37,7 +37,8 @@ function getItemsQuery(
   patchVersionId: string,
   sortBy: "recent" | "like",
   userId?: string,
-  filterPublic?: boolean
+  filterPublic?: boolean,
+  showPrivateForCurrentUser = false
 ) {
   return prismaClient.$queryRaw<LocationInfo[]>`
   select 
@@ -65,12 +66,14 @@ function getItemsQuery(
   where i."patchVersionId" = ${patchVersionId} ${
     filterPublic === undefined
       ? Prisma.empty
-      : Prisma.sql`and (i.public = ${filterPublic} or (i."userId" = ${userId} and i.public = false))`
+      : showPrivateForCurrentUser
+      ? Prisma.sql`and (i.public = ${filterPublic} or (i."userId" = ${userId} and i.public = false))`
+      : Prisma.sql`and (i.public = ${filterPublic})`
   }
   group by (i.id, u.id, pv.id)
   order by ${
     sortBy === "recent" ? Prisma.sql`i."createdAt"` : Prisma.sql`"likesCount"`
-  } asc
+  } desc
 `;
 }
 
@@ -101,6 +104,7 @@ export const itemRouter = router({
           input.patchVersion,
           input.sortBy,
           userId,
+          true,
           true
         );
       } catch (e) {

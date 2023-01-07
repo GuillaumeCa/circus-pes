@@ -1,4 +1,4 @@
-import { CogIcon } from "@heroicons/react/24/outline";
+import { ClockIcon, CogIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { AddItemForm } from "../components/AddItemForm";
@@ -6,6 +6,7 @@ import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
 import { ItemRow } from "../components/ItemRow";
 import { BaseLayout } from "../components/layouts/BaseLayout";
+import { TabBar } from "../components/TabBar";
 import { ItemRouterInput } from "../server/routers/item";
 import { STORAGE_BASE_URL } from "../utils/config";
 import { trpc } from "../utils/trpc";
@@ -109,54 +110,25 @@ export default function Home() {
           <span className="block text-xs uppercase font-bold text-gray-400">
             Trier par
           </span>
-          <div className="mt-1 flex">
-            <button
-              className={cls(
-                "rounded-l-lg px-2 py-1 font-bold border-r border-gray-600",
-                sortOpt === "recent" ? "bg-rose-700" : "bg-gray-500"
-              )}
-              onClick={() => setSortOpt("recent")}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6 inline"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span className="ml-1">Récents</span>
-            </button>
-            <button
-              className={cls(
-                "rounded-r-lg px-2 py-1 font-bold",
-                sortOpt === "like" ? "bg-rose-700" : "bg-gray-500"
-              )}
-              onClick={() => setSortOpt("like")}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6 inline"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                />
-              </svg>
-              <span className="ml-1">Likes</span>
-            </button>
-          </div>
+          <TabBar
+            className="mt-1"
+            items={[
+              {
+                key: "recent",
+                label: "Récents",
+                icon: <ClockIcon className="w-6 h-6 inline" />,
+              },
+              {
+                key: "like",
+                label: "Likes",
+                icon: (
+                  <HeartIcon fill="currentColor" className="w-6 h-6 inline" />
+                ),
+              },
+            ]}
+            selectedItem={sortOpt}
+            onSelect={(item) => setSortOpt(item)}
+          />
         </div>
       </div>
 

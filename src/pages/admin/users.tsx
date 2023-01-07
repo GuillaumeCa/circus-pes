@@ -1,11 +1,11 @@
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { Button } from "../../components/Button";
 import { LoadIcon } from "../../components/Icons";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
+import { TabBar } from "../../components/TabBar";
 import { UserRouterOutput } from "../../server/routers/user";
 import { trpc } from "../../utils/trpc";
-import { formatRole, formatRoleDescription, UserRole } from "../../utils/user";
+import { formatRole, UserRole } from "../../utils/user";
 
 interface UserRowProps {
   user: UserRouterOutput["getUsers"][0];
@@ -42,25 +42,23 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
           )}
 
           {loading && <LoadIcon />}
-          {user.id !== data?.user.id &&
-            [UserRole.INVITED, UserRole.CONTRIBUTOR, UserRole.ADMIN].map(
-              (role) => (
-                <Button
-                  title={formatRoleDescription(role)}
-                  onClick={() => {
-                    setLoading(true);
-                    updateRole({ userId: user.id, role }).then(() => {
-                      onUpdateRole();
-                      setLoading(false);
-                    });
-                  }}
-                  key={role}
-                  disabled={role === user.role}
-                >
-                  {formatRole(role)}
-                </Button>
-              )
-            )}
+          {user.id !== data?.user.id && (
+            <TabBar
+              selectedItem={user.role!}
+              onSelect={(role) => {
+                setLoading(true);
+                updateRole({ userId: user.id, role }).then(() => {
+                  onUpdateRole();
+                  setLoading(false);
+                });
+              }}
+              items={[
+                UserRole.INVITED,
+                UserRole.CONTRIBUTOR,
+                UserRole.ADMIN,
+              ].map((r) => ({ key: r, label: formatRole(r) }))}
+            />
+          )}
         </div>
       </div>
     </div>

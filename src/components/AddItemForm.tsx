@@ -117,6 +117,12 @@ export function AddItemForm({
 
   const image = watch("image");
 
+  const shardId = watch("shardId");
+
+  const shardsFiltered = shardIds.filter(
+    (s) => !shardId || s.toUpperCase().includes(shardId.toUpperCase())
+  );
+
   const onSubmit = async (formData: LocationFormData) => {
     const file = formData.image!.item(0)!;
     try {
@@ -182,26 +188,6 @@ export function AddItemForm({
             </option>
           ))}
         </select>
-        {/* <input
-          id="gameVersion"
-          className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
-          placeholder="Version du patch au format PTU.version ou LIVE-3.18"
-          autoFocus
-          {...register("gameVersion")}
-        /> */}
-        {/* <div className="flex space-x-2 mt-2">
-          {patchVersionList.map((pv) => (
-            <Button
-              key={pv.id}
-              type="button"
-              onClick={() =>
-                setValue("gameVersion", pv.id, { shouldValidate: false })
-              }
-            >
-              {pv.name}
-            </Button>
-          ))}
-        </div> */}
         <p className="text-red-500 text-sm mt-1">
           {errors.gameVersion?.message}
         </p>
@@ -241,7 +227,7 @@ export function AddItemForm({
           {...register("shardId")}
         />
         <div className="flex space-x-2 mt-2">
-          {shardIds.map((shard) => (
+          {shardsFiltered.slice(0, 4).map((shard) => (
             <Button
               key={shard}
               type="button"
@@ -252,6 +238,7 @@ export function AddItemForm({
               {shard}
             </Button>
           ))}
+          {shardsFiltered.length > 4 && <p>Et plus..</p>}
         </div>
         <p className="text-red-500 text-sm mt-1">{errors.shardId?.message}</p>
       </div>
@@ -302,21 +289,6 @@ export function AddItemForm({
             id="image"
             type="file"
             accept=".jpg,.jpeg,.png"
-            // onChange={async (e) => {
-            //   if (!e.target.files || e.target.files.length === 0) {
-            //     return;
-            //   }
-            //   const file = e.target.files[0];
-
-            //   const key = `${uuid()}-${file.name}`;
-            //   const url = await getPresignedUrl(key);
-
-            //   const res = await fetch(url, {
-            //     method: "PUT",
-            //     body: file,
-            //   });
-            //   setValue("image", key);
-            // }}
             {...register("image")}
           />
           {(image?.length ?? 0) > 0 && (
@@ -330,9 +302,7 @@ export function AddItemForm({
           )}
         </div>
       </div>
-      {/* <p className="text-red-500 text-sm mt-1">
-        {errors.image?.message?.toString()}
-      </p> */}
+      <p className="text-red-500 text-sm mt-1">{errors.image?.message}</p>
 
       <div className="flex items-center justify-end space-x-2 mt-3">
         {isError && (
