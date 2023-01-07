@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { PatchVersionRouterOutput } from "../server/routers/patch-version";
@@ -97,11 +98,9 @@ export function AddItemForm({
   onCancel,
   onCreated,
 }: AddLocationFormProps) {
-  const {
-    mutateAsync: createItem,
-    isError,
-    isLoading,
-  } = trpc.item.createItem.useMutation();
+  const [loading, setLoading] = useState(false);
+  const { mutateAsync: createItem, isError } =
+    trpc.item.createItem.useMutation();
 
   const { mutateAsync: getPresignedUrl } =
     trpc.storage.presignedUrl.useMutation();
@@ -132,6 +131,7 @@ export function AddItemForm({
   );
 
   const onSubmit = async (formData: LocationFormData) => {
+    setLoading(true);
     const file = formData.image!.item(0)!;
     try {
       const createdItem = await createItem({
@@ -157,6 +157,7 @@ export function AddItemForm({
       reset();
       onCreated();
     } catch (error) {}
+    setLoading(false);
   };
 
   function handleCancel() {
@@ -323,7 +324,9 @@ export function AddItemForm({
         <Button type="button" btnType="secondary" onClick={handleCancel}>
           Annuler
         </Button>
-        <Button type="submit">{isLoading ? "Chargement..." : "Ajouter"}</Button>
+        <Button disabled={loading} type="submit">
+          {loading ? "Chargement..." : "Ajouter"}
+        </Button>
       </div>
     </form>
   );

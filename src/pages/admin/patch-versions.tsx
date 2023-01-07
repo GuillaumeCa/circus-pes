@@ -17,23 +17,26 @@ export default function PatchVersions() {
 
   return (
     <AdminLayout title="Versions de patch">
-      <div className="mt-3 flex space-x-2">
-        <input
-          placeholder="Nouvelle version"
-          className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
-          value={patchName}
-          onChange={(e) => setPatchName(e.target.value)}
-        />
-        <Button
-          onClick={async () => {
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (patchName !== "") {
             await create({ name: patchName });
             setPatchName("");
             refetch();
-          }}
-        >
-          Ajouter
-        </Button>
-      </div>
+          }
+        }}
+      >
+        <div className="mt-3 flex space-x-2">
+          <input
+            placeholder="Nouvelle version"
+            className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
+            value={patchName}
+            onChange={(e) => setPatchName(e.target.value)}
+          />
+          <Button type="submit">Ajouter</Button>
+        </div>
+      </form>
       {isLoading && <p>Chargement...</p>}
       {patchVersions && (
         <ul className="mt-3 space-y-2">
