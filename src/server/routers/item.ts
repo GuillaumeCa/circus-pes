@@ -166,7 +166,23 @@ export const itemRouter = router({
     )
     .mutation(
       async ({ input: { description, patchId, location, shardId }, ctx }) => {
-        return await ctx.prisma?.item.create({
+        const patch = await ctx.prisma.patchVersion.findFirst({
+          where: { id: patchId },
+        });
+        if (!patch) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "invalid patch version",
+          });
+        }
+
+        if (ctx.session.user.role !== UserRole.ADMIN && !patch.visible) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+          });
+        }
+
+        return await ctx.prisma.item.create({
           data: {
             description,
             patchVersionId: patchId,
@@ -201,6 +217,13 @@ export const itemRouter = router({
       if (!item) {
         console.error("could not find the item to update");
         throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      if (item.image) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "image already exist",
+        });
       }
 
       await ctx.prisma.item.update({

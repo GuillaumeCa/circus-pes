@@ -7,6 +7,10 @@ export const storageRouter = router({
   presignedUrl: writeProcedure
     .input(z.string())
     .mutation(async ({ input: key }) => {
-      return await minioClient.presignedPutObject(IMAGE_BUCKET_NAME, key);
+      return await minioClient.presignedPutObject(
+        IMAGE_BUCKET_NAME,
+        key,
+        2 * 60
+      );
     }),
 });
