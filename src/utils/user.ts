@@ -1,7 +1,7 @@
 export enum UserRole {
-  INVITED,
-  CONTRIBUTOR,
-  ADMIN,
+  INVITED = 0,
+  CONTRIBUTOR = 1,
+  ADMIN = 2,
 }
 
 export function formatRole(role: UserRole) {

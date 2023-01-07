@@ -2,6 +2,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import NextAuth from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import { prisma } from "../../../server/db/client";
+import { UserRole } from "../../../utils/user";
 
 export default NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -25,7 +26,7 @@ export default NextAuth({
           image: profile.image_url,
           discriminator: profile.discriminator,
           emailVerified: null,
-          role: 1,
+          role: UserRole.CONTRIBUTOR,
         };
       },
     }),
@@ -37,7 +38,7 @@ export default NextAuth({
 
   callbacks: {
     async session({ session, user }) {
-      session.user.role = user.role ?? 0; // Add role value to user object so it is passed along with session
+      session.user.role = user.role ?? UserRole.INVITED; // Add role value to user object so it is passed along with session
       session.user.discriminator = user.discriminator ?? "";
       session.user.id = user.id;
       return session;
