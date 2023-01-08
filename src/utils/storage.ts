@@ -6,7 +6,7 @@ export const formatPreviewImageUrl = (patchId: string, itemId: string) =>
   STORAGE_BASE_URL + formatPreviewImageKey(patchId, itemId);
 
 export const formatPreviewImageKey = (patchId: string, itemId: string) =>
-  `${patchId}/preview_${itemId}.webp`;
+  `${patchId}/${itemId}_preview.webp`;
 
 export const formatImageUrl = (imageKey: string) => STORAGE_BASE_URL + imageKey;
 
