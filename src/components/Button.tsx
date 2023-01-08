@@ -87,6 +87,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export function Button({
   children,
   icon,
+  className = "",
   btnType = "primary",
   ...props
 }: ButtonProps) {
@@ -97,7 +98,8 @@ export function Button({
         btnType === "primary" &&
           "bg-rose-700 hover:bg-rose-800 focus:ring-rose-300",
         btnType === "secondary" &&
-          "bg-gray-800 hover:bg-gray-900 focus:ring-gray-400"
+          "bg-gray-800 hover:bg-gray-900 focus:ring-gray-400",
+        className
       )}
       {...props}
     >

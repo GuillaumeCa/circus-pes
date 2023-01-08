@@ -14,7 +14,7 @@ import { TabBar } from "../components/TabBar";
 import { createStaticContext } from "../server/context";
 import { ItemRouterInput } from "../server/routers/item";
 import { appRouter } from "../server/routers/_app";
-import { STORAGE_BASE_URL } from "../utils/config";
+import { formatImageUrl, formatPreviewImageUrl } from "../utils/storage";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
 
@@ -138,7 +138,7 @@ export default function Home() {
         </div>
       </div>
 
-      <Modal open={showAddForm}>
+      <Modal open={showAddForm} className="max-w-2xl">
         {showAddForm && patchVersions && (
           <AddItemForm
             shardIds={shardIds}
@@ -208,8 +208,11 @@ export default function Home() {
                 shard={item.shardId}
                 likes={item.likesCount}
                 hasLiked={item.hasLiked === 1}
-                imagePath={
-                  item.image ? STORAGE_BASE_URL + item.image : undefined
+                imagePath={item.image ? formatImageUrl(item.image) : undefined}
+                previewImagePath={
+                  item.image
+                    ? formatPreviewImageUrl(item.patchVersionId, item.id)
+                    : undefined
                 }
                 date={new Date(item.createdAt).toLocaleDateString("fr")}
                 isPublic={item.public}

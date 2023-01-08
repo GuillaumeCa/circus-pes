@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { PatchVersionRouterOutput } from "../server/routers/patch-version";
-import { MAX_IMAGE_UPLOAD_SIZE, MIN_IMAGE_UPLOAD_SIZE } from "../utils/config";
+import { MAX_IMAGE_UPLOAD_SIZE, MIN_IMAGE_UPLOAD_SIZE } from "../utils/storage";
 import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
 import { XMarkIcon } from "./Icons";
@@ -104,6 +104,7 @@ export function AddItemForm({
 }: AddLocationFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+
   const { mutateAsync: createItem } = trpc.item.createItem.useMutation();
 
   const { mutateAsync: getImageUploadUrl } =

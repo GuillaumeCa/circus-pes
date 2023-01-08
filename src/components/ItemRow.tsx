@@ -2,9 +2,12 @@ import { ClockIcon } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
+import { Button } from "./Button";
 import { TrashIcon } from "./Icons";
+import { Modal } from "./Modal";
 
 interface ItemLocationRow {
   id: string;
@@ -17,6 +20,7 @@ interface ItemLocationRow {
   shard: string;
   likes: number;
   hasLiked: boolean;
+  previewImagePath?: string;
   imagePath?: string;
   isPublic: boolean;
 
@@ -35,6 +39,7 @@ export function ItemRow({
   date,
   likes,
   hasLiked,
+  previewImagePath,
   imagePath,
   isPublic,
 
@@ -45,6 +50,8 @@ export function ItemRow({
   const { mutateAsync: deleteItem } = trpc.item.deleteItem.useMutation();
   const { mutateAsync: likeItem } = trpc.item.like.useMutation();
   const { mutateAsync: unLikeItem } = trpc.item.unLike.useMutation();
+
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
 
   function handleLike() {
     if (hasLiked) {
@@ -87,22 +94,52 @@ export function ItemRow({
           {data &&
             (authorId === data.user?.id ||
               data.user?.role === UserRole.ADMIN) && (
-              <button title="Supprimer" onClick={handleDelete}>
+              <button
+                title="Supprimer"
+                onClick={() => setShowDeletePopup(true)}
+              >
                 <TrashIcon />
               </button>
             )}
         </div>
       </div>
 
+      <Modal open={showDeletePopup} className="max-w-md">
+        <div className="p-5 flex flex-col items-center">
+          <h2 className="text-2xl font-bold text-center">
+            Voulez vous supprimer cette création ?
+          </h2>
+          <div className="flex mt-8 space-x-2">
+            <Button
+              onClick={() => {
+                handleDelete();
+                setShowDeletePopup(false);
+              }}
+            >
+              Supprimer
+            </Button>
+            <Button
+              btnType="secondary"
+              onClick={() => {
+                setShowDeletePopup(false);
+              }}
+            >
+              Annuler
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       <div className="flex flex-col lg:flex-row mt-2 space-y-2 lg:space-y-0">
-        {imagePath && (
+        {imagePath && previewImagePath && (
           <div className="mr-4 w-full lg:w-auto lg:min-w-fit max-w-md overflow-hidden rounded-lg shadow-md">
             <Link href={imagePath} target="_blank">
               <Image
                 width={500}
-                height={300}
-                alt="capture de la création"
-                src={imagePath}
+                height={281}
+                alt="image de la création"
+                src={previewImagePath}
+                unoptimized={true}
               />
             </Link>
           </div>
@@ -137,7 +174,11 @@ export function ItemRow({
         </button>
 
         <p className="text-gray-400">
-          <img className="inline w-5 h-5 rounded-full" src={avatarUrl} />{" "}
+          <img
+            alt="photo de profil"
+            className="inline w-5 h-5 rounded-full"
+            src={avatarUrl}
+          />{" "}
           <span className="italic font-bold text-gray-300">{author}</span> le{" "}
           {date}
         </p>

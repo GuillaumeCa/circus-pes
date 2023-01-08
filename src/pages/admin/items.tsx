@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Button } from "../../components/Button";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { TabBar } from "../../components/TabBar";
-import { LocationInfo } from "../../server/routers/item";
-import { STORAGE_BASE_URL } from "../../utils/config";
+import { LocationInfo } from "../../server/db/item";
+import { formatImageUrl, formatPreviewImageUrl } from "../../utils/storage";
 import { trpc } from "../../utils/trpc";
 
 function ItemMgtRow({
@@ -27,10 +27,11 @@ function ItemMgtRow({
       <div className="flex flex-col-reverse lg:flex-row items-start">
         <div className="min-w-fit">
           {item.image && (
-            <Link href={STORAGE_BASE_URL + item.image} target="_blank">
+            <Link href={formatImageUrl(item.image)} target="_blank">
               <img
+                alt="image de la création"
                 className="rounded-lg shadow-md w-full lg:w-52"
-                src={STORAGE_BASE_URL + item.image}
+                src={formatPreviewImageUrl(item.patchVersionId, item.id)}
                 width={200}
               />
             </Link>
@@ -52,6 +53,7 @@ function ItemMgtRow({
             </span>
             <p className="text-gray-400">
               <img
+                alt="photo de profil"
                 className="inline w-5 h-5 rounded-full"
                 src={item.userImage}
               />{" "}

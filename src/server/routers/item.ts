@@ -1,17 +1,19 @@
-import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { fileTypeStream } from "file-type";
+import { fileTypeFromBuffer } from "file-type";
+import sharp from "sharp";
 import { z } from "zod";
+
 import { minioClient } from "../../lib/minio";
 import {
+  formatPreviewImageKey,
   IMAGE_BUCKET_NAME,
   MAX_IMAGE_UPLOAD_SIZE,
   MIN_IMAGE_UPLOAD_SIZE,
   PRESIGNED_UPLOAD_IMAGE_EXPIRATION_DURATION,
-} from "../../utils/config";
+} from "../../utils/storage";
+import { stream2buffer } from "../../utils/stream";
 import { UserRole } from "../../utils/user";
-
-import type { MyPrismaClient } from "../db/client";
+import { getItemsQuery } from "../db/item";
 import {
   adminProcedure,
   protectedProcedure,
@@ -21,68 +23,7 @@ import {
 } from "../trpc";
 import { RouterInput } from "./_app";
 
-export interface LocationInfo {
-  id: string;
-  patchVersion: string;
-  shardId: string;
-  location: string;
-  description: string;
-  image?: string;
-  userId?: string;
-  userImage?: string;
-  userName?: string;
-  likesCount: number;
-  hasLiked?: number;
-  createdAt: number;
-  public: boolean;
-}
-
 export type ItemRouterInput = RouterInput["item"];
-
-function getItemsQuery(
-  prismaClient: MyPrismaClient,
-  patchVersionId: string,
-  sortBy: "recent" | "like",
-  userId?: string,
-  filterPublic?: boolean,
-  showPrivateForCurrentUser = false
-) {
-  return prismaClient.$queryRaw<LocationInfo[]>`
-  select 
-    i.id,
-    pv.name as "patchVersion",
-    i.description,
-    i.location,
-    i."shardId",
-    i.public,
-    i."createdAt",
-    i."userId",
-    i.image,
-    u.image as "userImage",
-    u.name as "userName",
-    count(l."itemId")::int as "likesCount"
-    ${
-      userId
-        ? Prisma.sql`, (select count(*)::int from "like" l1 where l1."itemId" = i.id and l1."userId" = ${userId}) as "hasLiked"`
-        : Prisma.empty
-    }
-  from item i
-  left join patch_version pv on pv.id = i."patchVersionId"
-  left join "like" l on l."itemId" = i.id
-  left join "user" u on u.id = i."userId"
-  where i."patchVersionId" = ${patchVersionId} ${
-    filterPublic === undefined
-      ? Prisma.empty
-      : showPrivateForCurrentUser
-      ? Prisma.sql`and (i.public = ${filterPublic} or (i."userId" = ${userId} and i.public = false))`
-      : Prisma.sql`and (i.public = ${filterPublic})`
-  }
-  group by (i.id, u.id, pv.id)
-  order by ${
-    sortBy === "recent" ? Prisma.sql`i."createdAt"` : Prisma.sql`"likesCount"`
-  } desc
-`;
-}
 
 export const itemRouter = router({
   getItems: publicProcedure
@@ -196,7 +137,7 @@ export const itemRouter = router({
             location,
             shardId,
             userId: ctx.session.user.id,
-            public: ctx.session.user.role === UserRole.ADMIN, // make item public by default only for admins
+            public: false,
           },
           select: {
             id: true,
@@ -231,7 +172,7 @@ export const itemRouter = router({
       }
       const policy = minioClient.newPostPolicy();
       policy.setBucket(IMAGE_BUCKET_NAME);
-      policy.setKey(`${input.itemId}.${input.ext}`);
+      policy.setKey(`${item.patchVersionId}/${item.id}.${input.ext}`);
 
       var expires = new Date();
       expires.setSeconds(PRESIGNED_UPLOAD_IMAGE_EXPIRATION_DURATION); // expires in 2min
@@ -242,12 +183,6 @@ export const itemRouter = router({
         MIN_IMAGE_UPLOAD_SIZE,
         MAX_IMAGE_UPLOAD_SIZE
       ); // up to 5MB
-
-      // return await minioClient.presignedPutObject(
-      //   IMAGE_BUCKET_NAME,
-      //   key,
-      //   2 * 60
-      // );
 
       return await minioClient.presignedPostPolicy(policy);
     }),
@@ -260,10 +195,6 @@ export const itemRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      if (ctx.session.user.role === UserRole.INVITED) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
-
       const item = await ctx.prisma.item.findFirst({
         where: { id: input.itemId, userId: ctx.session.user.id },
       });
@@ -273,6 +204,7 @@ export const itemRouter = router({
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
+      // check if the item already has an imaage set
       if (item.image) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -280,14 +212,16 @@ export const itemRouter = router({
         });
       }
 
-      const readableStream = await minioClient.getPartialObject(
+      // retrieve the uploaded image
+      const readableStream = await minioClient.getObject(
         IMAGE_BUCKET_NAME,
-        input.image,
-        0,
-        100
+        input.image
       );
 
-      const fileType = (await fileTypeStream(readableStream)).fileType;
+      const imgBuffer = await stream2buffer(readableStream);
+
+      // check if uploaded image has the correct file type, otherwise delete it and the item entity
+      const fileType = await fileTypeFromBuffer(imgBuffer);
       if (!fileType || !["jpg", "jpeg", "png"].includes(fileType.ext)) {
         await minioClient.removeObject(IMAGE_BUCKET_NAME, input.image);
         await ctx.prisma.item.delete({ where: { id: input.itemId } });
@@ -298,9 +232,22 @@ export const itemRouter = router({
         });
       }
 
+      // create preview image
+      const previewImgBuffer = await sharp(imgBuffer)
+        .resize({ width: 500 })
+        .toFormat("webp")
+        .toBuffer();
+
+      await minioClient.putObject(
+        IMAGE_BUCKET_NAME,
+        formatPreviewImageKey(item.patchVersionId, item.id),
+        previewImgBuffer
+      );
+
       await ctx.prisma.item.update({
         data: {
           image: input.image,
+          public: ctx.session.user.role === UserRole.ADMIN, // make item public by default only for admins
         },
         where: {
           id: input.itemId,
@@ -344,6 +291,10 @@ export const itemRouter = router({
 
         if (item.image) {
           await minioClient.removeObject(IMAGE_BUCKET_NAME, item.image);
+          await minioClient.removeObject(
+            IMAGE_BUCKET_NAME,
+            formatPreviewImageKey(item.patchVersionId, item.id)
+          );
         }
 
         return deletedItem;

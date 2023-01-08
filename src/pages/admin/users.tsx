@@ -1,7 +1,9 @@
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { Button } from "../../components/Button";
 import { LoadIcon } from "../../components/Icons";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
+import { Modal } from "../../components/Modal";
 import { TabBar } from "../../components/TabBar";
 import { UserRouterOutput } from "../../server/routers/user";
 import { trpc } from "../../utils/trpc";
@@ -16,11 +18,51 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
   const { data, status } = useSession();
   const { mutateAsync: updateRole } = trpc.user.updateRole.useMutation();
   const [loading, setLoading] = useState(false);
+  const [showRoleValidationPopup, setShowRoleValidationPopup] = useState(false);
+
+  function updateUserRole(role: UserRole) {
+    setLoading(true);
+    return updateRole({ userId: user.id, role }).then(() => {
+      onUpdateRole();
+      setLoading(false);
+    });
+  }
 
   return (
     <div className="flex flex-col lg:flex-row justify-between w-full">
+      <Modal open={showRoleValidationPopup} className="max-w-md">
+        <div className="p-5 flex flex-col items-center">
+          <h2 className="text-2xl font-bold text-center">
+            Valider que vous donnez le rôle admin à {user.name}
+          </h2>
+          <div className="flex mt-8 space-x-2">
+            <Button
+              onClick={async () => {
+                updateUserRole(UserRole.ADMIN).then(() => {
+                  setShowRoleValidationPopup(false);
+                });
+              }}
+            >
+              Valider
+            </Button>
+            <Button
+              btnType="secondary"
+              onClick={() => {
+                setShowRoleValidationPopup(false);
+              }}
+            >
+              Annuler
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       <div className="flex space-x-3 items-center">
-        <img className="h-10 w-10 rounded-full" src={user.image ?? ""} />
+        <img
+          className="h-10 w-10 rounded-full"
+          alt="photo de profil"
+          src={user.image ?? ""}
+        />
         <span className="font-bold">
           {user.name}
           <span className="text-sm text-gray-500">#{user.discriminator}</span>
@@ -46,11 +88,11 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
             <TabBar
               selectedItem={user.role!}
               onSelect={(role) => {
-                setLoading(true);
-                updateRole({ userId: user.id, role }).then(() => {
-                  onUpdateRole();
-                  setLoading(false);
-                });
+                if (role === UserRole.ADMIN) {
+                  setShowRoleValidationPopup(true);
+                } else {
+                  updateUserRole(role);
+                }
               }}
               items={[
                 UserRole.INVITED,

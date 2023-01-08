@@ -51,6 +51,7 @@ export function BaseLayout({ children }: BaseLayoutProps) {
                   <img
                     className="rounded-full h-10 w-10"
                     src={data.user?.image ?? ""}
+                    alt="photo de profil"
                     width={30}
                     height={30}
                   />

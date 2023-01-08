@@ -3,7 +3,9 @@ import { cls } from "./cls";
 export function Modal({
   open,
   children,
+  className = "",
 }: {
+  className?: string;
   open: boolean;
   children?: React.ReactNode;
 }) {
@@ -15,7 +17,7 @@ export function Modal({
         open ? "flex" : "hidden"
       )}
     >
-      <div className="relative w-full h-full max-w-2xl md:h-auto m-auto">
+      <div className={"relative w-full h-full md:h-auto m-auto " + className}>
         <div className="relative bg-gray-700 rounded-lg shadow">{children}</div>
       </div>
     </div>
