@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Toaster } from "react-hot-toast";
 import { UserButton } from "../Button";
 import { GithubIcon } from "../Icons";
-import { SEO } from "../Seo";
+import { BASE_URL, SEO } from "../Seo";
 
 interface BaseLayoutProps {
   children: React.ReactNode;
@@ -20,10 +20,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
         <title>Circus PES</title>
         <meta name="description" content="Circus PES" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link
-          rel="icon"
-          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎪</text></svg>"
-        />
+        <link rel="icon" href="cirque-lisoir-logo.png" />
 
         <meta
           name="description"
@@ -35,6 +32,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
         <SEO
           title="Circus PES"
           desc="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
+          imageUrl={BASE_URL + "/cirque-lisoir-logo.png"}
         />
       )}
 
@@ -54,7 +52,18 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
           <div>
             <div className="flex justify-between items-start">
               <Link href="/">
-                <h1 className="text-3xl font-bold">🎪 Circus PES</h1>
+                <div className="flex items-end space-x-2">
+                  <img
+                    src="cirque-lisoir-logo.png"
+                    className="inline"
+                    alt="Logo du Cirque Lisoir"
+                    width={50}
+                    height={50}
+                  />
+                  <h1 className="text-3xl font-bold align-middle">
+                    Circus PES
+                  </h1>
+                </div>
               </Link>
               {status === "unauthenticated" && (
                 <div>
