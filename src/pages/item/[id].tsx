@@ -1,9 +1,14 @@
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { GetStaticPaths, GetStaticPropsContext } from "next";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
+import SuperJSON from "superjson";
 import { LinkButton } from "../../components/Button";
 import { ItemRow } from "../../components/ItemRow";
 import { BaseLayout } from "../../components/layouts/BaseLayout";
-import { SEO } from "../../components/Seo";
+import { BASE_URL, SEO } from "../../components/Seo";
+import { createStaticContext } from "../../server/context";
+import { appRouter } from "../../server/routers/_app";
 import { formatImageUrl, formatPreviewImageUrl } from "../../utils/storage";
 import { trpc } from "../../utils/trpc";
 
@@ -39,7 +44,7 @@ export default function Item() {
           <SEO
             title={`Une création près de ${item.location} sur la shard ${item.shardId} (${item.patchVersion})`}
             desc={item.description}
-            url={window.location.href}
+            url={BASE_URL + "/item/" + item.id}
             imageUrl={formatPreviewImageUrl(item.patchVersionId, item.id)}
           />
 
@@ -80,3 +85,31 @@ export default function Item() {
     </BaseLayout>
   );
 }
+
+export async function getStaticProps(
+  context: GetStaticPropsContext<{ id: string }>
+) {
+  const ssg = await createProxySSGHelpers({
+    router: appRouter,
+    ctx: await createStaticContext(),
+    transformer: SuperJSON, // optional - adds superjson serialization
+  });
+  const id = context.params?.id as string;
+  // prefetch `post.byId`
+  await ssg.item.byId.prefetch(id);
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+      id,
+    },
+    revalidate: 1,
+  };
+}
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  return {
+    paths: [],
+    // https://nextjs.org/docs/basic-features/data-fetching#fallback-blocking
+    fallback: "blocking",
+  };
+};
