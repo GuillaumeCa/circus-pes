@@ -59,7 +59,11 @@ interface LinkButtonProps {
   href: string;
 }
 
-export function LinkButton({ children, btnType, href }: LinkButtonProps) {
+export function LinkButton({
+  children,
+  btnType = "primary",
+  href,
+}: LinkButtonProps) {
   return (
     <Link
       href={href}

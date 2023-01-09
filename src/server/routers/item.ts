@@ -13,7 +13,7 @@ import {
 } from "../../utils/storage";
 import { stream2buffer } from "../../utils/stream";
 import { UserRole } from "../../utils/user";
-import { getItemsQuery } from "../db/item";
+import { getItemById, getItemsQuery } from "../db/item";
 import {
   adminProcedure,
   protectedProcedure,
@@ -93,6 +93,21 @@ export const itemRouter = router({
       } catch (e) {
         console.error("could not query items", e);
       }
+    }),
+
+  byId: publicProcedure
+    .input(z.string().optional())
+    .query(async ({ ctx, input: id }) => {
+      if (!id) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      const items = await getItemById(ctx.prisma, id, ctx.session?.user.id);
+      if (items.length > 0) {
+        return items[0];
+      }
+
+      throw new TRPCError({ code: "NOT_FOUND" });
     }),
 
   createItem: writeProcedure

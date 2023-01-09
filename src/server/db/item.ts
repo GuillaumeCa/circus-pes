@@ -63,3 +63,37 @@ export function getItemsQuery(
   } desc
 `;
 }
+
+export function getItemById(
+  prismaClient: MyPrismaClient,
+  itemId: string,
+  userId?: string
+) {
+  return prismaClient.$queryRaw<LocationInfo[]>`
+  select 
+    i.id,
+    pv.id as "patchVersionId",
+    pv.name as "patchVersion",
+    i.description,
+    i.location,
+    i."shardId",
+    i.public,
+    i."createdAt",
+    i."userId",
+    i.image,
+    u.image as "userImage",
+    u.name as "userName",
+    count(l."itemId")::int as "likesCount"
+    ${
+      userId
+        ? Prisma.sql`, (select count(*)::int from "like" l1 where l1."itemId" = i.id and l1."userId" = ${userId}) as "hasLiked"`
+        : Prisma.empty
+    }
+  from item i
+  left join patch_version pv on pv.id = i."patchVersionId"
+  left join "like" l on l."itemId" = i.id
+  left join "user" u on u.id = i."userId"
+  where i.id = ${itemId}
+  group by (i.id, u.id, pv.id)
+`;
+}

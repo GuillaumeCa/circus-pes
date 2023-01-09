@@ -1,12 +1,15 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
+import { Toaster } from "react-hot-toast";
 import { UserButton } from "../Button";
 import { GithubIcon } from "../Icons";
 
 interface BaseLayoutProps {
   children: React.ReactNode;
 }
+
+const BASE_URL = process.env.VERCEL_URL || "localhost:3000";
 export function BaseLayout({ children }: BaseLayoutProps) {
   const { data, status } = useSession();
 
@@ -20,8 +23,41 @@ export function BaseLayout({ children }: BaseLayoutProps) {
           rel="icon"
           href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎪</text></svg>"
         />
+
+        <meta
+          name="description"
+          content="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
+        />
+
+        {/* <!-- Facebook Meta Tags --> */}
+        <meta property="og:url" content={`https://${BASE_URL}}/`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Circus PES" />
+        <meta
+          property="og:description"
+          content="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta property="twitter:domain" content={BASE_URL} />
+        <meta property="twitter:url" content={`https://${BASE_URL}}/`} />
+        <meta name="twitter:title" content="Circus PES" />
+        <meta
+          name="twitter:description"
+          content="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
+        />
       </Head>
       <main className="p-3 md:p-8 min-h-[90vh] text-gray-200">
+        <Toaster
+          toastOptions={{
+            className: "",
+            style: {
+              borderRadius: "12px",
+              background: "rgb(31 41 55)",
+              color: "rgb(229 231 235)",
+            },
+          }}
+        />
+
         <div className="max-w-5xl mx-auto">
           <div>
             <div className="flex justify-between items-start">

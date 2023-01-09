@@ -1,8 +1,9 @@
-import { ClockIcon } from "@heroicons/react/24/outline";
+import { ClockIcon, LinkIcon } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
 import { Button } from "./Button";
@@ -90,11 +91,31 @@ export function ItemRow({
             </div>
           )}
         </div>
-        <div>
+        <div className="flex space-x-4">
+          <button
+            title="Copier le lien"
+            className="active:text-gray-500"
+            onClick={() => {
+              const url = `${window.location.origin}/item/${id}`;
+              navigator.clipboard.writeText(url).then(
+                () => {
+                  toast.success(
+                    "Le lien vers la création à été copié dans votre presse papier !"
+                  );
+                },
+                () => {
+                  toast.error("Le lien vers la création n'a pas pu être copié");
+                }
+              );
+            }}
+          >
+            <LinkIcon className="w-5 h-5" />
+          </button>
           {data &&
             (authorId === data.user?.id ||
               data.user?.role === UserRole.ADMIN) && (
               <button
+                className="active:text-gray-500"
                 title="Supprimer"
                 onClick={() => setShowDeletePopup(true)}
               >
