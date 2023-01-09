@@ -252,6 +252,6 @@ export const getStaticProps: GetStaticProps = async (context) => {
     props: {
       trpcState: ssg.dehydrate(),
     },
-    revalidate: 60 * 60, // refresh at most every 1h,
+    revalidate: 60, // refresh at most every 1min,
   };
 };
