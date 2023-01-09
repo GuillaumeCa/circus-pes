@@ -28,7 +28,7 @@ export default function Home() {
   const [sortOpt, setSortOpt] = useState<SortOption>("recent");
   const { data: patchVersions, isLoading: isLoadingVersions } =
     trpc.patchVersion.getPatchVersions.useQuery();
-  const selectedPatchId = patchVersions?.[gameVersionId];
+  const selectedPatch = patchVersions?.[gameVersionId];
   const {
     data: items,
     error,
@@ -36,13 +36,15 @@ export default function Home() {
     refetch,
   } = trpc.item.getItems.useQuery(
     {
-      patchVersion: selectedPatchId?.id ?? "",
+      patchVersion: selectedPatch?.id ?? "",
       sortBy: sortOpt,
     },
     {
-      enabled: !!selectedPatchId,
+      enabled: !!selectedPatch,
     }
   );
+
+  const utils = trpc.useContext();
 
   const shardIds = Array.from(
     new Set(
@@ -190,7 +192,7 @@ export default function Home() {
         )}
         {!isLoadingItems &&
           !isLoadingVersions &&
-          (!selectedPatchId || itemsFiltered.length === 0) && (
+          (!selectedPatch || itemsFiltered.length === 0) && (
             <p className="text-gray-400">Aucune création</p>
           )}
 
@@ -216,8 +218,34 @@ export default function Home() {
                 }
                 date={new Date(item.createdAt).toLocaleDateString("fr")}
                 isPublic={item.public}
-                onLike={() => {
-                  refetch();
+                onLike={(like) => {
+                  if (!selectedPatch) {
+                    return;
+                  }
+
+                  const currentInput: ItemRouterInput["getItems"] = {
+                    patchVersion: selectedPatch.id ?? "",
+                    sortBy: sortOpt,
+                  };
+
+                  const items = utils.item.getItems.getData(currentInput);
+
+                  if (items) {
+                    utils.item.getItems.setData(
+                      currentInput,
+                      items.map((it) => {
+                        if (it.id === item.id) {
+                          return {
+                            ...it,
+                            hasLiked: like === 1 ? 1 : 0,
+                            likesCount: it.likesCount + like,
+                          };
+                        }
+
+                        return it;
+                      })
+                    );
+                  }
                 }}
                 onDelete={() => {
                   refetch();

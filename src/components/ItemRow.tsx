@@ -26,7 +26,7 @@ interface ItemLocationRow {
   isPublic: boolean;
 
   onDelete(): void;
-  onLike(): void;
+  onLike(like: number): void;
 }
 
 export function ItemRow({
@@ -56,9 +56,9 @@ export function ItemRow({
 
   function handleLike() {
     if (hasLiked) {
-      unLikeItem(id).then(() => onLike());
+      unLikeItem(id).then(() => onLike(-1));
     } else {
-      likeItem(id).then(() => onLike());
+      likeItem(id).then(() => onLike(1));
     }
   }
 
