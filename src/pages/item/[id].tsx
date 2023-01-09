@@ -1,13 +1,11 @@
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
 import { LinkButton } from "../../components/Button";
 import { ItemRow } from "../../components/ItemRow";
 import { BaseLayout } from "../../components/layouts/BaseLayout";
+import { SEO } from "../../components/Seo";
 import { formatImageUrl, formatPreviewImageUrl } from "../../utils/storage";
 import { trpc } from "../../utils/trpc";
-
-const BASE_URL = process.env.VERCEL_URL || "localhost:3000";
 
 function getId(query: ParsedUrlQuery): string | undefined {
   const id = query["id"];
@@ -29,7 +27,7 @@ export default function Item() {
   });
 
   return (
-    <BaseLayout>
+    <BaseLayout overrideSEO={true}>
       {isLoading && <p className="text-gray-300 mt-5">Chargement en cours..</p>}
       {!isLoading && !item && (
         <p className="text-gray-300 mt-5">
@@ -38,20 +36,12 @@ export default function Item() {
       )}
       {item && (
         <>
-          <Head>
-            <meta
-              property="og:title"
-              content={`Une création à ${item.location} sur la shard ${item.shardId} (${item.patchVersion})`}
-            />
-            <meta property="og:site_name" content="Circus PES" />
-            <meta property="og:url" content={`https://${BASE_URL}/`} />
-            <meta property="og:description" content={item.description} />
-            <meta property="og:type" content="place" />
-            <meta
-              property="og:image"
-              content={formatPreviewImageUrl(item.patchVersionId, item.id)}
-            />
-          </Head>
+          <SEO
+            title={`Une création près de ${item.location} sur la shard ${item.shardId} (${item.patchVersion})`}
+            desc={item.description}
+            url={window.location.href}
+            imageUrl={formatPreviewImageUrl(item.patchVersionId, item.id)}
+          />
 
           <ul className="mt-5 space-y-2 bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
             <ItemRow

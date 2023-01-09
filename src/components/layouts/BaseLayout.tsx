@@ -4,13 +4,14 @@ import Link from "next/link";
 import { Toaster } from "react-hot-toast";
 import { UserButton } from "../Button";
 import { GithubIcon } from "../Icons";
+import { SEO } from "../Seo";
 
 interface BaseLayoutProps {
   children: React.ReactNode;
+  overrideSEO?: boolean;
 }
 
-const BASE_URL = process.env.VERCEL_URL || "localhost:3000";
-export function BaseLayout({ children }: BaseLayoutProps) {
+export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
   const { data, status } = useSession();
 
   return (
@@ -28,24 +29,15 @@ export function BaseLayout({ children }: BaseLayoutProps) {
           name="description"
           content="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
         />
-
-        {/* <!-- Facebook Meta Tags --> */}
-        <meta property="og:url" content={`https://${BASE_URL}}/`} />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Circus PES" />
-        <meta
-          property="og:description"
-          content="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
-        />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta property="twitter:domain" content={BASE_URL} />
-        <meta property="twitter:url" content={`https://${BASE_URL}}/`} />
-        <meta name="twitter:title" content="Circus PES" />
-        <meta
-          name="twitter:description"
-          content="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
-        />
       </Head>
+
+      {!overrideSEO && (
+        <SEO
+          title="Circus PES"
+          desc="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
+        />
+      )}
+
       <main className="p-3 md:p-8 min-h-[90vh] text-gray-200">
         <Toaster
           toastOptions={{
