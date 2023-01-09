@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { getParagraphs } from "../utils/text";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
 import { Button } from "./Button";
@@ -153,11 +154,12 @@ export function ItemRow({
 
       <div className="flex flex-col lg:flex-row mt-2 space-y-2 lg:space-y-0">
         {imagePath && previewImagePath && (
-          <div className="mr-4 w-full lg:w-auto lg:min-w-fit max-w-md overflow-hidden rounded-lg shadow-md">
+          <div className="mr-4 w-full lg:w-auto lg:min-w-fit max-w-md">
             <Link href={imagePath} target="_blank">
               <Image
                 width={500}
                 height={281}
+                className="overflow-hidden rounded-lg shadow-md"
                 alt="image de la création"
                 src={previewImagePath}
                 unoptimized={true}
@@ -166,7 +168,13 @@ export function ItemRow({
           </div>
         )}
 
-        <p className="w-full lg:w-auto text-lg">{description}</p>
+        <div>
+          {getParagraphs(description).map((paragraph, i) => (
+            <p key={i} className="w-full lg:w-auto text-lg">
+              {paragraph}
+            </p>
+          ))}
+        </div>
       </div>
 
       <div className="flex justify-between mt-4">

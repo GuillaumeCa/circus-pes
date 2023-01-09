@@ -6,6 +6,7 @@ import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { TabBar } from "../../components/TabBar";
 import { LocationInfo } from "../../server/db/item";
 import { formatImageUrl, formatPreviewImageUrl } from "../../utils/storage";
+import { getParagraphs } from "../../utils/text";
 import { trpc } from "../../utils/trpc";
 
 function ItemMgtRow({
@@ -63,7 +64,11 @@ function ItemMgtRow({
               le {new Date(item.createdAt).toLocaleDateString()}
             </p>
           </div>
-          <p className="p-2">{item.description}</p>
+          <div className="p-2">
+            {getParagraphs(item.description).map((paragraph, i) => (
+              <p key={i}>{paragraph}</p>
+            ))}
+          </div>
         </div>
       </div>
       <div className="flex mt-2 lg:mt-0 items-center justify-end lg:justify-start space-x-2">
