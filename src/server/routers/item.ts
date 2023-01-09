@@ -177,8 +177,7 @@ export const itemRouter = router({
       var expires = new Date();
       expires.setSeconds(PRESIGNED_UPLOAD_IMAGE_EXPIRATION_DURATION); // expires in 2min
       policy.setExpires(expires);
-
-      policy.setContentTypeStartsWith("image/");
+      policy.setContentType("image/" + input.ext);
       policy.setContentLengthRange(
         MIN_IMAGE_UPLOAD_SIZE,
         MAX_IMAGE_UPLOAD_SIZE
