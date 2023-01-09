@@ -20,7 +20,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
         <title>Circus PES</title>
         <meta name="description" content="Circus PES" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="cirque-lisoir-logo.png" />
+        <link rel="icon" href="/cirque-lisoir-logo.png" />
 
         <meta
           name="description"
@@ -54,7 +54,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
               <Link href="/">
                 <div className="flex items-end space-x-2">
                   <img
-                    src="cirque-lisoir-logo.png"
+                    src="/cirque-lisoir-logo.png"
                     className="inline"
                     alt="Logo du Cirque Lisoir"
                     width={50}
