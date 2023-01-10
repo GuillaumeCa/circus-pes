@@ -19,45 +19,64 @@ interface AddLocationFormProps {
 }
 
 export const LOCATIONS = [
-  "Crusader",
-  "Cellin",
-  "Yela",
-  "Grim Hex",
-  "Daymar",
-  "CRU-L1",
-  "CRU-L2",
-  "CRU-L3",
-  "CRU-L4",
-  "CRU-L5",
-  "Hurston",
-  "Ita",
-  "Aberdeen",
-  "Arial",
-  "Magda",
-  "HUR-L1",
-  "HUR-L2",
-  "HUR-L3",
-  "HUR-L4",
-  "HUR-L5",
-  "ArCorp",
-  "Wala",
-  "Lyria",
-  "ARC-L1",
-  "ARC-L2",
-  "ARC-L3",
-  "ARC-L4",
-  "ARC-L5",
-  "Microtech",
-  "Calliope",
-  "Clio",
-  "Euterpe",
-  "MIC-L1",
-  "MIC-L2",
-  "MIC-L3",
-  "MIC-L4",
-  "MIC-L5",
-  "Aaron Halo",
-  "Stanton",
+  {
+    name: "Crusader",
+    children: [
+      "Crusader",
+      "Cellin",
+      "Yela",
+      "Grim Hex",
+      "Daymar",
+      "CRU-L1",
+      "CRU-L2",
+      "CRU-L3",
+      "CRU-L4",
+      "CRU-L5",
+    ],
+  },
+  {
+    name: "Hurston",
+    children: [
+      "Hurston",
+      "Ita",
+      "Aberdeen",
+      "Arial",
+      "Magda",
+      "HUR-L1",
+      "HUR-L2",
+      "HUR-L3",
+      "HUR-L4",
+      "HUR-L5",
+    ],
+  },
+  {
+    name: "ArCorp",
+    children: [
+      "ArCorp",
+      "Wala",
+      "Lyria",
+      "ARC-L1",
+      "ARC-L2",
+      "ARC-L3",
+      "ARC-L4",
+      "ARC-L5",
+    ],
+  },
+  {
+    name: "Microtech",
+    children: [
+      "Microtech",
+      "Calliope",
+      "Clio",
+      "Euterpe",
+      "MIC-L1",
+      "MIC-L2",
+      "MIC-L3",
+      "MIC-L4",
+      "MIC-L5",
+    ],
+  },
+  { name: "Stanton", children: ["Aaron Halo", "Stanton"] },
 ];
 
 export const itemFormSchema = z.object({
@@ -72,7 +91,7 @@ export const itemFormSchema = z.object({
     .string()
     .min(1, "Le champ ne doit pas être vide")
     .max(255, "La description ne doit pas dépasser 255 caractères"),
-  location: z.string().min(1, "Le champ ne doit pas être vide"),
+  location: z.string().min(1, "Le champ ne doit pas être vide").default(""),
   image:
     typeof window === "undefined"
       ? z.null()
@@ -192,10 +211,10 @@ export function AddItemForm({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="p-4 mt-2 border border-gray-600 rounded-lg"
+      className="p-4 flex flex-col space-y-2 mt-2 border border-gray-600 rounded-lg"
     >
       <div className="flex items-start justify-between">
-        <h2 className="text-xl font-bold mb-3">Nouvelle création</h2>
+        <h2 className="text-2xl font-bold mb-3">Nouvelle création</h2>
         <button
           type="button"
           className="text-gray-400 bg-transparent hover:bg-gray-600 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
@@ -259,6 +278,9 @@ export function AddItemForm({
           className="mt-2 appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
           placeholder="Identifiant de la shard"
           {...register("shardId")}
+          onChange={(e) => {
+            setValue("shardId", e.target.value.toUpperCase());
+          }}
         />
         <div className="flex space-x-2 mt-2 items-center">
           {shardsFiltered.slice(0, 4).map((shard) => (
@@ -288,8 +310,9 @@ export function AddItemForm({
         <textarea
           id="description"
           className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
-          placeholder="Décrivez votre création en quelques mots.."
+          placeholder="Décrivez votre création en quelques mots, avec par exemple les étapes pour la retrouver."
           maxLength={255}
+          rows={5}
           {...register("description")}
         />
         <p className="text-red-500 text-sm mt-1">
@@ -304,10 +327,15 @@ export function AddItemForm({
           Lieu
         </label>
         <select id="location" className="w-full" {...register("location")}>
+          <option value="">Choisissez un lieu</option>
           {LOCATIONS.map((l) => (
-            <option key={l} value={l}>
-              {l}
-            </option>
+            <optgroup key={l.name} label={l.name}>
+              {l.children.map((child) => (
+                <option key={child} value={child}>
+                  {child}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
         <p className="text-red-500 text-sm mt-1">{errors.location?.message}</p>

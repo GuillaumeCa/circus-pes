@@ -1,3 +1,4 @@
+import { HomeIcon } from "@heroicons/react/24/outline";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticPaths, GetStaticPropsContext } from "next";
 import { useRouter } from "next/router";
@@ -79,7 +80,8 @@ export default function Item() {
       )}
       <div className="flex mt-3">
         <LinkButton href="/" btnType="primary">
-          <span className="font-bold">Voir plus de créations</span>
+          <HomeIcon className="w-5 h-5 inline" />
+          <span className="ml-2 text-md">Voir plus de créations</span>
         </LinkButton>
       </div>
     </BaseLayout>
