@@ -4,6 +4,8 @@ import { itemRouter } from "./item";
 import { patchVersionRouter } from "./patch-version";
 import { userRouter } from "./user";
 
+export { reportWebVitals } from "next-axiom";
+
 export const appRouter = router({
   item: itemRouter,
   patchVersion: patchVersionRouter,
