@@ -25,14 +25,29 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
     <>
       <Head>
         <title>Circus PES</title>
-        <meta name="description" content="Circus PES" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/cirque-lisoir-logo.png" />
-
         <meta
           name="description"
           content="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
         />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        <link rel="manifest" href="/site.webmanifest" />
       </Head>
 
       {!overrideSEO && (
@@ -117,7 +132,9 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
         </div>
       </main>
 
-      <footer className={inter.variable + " font-sans text-center m-6 text-gray-400"}>
+      <footer
+        className={inter.variable + " font-sans text-center m-6 text-gray-400"}
+      >
         <Link
           href="https://github.com/GuillaumeCa/circus-pes"
           target="_blank"
