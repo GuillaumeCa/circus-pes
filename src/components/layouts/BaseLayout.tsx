@@ -11,6 +11,13 @@ interface BaseLayoutProps {
   overrideSEO?: boolean;
 }
 
+import { Inter } from "@next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
 export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
   const { data, status } = useSession();
 
@@ -36,7 +43,11 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
         />
       )}
 
-      <main className="p-3 md:p-8 min-h-[90vh] text-gray-200">
+      <main
+        className={
+          inter.variable + " font-sans p-3 md:p-8 min-h-[90vh] text-gray-200"
+        }
+      >
         <Toaster
           toastOptions={{
             className: "",
