@@ -1,7 +1,83 @@
+import { TrashIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 import { Button } from "../../components/Button";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
+import { ConfirmModal } from "../../components/Modal";
 import { trpc } from "../../utils/trpc";
+
+function PatchVersionRow({
+  id,
+  name,
+  isVisible,
+  onUpdate,
+}: {
+  id: string;
+  name: string;
+  isVisible: boolean;
+  onUpdate(): void;
+}) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { mutateAsync: updateVisibility } =
+    trpc.patchVersion.updateVisibility.useMutation();
+  const { mutate: deleteVersion } = trpc.patchVersion.delete.useMutation({
+    onError() {
+      toast.error(
+        "La version n'a pas pu être supprimée, verifiez si toutes les créations ont été supprimées",
+        {
+          duration: 3000,
+        }
+      );
+      setShowDeleteConfirm(false);
+    },
+    onSuccess() {
+      onUpdate();
+      setShowDeleteConfirm(false);
+    },
+  });
+
+  return (
+    <li className="flex items-center justify-between p-3 bg-gray-600 rounded-lg">
+      <span className="font-bold text-lg">{name}</span>
+      <div className="flex">
+        <div className="flex items-center">
+          <label
+            htmlFor="visible"
+            className="uppercase text-sm text-gray-400 font-bold"
+          >
+            Visible
+          </label>
+          <input
+            id="visible"
+            type="checkbox"
+            checked={isVisible}
+            onChange={async (e) => {
+              const checked = e.target.checked;
+              await updateVisibility({
+                id,
+                visible: checked,
+              });
+              onUpdate();
+            }}
+            className="form-checkbox cursor-pointer ml-2 rounded text-rose-600 focus:ring-rose-600 bg-gray-500"
+          />
+        </div>
+        <button className="ml-8" onClick={() => setShowDeleteConfirm(true)}>
+          <TrashIcon className="w-6 h-6" />
+        </button>
+      </div>
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Voulez vous supprimer cette version ?"
+        description="Attention, si une version à des créations, elle ne peut actuellement pas être supprimée."
+        acceptLabel="Supprimer"
+        onAccept={() => deleteVersion(id)}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
+    </li>
+  );
+}
 
 export default function PatchVersions() {
   const {
@@ -10,8 +86,6 @@ export default function PatchVersions() {
     refetch,
   } = trpc.patchVersion.getAllPatchVersions.useQuery();
   const { mutateAsync: create } = trpc.patchVersion.create.useMutation();
-  const { mutateAsync: updateVisibility } =
-    trpc.patchVersion.updateVisibility.useMutation();
 
   const [patchName, setPatchName] = useState("");
 
@@ -37,43 +111,18 @@ export default function PatchVersions() {
           <Button type="submit">Ajouter</Button>
         </div>
       </form>
+
       {isLoading && <p>Chargement...</p>}
       {patchVersions && (
         <ul className="mt-3 space-y-2">
           {patchVersions.map((v) => (
-            <li
+            <PatchVersionRow
               key={v.id}
-              className="flex items-center justify-between p-3 bg-gray-600 rounded-lg"
-            >
-              <span className="font-bold text-lg">{v.name}</span>
-              <div className="flex">
-                <div className="flex items-center">
-                  <label
-                    htmlFor="visible"
-                    className="uppercase text-sm text-gray-400 font-bold"
-                  >
-                    Visible
-                  </label>
-                  <input
-                    id="visible"
-                    type="checkbox"
-                    checked={v.visible}
-                    onChange={async (e) => {
-                      const checked = e.target.checked;
-                      await updateVisibility({
-                        id: v.id,
-                        visible: checked,
-                      });
-                      refetch();
-                    }}
-                    className="form-checkbox cursor-pointer ml-2 rounded text-rose-600 focus:ring-rose-600 bg-gray-500"
-                  />
-                </div>
-                {/* <button className="ml-8">
-                  <TrashIcon />
-                </button> */}
-              </div>
-            </li>
+              id={v.id}
+              name={v.name}
+              isVisible={v.visible}
+              onUpdate={refetch}
+            />
           ))}
         </ul>
       )}

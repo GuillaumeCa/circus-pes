@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, publicProcedure, router } from "../trpc";
 import { RouterOutput } from "./_app";
@@ -51,9 +52,25 @@ export const patchVersionRouter = router({
       await ctx.prisma.patchVersion.create({
         data: {
           name,
-          visible: true,
+          visible: false,
         },
       });
+    }),
+
+  delete: adminProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input: id }) => {
+      const nbItemsForVersion = await ctx.prisma.item.count({
+        where: { patchVersionId: id },
+      });
+      if (nbItemsForVersion > 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "cannot delete version which has items",
+        });
+      }
+
+      await ctx.prisma.patchVersion.delete({ where: { id } });
     }),
 
   updateVisibility: adminProcedure

@@ -110,7 +110,7 @@ export const itemRouter = router({
       throw new TRPCError({ code: "NOT_FOUND" });
     }),
 
-  createItem: writeProcedure
+  create: writeProcedure
     .input(
       z.object({
         patchId: z.string(),

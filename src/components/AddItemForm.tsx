@@ -124,7 +124,7 @@ export function AddItemForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const { mutateAsync: createItem } = trpc.item.createItem.useMutation();
+  const { mutateAsync: createItem } = trpc.item.create.useMutation();
 
   const { mutateAsync: getImageUploadUrl } =
     trpc.item.imageUploadUrl.useMutation();
