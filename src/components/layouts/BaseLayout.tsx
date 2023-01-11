@@ -117,7 +117,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
         </div>
       </main>
 
-      <footer className="text-center m-6 text-gray-400">
+      <footer className={inter.variable + " font-sans text-center m-6 text-gray-400"}>
         <Link
           href="https://github.com/GuillaumeCa/circus-pes"
           target="_blank"
