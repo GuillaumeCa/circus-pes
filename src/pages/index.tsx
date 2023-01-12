@@ -1,6 +1,5 @@
 import { ClockIcon, CogIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import dayjs from "dayjs";
 import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -268,7 +267,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     transformer: SuperJSON, // optional - adds superjson serialization
   });
 
-  // await ssg.patchVersion.getPatchVersions.prefetch();
+  await ssg.patchVersion.getPatchVersions.prefetch();
   const patch = await ssg.patchVersion.getPatchVersions.fetch();
   if (patch.length > 0) {
     await ssg.item.getItems.prefetch({
