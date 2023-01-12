@@ -11,13 +11,6 @@ interface BaseLayoutProps {
   overrideSEO?: boolean;
 }
 
-import { Inter } from "@next/font/google";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
 export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
   const { data, status } = useSession();
 
@@ -58,11 +51,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
         />
       )}
 
-      <main
-        className={
-          inter.variable + " font-sans p-3 md:p-8 min-h-[90vh] text-gray-200"
-        }
-      >
+      <section className="p-3 md:p-8 min-h-[90vh] text-gray-200">
         <Toaster
           toastOptions={{
             className: "",
@@ -75,7 +64,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
         />
 
         <div className="max-w-5xl mx-auto">
-          <div>
+          <header>
             <div className="flex justify-between items-start">
               <Link href="/">
                 <div className="flex items-end space-x-2">
@@ -126,15 +115,13 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
               persistence dans Star Citizen. Ici vous pourrez explorer toutes
               les créations de la communautée.
             </p>
-          </div>
+          </header>
 
           {children}
         </div>
-      </main>
+      </section>
 
-      <footer
-        className={inter.variable + " font-sans text-center m-6 text-gray-400"}
-      >
+      <footer className={"text-center m-6 text-gray-400"}>
         <Link
           href="https://github.com/GuillaumeCa/circus-pes"
           target="_blank"

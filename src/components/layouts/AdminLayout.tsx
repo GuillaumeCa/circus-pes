@@ -26,7 +26,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
     ) {
       replace("/");
     }
-  }, [data, status]);
+  }, [data, status, replace]);
 
   return (
     <BaseLayout>
