@@ -1,4 +1,5 @@
 import { ClockIcon, LinkIcon } from "@heroicons/react/24/outline";
+import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,7 +19,7 @@ interface ItemLocationRow {
   description: string;
   author?: string;
   avatarUrl?: string;
-  date: string;
+  date: Date;
   shard: string;
   likes: number;
   hasLiked: boolean;
@@ -97,7 +98,10 @@ export function ItemRow({
             title="Copier le lien"
             className="active:text-gray-500"
             onClick={() => {
-              const url = `${window.location.origin}/item/${id}`;
+              const url =
+                typeof window !== undefined
+                  ? `${window.location.origin}/item/${id}`
+                  : "";
               navigator.clipboard.writeText(url).then(
                 () => {
                   toast.success(
@@ -209,7 +213,7 @@ export function ItemRow({
             src={avatarUrl}
           />{" "}
           <span className="italic font-bold text-gray-300">{author}</span> le{" "}
-          {date}
+          {dayjs(date).format("DD/MM/YYYY")}
         </p>
       </div>
     </li>

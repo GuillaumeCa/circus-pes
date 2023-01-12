@@ -7,11 +7,11 @@ module.exports = {
     "./src/components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    // extend: {
-    //   fontFamily: {
-    //     sans: ["var(--font-inter)", ...fontFamily.sans],
-    //   },
-    // },
+    extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", ...fontFamily.sans],
+      },
+    },
   },
   plugins: [require("@tailwindcss/forms")],
 };

@@ -1,5 +1,6 @@
 import { ClockIcon, CogIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import dayjs from "dayjs";
 import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -216,7 +217,7 @@ export default function Home() {
                     ? formatPreviewImageUrl(item.patchVersionId, item.id)
                     : undefined
                 }
-                date={new Date(item.createdAt).toLocaleDateString("fr")}
+                date={new Date(item.createdAt)}
                 isPublic={item.public}
                 onLike={(like) => {
                   if (!selectedPatch) {

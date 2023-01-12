@@ -1,4 +1,5 @@
 import { TrashIcon } from "@heroicons/react/24/outline";
+import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../../components/Button";
@@ -61,7 +62,7 @@ function ItemMgtRow({
               <span className="italic font-bold text-gray-300">
                 {item.userName}
               </span>{" "}
-              le {new Date(item.createdAt).toLocaleDateString()}
+              le {dayjs(new Date(item.createdAt)).format("DD/MM/YYYY")}
             </p>
           </div>
           <div className="p-2">
