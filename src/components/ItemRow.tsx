@@ -1,5 +1,4 @@
 import { ClockIcon, LinkIcon } from "@heroicons/react/24/outline";
-import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,6 +10,7 @@ import { UserRole } from "../utils/user";
 import { Button } from "./Button";
 import { TrashIcon } from "./Icons";
 import { Modal } from "./Modal";
+import { TimeFormatted } from "./TimeFormatted";
 
 interface ItemLocationRow {
   id: string;
@@ -213,7 +213,7 @@ export function ItemRow({
             src={avatarUrl}
           />{" "}
           <span className="italic font-bold text-gray-300">{author}</span> le{" "}
-          {dayjs(date).format("DD/MM/YYYY")}
+          <TimeFormatted format="DD/MM/YYYY">{date}</TimeFormatted>
         </p>
       </div>
     </li>

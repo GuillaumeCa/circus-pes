@@ -1,4 +1,6 @@
 import React from "react";
+import { Button } from "./Button";
+import { BaseLayout } from "./layouts/BaseLayout";
 
 export class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -22,7 +24,17 @@ export class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI
-      return <h1>Ooops 30K</h1>;
+      return (
+        <BaseLayout>
+          <div className="text-center">
+            <h2 className="text-4xl font-bold m-8">Oops, 30K</h2>
+
+            <Button onClick={() => this.setState({ hasError: false })}>
+              Réessayer
+            </Button>
+          </div>
+        </BaseLayout>
+      );
     }
 
     return this.props.children;

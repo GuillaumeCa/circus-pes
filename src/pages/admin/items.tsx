@@ -1,10 +1,10 @@
 import { TrashIcon } from "@heroicons/react/24/outline";
-import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../../components/Button";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { TabBar } from "../../components/TabBar";
+import { TimeFormatted } from "../../components/TimeFormatted";
 import { LocationInfo } from "../../server/db/item";
 import { formatImageUrl, formatPreviewImageUrl } from "../../utils/storage";
 import { getParagraphs } from "../../utils/text";
@@ -62,7 +62,10 @@ function ItemMgtRow({
               <span className="italic font-bold text-gray-300">
                 {item.userName}
               </span>{" "}
-              le {dayjs(new Date(item.createdAt)).format("DD/MM/YYYY")}
+              le{" "}
+              <TimeFormatted format="DD/MM/YYYY">
+                {new Date(item.createdAt)}
+              </TimeFormatted>
             </p>
           </div>
           <div className="p-2">
