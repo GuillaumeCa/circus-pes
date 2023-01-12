@@ -181,7 +181,7 @@ export function ItemRow({
         </div>
       </div>
 
-      <div className="flex justify-between mt-4">
+      <div className="flex justify-between mt-4 items-center">
         <button
           disabled={status === "unauthenticated"}
           onClick={handleLike}
@@ -212,8 +212,8 @@ export function ItemRow({
             className="inline w-5 h-5 rounded-full"
             src={avatarUrl}
           />{" "}
-          <span className="italic font-bold text-gray-300">{author}</span> le{" "}
-          <TimeFormatted format="DD/MM/YYYY">{date}</TimeFormatted>
+          <span className="italic font-bold text-gray-300">{author}</span>
+          <TimeFormatted className="ml-3 text-sm">{date}</TimeFormatted>
         </p>
       </div>
     </li>

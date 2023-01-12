@@ -61,9 +61,8 @@ function ItemMgtRow({
               />{" "}
               <span className="italic font-bold text-gray-300">
                 {item.userName}
-              </span>{" "}
-              le{" "}
-              <TimeFormatted format="DD/MM/YYYY">
+              </span>
+              <TimeFormatted className="ml-2">
                 {new Date(item.createdAt)}
               </TimeFormatted>
             </p>
