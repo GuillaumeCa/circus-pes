@@ -10,6 +10,7 @@ dayjs.locale("fr"); // use locale
 export { reportWebVitals } from "next-axiom";
 
 import { Inter } from "@next/font/google";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,11 +19,13 @@ const inter = Inter({
 
 function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
-    <SessionProvider session={session}>
-      <main className={`${inter.variable} font-sans`}>
-        <Component {...pageProps} />
-      </main>
-    </SessionProvider>
+    <ErrorBoundary>
+      <SessionProvider session={session}>
+        <main className={`${inter.variable} font-sans`}>
+          <Component {...pageProps} />
+        </main>
+      </SessionProvider>
+    </ErrorBoundary>
   );
 }
 

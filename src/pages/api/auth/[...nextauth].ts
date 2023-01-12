@@ -1,10 +1,10 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import { prisma } from "../../../server/db/client";
 import { UserRole } from "../../../utils/user";
 
-export default NextAuth({
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     DiscordProvider({
@@ -44,4 +44,6 @@ export default NextAuth({
       return session;
     },
   },
-});
+};
+
+export default NextAuth(authOptions);

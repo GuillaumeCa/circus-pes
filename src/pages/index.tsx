@@ -261,7 +261,7 @@ export default function Home() {
 
 // TODO: setup for trpc
 export const getStaticProps: GetStaticProps = async (context) => {
-  const ssg = await createProxySSGHelpers({
+  const ssg = createProxySSGHelpers({
     router: appRouter,
     ctx: await createStaticContext(),
     transformer: SuperJSON, // optional - adds superjson serialization
