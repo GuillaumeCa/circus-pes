@@ -66,7 +66,7 @@ export default function Item() {
                   ? formatPreviewImageUrl(item.patchVersionId, item.id)
                   : undefined
               }
-              date={new Date(item.createdAt).toLocaleDateString("fr")}
+              date={new Date(item.createdAt)}
               isPublic={item.public}
               onLike={() => {
                 refetch();
