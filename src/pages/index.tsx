@@ -2,8 +2,9 @@ import { ClockIcon, CogIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SuperJSON from "superjson";
+
 import { AddItemForm } from "../components/AddItemForm";
 import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
@@ -59,10 +60,6 @@ export default function Home() {
         (selectedShard === "" || i.shardId === selectedShard) &&
         i.patchVersion === patchVersions?.[gameVersionId]?.name
     ) ?? [];
-
-  useEffect(() => {
-    document.body.style.overflow = showAddForm ? "hidden" : "initial";
-  });
 
   return (
     <BaseLayout>
@@ -139,7 +136,11 @@ export default function Home() {
         </div>
       </div>
 
-      <Modal open={showAddForm} className="max-w-2xl">
+      <Modal
+        open={showAddForm}
+        onClose={() => setShowAddForm(false)}
+        className="max-w-2xl"
+      >
         {showAddForm && patchVersions && (
           <AddItemForm
             shardIds={shardIds}

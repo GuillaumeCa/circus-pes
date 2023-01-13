@@ -1,9 +1,8 @@
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { Button } from "../../components/Button";
 import { LoadIcon } from "../../components/Icons";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
-import { Modal } from "../../components/Modal";
+import { ConfirmModal } from "../../components/Modal";
 import { TabBar } from "../../components/TabBar";
 import { UserRouterOutput } from "../../server/routers/user";
 import { trpc } from "../../utils/trpc";
@@ -30,32 +29,19 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
 
   return (
     <div className="flex flex-col lg:flex-row justify-between w-full">
-      <Modal open={showRoleValidationPopup} className="max-w-md">
-        <div className="p-5 flex flex-col items-center">
-          <h2 className="text-2xl font-bold text-center">
-            Valider que vous donnez le rôle admin à {user.name}
-          </h2>
-          <div className="flex mt-8 space-x-2">
-            <Button
-              onClick={async () => {
-                updateUserRole(UserRole.ADMIN).then(() => {
-                  setShowRoleValidationPopup(false);
-                });
-              }}
-            >
-              Valider
-            </Button>
-            <Button
-              btnType="secondary"
-              onClick={() => {
-                setShowRoleValidationPopup(false);
-              }}
-            >
-              Annuler
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <ConfirmModal
+        title={`Valider que vous donnez le rôle admin à ${user.name}`}
+        open={showRoleValidationPopup}
+        acceptLabel="Valider"
+        onAccept={async () => {
+          updateUserRole(UserRole.ADMIN).then(() => {
+            setShowRoleValidationPopup(false);
+          });
+        }}
+        onClose={() => {
+          setShowRoleValidationPopup(false);
+        }}
+      />
 
       <div className="flex space-x-3 items-center">
         <img

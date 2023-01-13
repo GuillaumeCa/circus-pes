@@ -73,7 +73,7 @@ function PatchVersionRow({
         description="Attention, si une version à des créations, elle ne peut actuellement pas être supprimée."
         acceptLabel="Supprimer"
         onAccept={() => deleteVersion(id)}
-        onCancel={() => setShowDeleteConfirm(false)}
+        onClose={() => setShowDeleteConfirm(false)}
       />
     </li>
   );

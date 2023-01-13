@@ -1,4 +1,5 @@
 import Link from "next/link";
+import React from "react";
 import { cls } from "./cls";
 
 export function UserButton({ children, ...props }: ButtonProps) {
@@ -88,27 +89,24 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   btnType?: ButtonType;
 }
 
-export function Button({
-  children,
-  icon,
-  className = "",
-  btnType = "primary",
-  ...props
-}: ButtonProps) {
-  return (
-    <button
-      className={cls(
-        "flex items-center text-white disabled:cursor-not-allowed disabled:bg-gray-500 focus:ring-2 font-medium rounded-lg text-sm px-3 py-2.5 focus:outline-none",
-        btnType === "primary" &&
-          "bg-rose-700 hover:bg-rose-800 focus:ring-rose-300",
-        btnType === "secondary" &&
-          "bg-gray-800 hover:bg-gray-900 focus:ring-gray-400",
-        className
-      )}
-      {...props}
-    >
-      {icon}
-      <span className={icon ? "ml-1" : ""}>{children}</span>
-    </button>
-  );
-}
+export const Button = React.forwardRef<any, ButtonProps>(
+  ({ children, icon, className = "", btnType = "primary", ...props }, ref) => {
+    return (
+      <button
+        ref={ref}
+        className={cls(
+          "flex items-center text-white disabled:cursor-not-allowed disabled:bg-gray-500 focus:ring-2 font-medium rounded-lg text-sm px-3 py-2.5 focus:outline-none",
+          btnType === "primary" &&
+            "bg-rose-700 hover:bg-rose-800 focus:ring-rose-300",
+          btnType === "secondary" &&
+            "bg-gray-800 hover:bg-gray-900 focus:ring-gray-400",
+          className
+        )}
+        {...props}
+      >
+        {icon}
+        <span className={icon ? "ml-1" : ""}>{children}</span>
+      </button>
+    );
+  }
+);

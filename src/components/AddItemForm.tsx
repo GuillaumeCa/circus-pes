@@ -211,7 +211,7 @@ export function AddItemForm({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="p-4 flex flex-col space-y-2 mt-2 border border-gray-600 rounded-lg"
+      className="p-4 flex flex-col space-y-2 border border-gray-600 rounded-lg"
     >
       <div className="flex items-start justify-between">
         <h2 className="text-2xl font-bold mb-3">Nouvelle création</h2>

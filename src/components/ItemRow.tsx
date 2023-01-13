@@ -7,9 +7,8 @@ import { toast } from "react-hot-toast";
 import { getParagraphs } from "../utils/text";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
-import { Button } from "./Button";
 import { TrashIcon } from "./Icons";
-import { Modal } from "./Modal";
+import { ConfirmModal } from "./Modal";
 import { TimeFormatted } from "./TimeFormatted";
 
 interface ItemLocationRow {
@@ -130,31 +129,19 @@ export function ItemRow({
         </div>
       </div>
 
-      <Modal open={showDeletePopup} className="max-w-md">
-        <div className="p-5 flex flex-col items-center">
-          <h2 className="text-2xl font-bold text-center">
-            Voulez vous supprimer cette création ?
-          </h2>
-          <div className="flex mt-8 space-x-2">
-            <Button
-              onClick={() => {
-                handleDelete();
-                setShowDeletePopup(false);
-              }}
-            >
-              Supprimer
-            </Button>
-            <Button
-              btnType="secondary"
-              onClick={() => {
-                setShowDeletePopup(false);
-              }}
-            >
-              Annuler
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <ConfirmModal
+        open={showDeletePopup}
+        title="Voulez vous supprimer cette création ?"
+        description="Cette opération ne peut être annulé"
+        acceptLabel="Supprimer"
+        onAccept={() => {
+          handleDelete();
+          setShowDeletePopup(false);
+        }}
+        onClose={() => {
+          setShowDeletePopup(false);
+        }}
+      />
 
       <div className="flex flex-col lg:flex-row mt-2 space-y-2 lg:space-y-0">
         {imagePath && previewImagePath && (

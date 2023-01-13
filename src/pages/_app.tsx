@@ -12,7 +12,7 @@ export { reportWebVitals } from "next-axiom";
 import { Inter } from "@next/font/google";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 
-const inter = Inter({
+export const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
