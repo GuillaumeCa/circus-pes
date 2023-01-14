@@ -129,7 +129,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
 
         <p className="mt-4 text-gray-500 text-sm max-w-lg mx-auto">
           Circus PES est un outil créé par la communauté de Star Citizen. Il
-          n'est pas affilié aux sociétés Cloud Imperium ou Roberts Space
+          n&apos;est pas affilié aux sociétés Cloud Imperium ou Roberts Space
           Industries.
         </p>
       </footer>
