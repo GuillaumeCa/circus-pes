@@ -43,6 +43,7 @@ DISCORD_ID=<client id>
 DISCORD_SECRET=<client secret>
 
 NEXT_PUBLIC_MINIO_ENDPOINT=storage.circuspes.fr
+NEXT_PUBLIC_MINIO_IMAGE_BUCKET_NAME=circuspes-images-test
 MINIO_ACCESS_KEY=<access key>
 MINIO_SECRET_KEY=<secret key>
 
