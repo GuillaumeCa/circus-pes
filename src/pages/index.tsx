@@ -197,7 +197,7 @@ export default function Home() {
           )}
 
         {items && (
-          <ul className="space-y-2 bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
+          <ul className="bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
             {typeof window !== undefined &&
               itemsFiltered?.map((item) => (
                 <ItemRow

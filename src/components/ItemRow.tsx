@@ -143,7 +143,7 @@ export function ItemRow({
         }}
       />
 
-      <div className="flex flex-col lg:flex-row mt-2 space-y-2 lg:space-y-0">
+      <div className="flex flex-col lg:flex-row mt-4 space-y-2 lg:space-y-0">
         {imagePath && previewImagePath && (
           <div className="mr-4 w-full lg:w-auto lg:min-w-fit max-w-md">
             <Link href={imagePath} target="_blank">

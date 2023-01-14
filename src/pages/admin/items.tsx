@@ -205,7 +205,7 @@ export default function ItemsManagement() {
         )}
 
         {items && (
-          <ul className="space-y-2 overflow-hidden bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
+          <ul className="overflow-hidden bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
             {items?.map((item) => (
               <ItemMgtRow
                 key={item.id}
