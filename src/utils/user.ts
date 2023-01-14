@@ -18,10 +18,10 @@ export function formatRole(role: UserRole) {
 export function formatRoleDescription(role: UserRole): string {
   switch (role) {
     case UserRole.INVITED:
-      return "Ne peut pas ajouter de créations";
+      return "Peut uniquement liker les créations";
     case UserRole.CONTRIBUTOR:
-      return "Peut ajouter des créations";
+      return "Peut proposer et liker des créations";
     case UserRole.ADMIN:
-      return "Peut modifier le rôle des utilisateurs";
+      return "Peut modifier le rôle des utilisateurs, modérer les publications et gérer les versions de patch";
   }
 }

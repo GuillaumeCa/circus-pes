@@ -1,4 +1,4 @@
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { Toaster } from "react-hot-toast";
@@ -65,12 +65,12 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
 
         <div className="max-w-5xl mx-auto">
           <header>
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-center">
               <Link href="/">
-                <div className="flex items-end space-x-2">
+                <div className="flex items-center space-x-2">
                   <img
                     src="/cirque-lisoir-logo.png"
-                    className="inline"
+                    className="inline mb-2"
                     alt="Logo du Cirque Lisoir"
                     width={50}
                     height={50}
@@ -88,26 +88,22 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
                 </div>
               )}
               {status === "authenticated" && (
-                <div className="flex items-center">
-                  <div className="mr-2">
-                    <span className="uppercase text-sm font-bold text-gray-300">
-                      {data.user?.name}
-                    </span>
-                    <button
-                      onClick={() => signOut()}
-                      className="block text-sm bg-gray-500 hover:bg-gray-400 px-2 rounded text-gray-700"
-                    >
-                      Déconnexion
-                    </button>
+                <Link href="/account">
+                  <div className="flex items-center hover:bg-gray-600 p-2 rounded-full">
+                    <div className="p-2 hidden lg:block">
+                      <span className="uppercase text-sm font-bold text-gray-300">
+                        {data.user?.name}
+                      </span>
+                    </div>
+                    <img
+                      className="rounded-full h-10 w-10"
+                      src={data.user?.image ?? ""}
+                      alt="photo de profil"
+                      width={30}
+                      height={30}
+                    />
                   </div>
-                  <img
-                    className="rounded-full h-10 w-10"
-                    src={data.user?.image ?? ""}
-                    alt="photo de profil"
-                    width={30}
-                    height={30}
-                  />
-                </div>
+                </Link>
               )}
             </div>
             <p className="text-gray-400 max-w-xl text-sm mt-2">
@@ -121,7 +117,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
         </div>
       </section>
 
-      <footer className={"text-center m-6 text-gray-400"}>
+      <footer className="text-center m-6 text-gray-400">
         <Link
           href="https://github.com/GuillaumeCa/circus-pes"
           target="_blank"
@@ -130,6 +126,12 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
           <GithubIcon />
           <span className="ml-2">Github</span>
         </Link>
+
+        <p className="mt-4 text-gray-500 text-sm max-w-lg mx-auto">
+          Circus PES est un outil créé par la communauté de Star Citizen. Il
+          n'est pas affilié aux sociétés Cloud Imperium ou Roberts Space
+          Industries.
+        </p>
       </footer>
     </>
   );
