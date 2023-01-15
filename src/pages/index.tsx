@@ -7,7 +7,7 @@ import {
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import SuperJSON from "superjson";
 
 import { AddItemForm } from "../components/AddItemForm";
@@ -28,7 +28,7 @@ export type SortOption = ItemRouterInput["getItems"]["sortBy"];
 
 export default function Home() {
   // filters
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [gameVersionId, setGameVersion] = useState(0);
   const [selectedShard, setSelectedShard] = useState("");
   const [location, setLocation] = useState("");
@@ -59,6 +59,13 @@ export default function Home() {
       enabled: !!selectedPatch,
     }
   );
+
+  useLayoutEffect(() => {
+    // only show filters by default on desktop view
+    if (window.innerWidth < 600) {
+      setShowFilters(false);
+    }
+  }, []);
 
   const groupedShards = useMemo(() => {
     const shards: { [key: string]: number } = {};
