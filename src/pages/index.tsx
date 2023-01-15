@@ -190,13 +190,14 @@ export default function Home() {
             Erreur de chargement, veuillez recharger la page
           </p>
         )}
-        {!isLoadingItems &&
+        {!error &&
+          !isLoadingItems &&
           !isLoadingVersions &&
           (!selectedPatch || itemsFiltered.length === 0) && (
             <p className="text-gray-400">Aucune création</p>
           )}
 
-        {items && (
+        {!error && items && (
           <ul className="bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
             {typeof window !== undefined &&
               itemsFiltered?.map((item) => (
