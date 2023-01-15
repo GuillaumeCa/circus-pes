@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { PatchVersionRouterOutput } from "../server/routers/patch-version";
+import { LOCATIONS } from "../utils/locations";
 import { MAX_IMAGE_UPLOAD_SIZE, MIN_IMAGE_UPLOAD_SIZE } from "../utils/storage";
 import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
@@ -17,67 +18,6 @@ interface AddLocationFormProps {
   onCancel(): void;
   onCreated(): void;
 }
-
-export const LOCATIONS = [
-  {
-    name: "Crusader",
-    children: [
-      "Crusader",
-      "Cellin",
-      "Yela",
-      "Grim Hex",
-      "Daymar",
-      "CRU-L1",
-      "CRU-L2",
-      "CRU-L3",
-      "CRU-L4",
-      "CRU-L5",
-    ],
-  },
-  {
-    name: "Hurston",
-    children: [
-      "Hurston",
-      "Ita",
-      "Aberdeen",
-      "Arial",
-      "Magda",
-      "HUR-L1",
-      "HUR-L2",
-      "HUR-L3",
-      "HUR-L4",
-      "HUR-L5",
-    ],
-  },
-  {
-    name: "ArCorp",
-    children: [
-      "ArCorp",
-      "Wala",
-      "Lyria",
-      "ARC-L1",
-      "ARC-L2",
-      "ARC-L3",
-      "ARC-L4",
-      "ARC-L5",
-    ],
-  },
-  {
-    name: "Microtech",
-    children: [
-      "Microtech",
-      "Calliope",
-      "Clio",
-      "Euterpe",
-      "MIC-L1",
-      "MIC-L2",
-      "MIC-L3",
-      "MIC-L4",
-      "MIC-L5",
-    ],
-  },
-  { name: "Stanton", children: ["Aaron Halo", "Stanton"] },
-];
 
 export const itemFormSchema = z.object({
   gameVersion: z.string(),

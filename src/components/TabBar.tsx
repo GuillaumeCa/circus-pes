@@ -21,14 +21,14 @@ export function TabBar<T extends React.Key>({
   onSelect(item: T): void;
 }) {
   return (
-    <div className={"flex " + className}>
+    <div className={"flex items-center " + className}>
       {items.map((item, i) => (
         <button
           key={item.key}
           className={cls(
             i === 0 && "rounded-l-lg",
             i === items.length - 1 && "rounded-r-lg",
-            "px-2 py-1 font-bold border-r border-gray-600",
+            "px-2 py-1 border-r font-semibold border-gray-600",
             selectedItem === item.key
               ? type === "primary"
                 ? "bg-rose-700"

@@ -81,7 +81,7 @@ export function ItemRow({
             title="ID de Shard"
             className="ml-2 text-sm font-bold bg-gray-700 py-1 px-2 rounded-md"
           >
-            {shard}
+            <span>{shard}</span>
           </p>
           {!isPublic && (
             <div className="inline-flex items-center ml-2 bg-gray-500 p-1 px-2 rounded-md">

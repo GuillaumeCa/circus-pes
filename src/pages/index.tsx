@@ -2,7 +2,7 @@ import { ClockIcon, CogIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import SuperJSON from "superjson";
 
 import { AddItemForm } from "../components/AddItemForm";
@@ -24,9 +24,12 @@ export type SortOption = ItemRouterInput["getItems"]["sortBy"];
 export default function Home() {
   const [gameVersionId, setGameVersion] = useState(0);
   const [selectedShard, setSelectedShard] = useState("");
+  const [location, setLocation] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const { data, status } = useSession();
   const [sortOpt, setSortOpt] = useState<SortOption>("recent");
+
+  const utils = trpc.useContext();
   const { data: patchVersions, isLoading: isLoadingVersions } =
     trpc.patchVersion.getPatchVersions.useQuery();
   const selectedPatch = patchVersions?.[gameVersionId];
@@ -45,12 +48,32 @@ export default function Home() {
     }
   );
 
-  const utils = trpc.useContext();
-  const shardIds = Array.from(
+  const groupedShards = useMemo(() => {
+    const shards: { [key: string]: number } = {};
+    items
+      ?.filter((i) => i.patchVersion === selectedPatch?.name)
+      .filter((i) => !location || i.location === location)
+      .map((i) => i.shardId)
+      .forEach((sid) => {
+        if (!shards[sid]) {
+          shards[sid] = 0;
+        }
+
+        shards[sid]++;
+      });
+    return shards;
+  }, [items, selectedPatch]);
+
+  const shardIds = Object.keys(groupedShards).sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  const locationsList = Array.from(
     new Set(
       items
-        ?.filter((i) => i.patchVersion === patchVersions?.[gameVersionId]?.name)
-        .map((i) => i.shardId) ?? []
+        ?.filter((i) => i.patchVersion === selectedPatch?.name)
+        .filter((i) => !selectedShard || i.shardId === selectedShard)
+        .map((i) => i.location)
     )
   );
 
@@ -58,7 +81,8 @@ export default function Home() {
     items?.filter(
       (i) =>
         (selectedShard === "" || i.shardId === selectedShard) &&
-        i.patchVersion === patchVersions?.[gameVersionId]?.name
+        i.patchVersion === selectedPatch?.name &&
+        (!location || i.location === location)
     ) ?? [];
 
   return (
@@ -83,6 +107,25 @@ export default function Home() {
           )}
         </div>
       )}
+
+      <Modal
+        open={showAddForm}
+        onClose={() => setShowAddForm(false)}
+        className="max-w-2xl"
+      >
+        {showAddForm && patchVersions && (
+          <AddItemForm
+            shardIds={shardIds}
+            patchVersionList={patchVersions}
+            onCancel={() => setShowAddForm(false)}
+            onCreated={() => {
+              refetch();
+              setShowAddForm(false);
+            }}
+          />
+        )}
+      </Modal>
+
       <div className="mt-3 flex justify-between items-end">
         <div>
           <label
@@ -97,6 +140,7 @@ export default function Home() {
             onChange={(e) => {
               setGameVersion(parseInt(e.target.value, 10));
               setSelectedShard("");
+              setLocation("");
             }}
           >
             {patchVersions && patchVersions?.length === 0 && (
@@ -120,13 +164,13 @@ export default function Home() {
               {
                 key: "recent",
                 label: "Récents",
-                icon: <ClockIcon className="w-6 h-6 inline" />,
+                icon: <ClockIcon className="w-5 h-5 inline" />,
               },
               {
                 key: "like",
                 label: "Likes",
                 icon: (
-                  <HeartIcon fill="currentColor" className="w-6 h-6 inline" />
+                  <HeartIcon fill="currentColor" className="w-5 h-5 inline" />
                 ),
               },
             ]}
@@ -136,49 +180,74 @@ export default function Home() {
         </div>
       </div>
 
-      <Modal
-        open={showAddForm}
-        onClose={() => setShowAddForm(false)}
-        className="max-w-2xl"
-      >
-        {showAddForm && patchVersions && (
-          <AddItemForm
-            shardIds={shardIds}
-            patchVersionList={patchVersions}
-            onCancel={() => setShowAddForm(false)}
-            onCreated={() => {
-              refetch();
-              setShowAddForm(false);
-            }}
-          />
-        )}
-      </Modal>
-
-      <p className="uppercase mt-4 font-bold text-xs text-gray-400">Shards</p>
+      <p className="mt-4 uppercase font-bold text-xs text-gray-400">Shards</p>
       <div className="mt-1 flex flex-wrap">
         <button
-          onClick={() => setSelectedShard("")}
+          onClick={() => {
+            setSelectedShard("");
+            setLocation("");
+          }}
           className={cls(
-            "rounded-lg px-2 py-1 font-bold mr-2 mb-2",
+            "rounded-lg px-2 py-1 font-bold mr-3 mb-3",
             selectedShard === "" ? "bg-rose-700" : "bg-gray-500"
           )}
         >
           Toutes
         </button>
-        {shardIds.map((shardId) => (
-          <button
-            key={shardId}
-            onClick={() =>
-              setSelectedShard(selectedShard === shardId ? "" : shardId)
-            }
-            className={cls(
-              "rounded-lg px-2 py-1 font-bold mr-2 mb-2",
-              selectedShard === shardId ? "bg-rose-700" : "bg-gray-500"
-            )}
-          >
-            {shardId}
-          </button>
-        ))}
+        {shardIds.map((shardId) => {
+          const isActive = selectedShard === shardId;
+          return (
+            <button
+              key={shardId}
+              onClick={() => {
+                setSelectedShard(isActive ? "" : shardId);
+                setLocation("");
+              }}
+              className={cls(
+                "relative rounded-lg px-2 py-1 font-bold mr-3 mb-3 hover:shadow-md",
+                isActive ? "bg-rose-700" : "bg-gray-500"
+              )}
+            >
+              <span
+                className={cls(
+                  "absolute z-10 -top-2 -right-3 px-1 min-w-[1.25rem] h-5 mr-1 text-sm shadow-md rounded-full inline-flex justify-center items-center bg-gray-200",
+                  isActive ? "text-rose-700" : "text-gray-500"
+                )}
+              >
+                {groupedShards[shardId]}
+              </span>
+              <span>{shardId}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="uppercase font-bold text-xs text-gray-400">Lieu</p>
+      <div className="mt-1 flex flex-wrap">
+        <button
+          onClick={() => setLocation("")}
+          className={cls(
+            "rounded-full px-3 py-1 font-bold mr-3 mb-3",
+            location === "" ? "bg-rose-700" : "bg-gray-500"
+          )}
+        >
+          Tout
+        </button>
+        {locationsList.map((locationId) => {
+          const isActive = location === locationId;
+          return (
+            <button
+              key={locationId}
+              onClick={() => setLocation(isActive ? "" : locationId)}
+              className={cls(
+                "relative uppercase rounded-full px-3 py-1 font-bold mr-3 mb-3 hover:shadow-md",
+                isActive ? "bg-rose-700" : "bg-gray-500"
+              )}
+            >
+              {locationId}
+            </button>
+          );
+        })}
       </div>
 
       <div className="mt-4">
