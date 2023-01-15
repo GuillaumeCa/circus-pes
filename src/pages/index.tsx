@@ -1,4 +1,9 @@
-import { ClockIcon, CogIcon, HeartIcon } from "@heroicons/react/24/outline";
+import {
+  ClockIcon,
+  CogIcon,
+  FunnelIcon,
+  HeartIcon,
+} from "@heroicons/react/24/outline";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
@@ -22,13 +27,20 @@ import { UserRole } from "../utils/user";
 export type SortOption = ItemRouterInput["getItems"]["sortBy"];
 
 export default function Home() {
+  // filters
+  const [showFilters, setShowFilters] = useState(false);
   const [gameVersionId, setGameVersion] = useState(0);
   const [selectedShard, setSelectedShard] = useState("");
   const [location, setLocation] = useState("");
-  const [showAddForm, setShowAddForm] = useState(false);
-  const { data, status } = useSession();
+
+  // sorting
   const [sortOpt, setSortOpt] = useState<SortOption>("recent");
 
+  // form
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  // data
+  const { data, status } = useSession();
   const utils = trpc.useContext();
   const { data: patchVersions, isLoading: isLoadingVersions } =
     trpc.patchVersion.getPatchVersions.useQuery();
@@ -126,35 +138,49 @@ export default function Home() {
         )}
       </Modal>
 
-      <div className="mt-3 flex justify-between items-end">
-        <div>
-          <label
-            htmlFor="gameVersion"
-            className="text-xs uppercase font-bold text-gray-400"
-          >
-            Version
-          </label>
-          <select
-            id="gameVersion"
-            value={gameVersionId}
-            onChange={(e) => {
-              setGameVersion(parseInt(e.target.value, 10));
-              setSelectedShard("");
-              setLocation("");
-            }}
-          >
-            {patchVersions && patchVersions?.length === 0 && (
-              <option disabled>Aucune</option>
+      <div className="mt-3 flex flex-col sm:flex-row justify-between items-start sm:items-end">
+        <div className="flex space-x-3 items-end">
+          <div>
+            <label
+              htmlFor="gameVersion"
+              className="text-xs uppercase font-bold text-gray-400"
+            >
+              Version
+            </label>
+            <select
+              id="gameVersion"
+              value={gameVersionId}
+              onChange={(e) => {
+                setGameVersion(parseInt(e.target.value, 10));
+                setSelectedShard("");
+                setLocation("");
+              }}
+            >
+              {patchVersions && patchVersions?.length === 0 && (
+                <option disabled>Aucune</option>
+              )}
+              {patchVersions?.map((v, i) => (
+                <option key={v.id} value={i}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={cls(
+              "p-2 font-semibold outline-none rounded-lg focus:ring-2",
+              showFilters
+                ? "bg-rose-700 focus:ring-rose-500"
+                : "bg-gray-500 focus:ring-gray-400"
             )}
-            {patchVersions?.map((v, i) => (
-              <option key={v.id} value={i}>
-                {v.name}
-              </option>
-            ))}
-          </select>
+          >
+            <FunnelIcon className="w-6 h-6 inline" />
+            <span className="ml-2">Filtres</span>
+          </button>
         </div>
 
-        <div>
+        <div className="mt-2 lg:mt-0">
           <span className="block text-xs uppercase font-bold text-gray-400">
             Trier par
           </span>
@@ -180,75 +206,81 @@ export default function Home() {
         </div>
       </div>
 
-      <p className="mt-4 uppercase font-bold text-xs text-gray-400">Shards</p>
-      <div className="mt-1 flex flex-wrap">
-        <button
-          onClick={() => {
-            setSelectedShard("");
-            setLocation("");
-          }}
-          className={cls(
-            "rounded-lg px-2 py-1 font-bold mr-3 mb-3",
-            selectedShard === "" ? "bg-rose-700" : "bg-gray-500"
-          )}
-        >
-          Toutes
-        </button>
-        {shardIds.map((shardId) => {
-          const isActive = selectedShard === shardId;
-          return (
+      {showFilters && (
+        <>
+          <p className="mt-4 uppercase font-bold text-xs text-gray-400">
+            Shards
+          </p>
+          <div className="mt-1 flex flex-wrap">
             <button
-              key={shardId}
               onClick={() => {
-                setSelectedShard(isActive ? "" : shardId);
+                setSelectedShard("");
                 setLocation("");
               }}
               className={cls(
-                "relative rounded-lg px-2 py-1 font-bold mr-3 mb-3 hover:shadow-md",
-                isActive ? "bg-rose-700" : "bg-gray-500"
+                "rounded-lg px-2 py-1 font-bold mr-3 mb-3",
+                selectedShard === "" ? "bg-rose-700" : "bg-gray-500"
               )}
             >
-              <span
-                className={cls(
-                  "absolute z-10 -top-2 -right-3 px-1 min-w-[1.25rem] h-5 mr-1 text-sm shadow-md rounded-full inline-flex justify-center items-center bg-gray-200",
-                  isActive ? "text-rose-700" : "text-gray-500"
-                )}
-              >
-                {groupedShards[shardId]}
-              </span>
-              <span>{shardId}</span>
+              Toutes
             </button>
-          );
-        })}
-      </div>
+            {shardIds.map((shardId) => {
+              const isActive = selectedShard === shardId;
+              return (
+                <button
+                  key={shardId}
+                  onClick={() => {
+                    setSelectedShard(isActive ? "" : shardId);
+                    setLocation("");
+                  }}
+                  className={cls(
+                    "relative rounded-lg px-2 py-1 font-bold mr-3 mb-3 hover:shadow-md",
+                    isActive ? "bg-rose-700" : "bg-gray-500"
+                  )}
+                >
+                  <span
+                    className={cls(
+                      "absolute z-10 -top-2 -right-3 px-1 min-w-[1.25rem] h-5 mr-1 text-sm shadow-md rounded-full inline-flex justify-center items-center bg-gray-200",
+                      isActive ? "text-rose-700" : "text-gray-500"
+                    )}
+                  >
+                    {groupedShards[shardId]}
+                  </span>
+                  <span>{shardId}</span>
+                </button>
+              );
+            })}
+          </div>
 
-      <p className="uppercase font-bold text-xs text-gray-400">Lieu</p>
-      <div className="mt-1 flex flex-wrap">
-        <button
-          onClick={() => setLocation("")}
-          className={cls(
-            "rounded-full px-3 py-1 font-bold mr-3 mb-3",
-            location === "" ? "bg-rose-700" : "bg-gray-500"
-          )}
-        >
-          Tout
-        </button>
-        {locationsList.map((locationId) => {
-          const isActive = location === locationId;
-          return (
+          <p className="uppercase font-bold text-xs text-gray-400">Lieu</p>
+          <div className="mt-1 flex flex-wrap">
             <button
-              key={locationId}
-              onClick={() => setLocation(isActive ? "" : locationId)}
+              onClick={() => setLocation("")}
               className={cls(
-                "relative uppercase rounded-full px-3 py-1 font-bold mr-3 mb-3 hover:shadow-md",
-                isActive ? "bg-rose-700" : "bg-gray-500"
+                "rounded-full px-3 py-1 font-bold mr-3 mb-3",
+                location === "" ? "bg-rose-700" : "bg-gray-500"
               )}
             >
-              {locationId}
+              Tout
             </button>
-          );
-        })}
-      </div>
+            {locationsList.map((locationId) => {
+              const isActive = location === locationId;
+              return (
+                <button
+                  key={locationId}
+                  onClick={() => setLocation(isActive ? "" : locationId)}
+                  className={cls(
+                    "relative uppercase rounded-full px-3 py-1 font-bold mr-3 mb-3 hover:shadow-md",
+                    isActive ? "bg-rose-700" : "bg-gray-500"
+                  )}
+                >
+                  {locationId}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       <div className="mt-4">
         {(isLoadingItems || isLoadingVersions) && (
