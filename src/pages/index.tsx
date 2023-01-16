@@ -1,4 +1,5 @@
 import {
+  ArrowsUpDownIcon,
   ClockIcon,
   CogIcon,
   FunnelIcon,
@@ -7,7 +8,7 @@ import {
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SuperJSON from "superjson";
 
 import { AddItemForm } from "../components/AddItemForm";
@@ -25,15 +26,33 @@ import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
 
 export type SortOption = ItemRouterInput["getItems"]["sortBy"];
+export type SortShard = "az" | "num";
+
+const regions = [
+  {
+    name: "Europe",
+    prefix: "EU",
+  },
+  {
+    name: "USA",
+    prefix: "US",
+  },
+  {
+    name: "Asie/Australie",
+    prefix: "AP",
+  },
+];
 
 export default function Home() {
   // filters
   const [showFilters, setShowFilters] = useState(true);
   const [gameVersionId, setGameVersion] = useState(0);
+  const [region, setRegion] = useState("");
   const [selectedShard, setSelectedShard] = useState("");
   const [location, setLocation] = useState("");
 
   // sorting
+  const [sortShard, setSortShard] = useState<SortShard>("az");
   const [sortOpt, setSortOpt] = useState<SortOption>("recent");
 
   // form
@@ -60,9 +79,9 @@ export default function Home() {
     }
   );
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     // only show filters by default on desktop view
-    if (window.innerWidth < 600) {
+    if (window.innerWidth < 700) {
       setShowFilters(false);
     }
   }, []);
@@ -71,6 +90,7 @@ export default function Home() {
     const shards: { [key: string]: number } = {};
     items
       ?.filter((i) => i.patchVersion === selectedPatch?.name)
+      .filter((i) => !region || i.shardId.startsWith(region))
       .filter((i) => !location || i.location === location)
       .map((i) => i.shardId)
       .forEach((sid) => {
@@ -81,16 +101,19 @@ export default function Home() {
         shards[sid]++;
       });
     return shards;
-  }, [items, selectedPatch]);
+  }, [items, selectedPatch, region]);
 
   const shardIds = Object.keys(groupedShards).sort((a, b) =>
-    a.localeCompare(b)
+    sortShard === "az"
+      ? a.localeCompare(b)
+      : groupedShards[b] - groupedShards[a]
   );
 
   const locationsList = Array.from(
     new Set(
       items
         ?.filter((i) => i.patchVersion === selectedPatch?.name)
+        .filter((i) => !region || i.shardId.startsWith(region))
         .filter((i) => !selectedShard || i.shardId === selectedShard)
         .map((i) => i.location)
     )
@@ -99,6 +122,7 @@ export default function Home() {
   const itemsFiltered =
     items?.filter(
       (i) =>
+        (region === "" || i.shardId.startsWith(region)) &&
         (selectedShard === "" || i.shardId === selectedShard) &&
         i.patchVersion === selectedPatch?.name &&
         (!location || i.location === location)
@@ -176,10 +200,8 @@ export default function Home() {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cls(
-              "p-2 font-semibold outline-none rounded-lg focus:ring-2",
-              showFilters
-                ? "bg-rose-700 focus:ring-rose-500"
-                : "bg-gray-500 focus:ring-gray-400"
+              "p-2 font-semibold rounded-lg outline-offset-2 outline-white/0",
+              showFilters ? "bg-rose-700 " : "bg-gray-500 "
             )}
           >
             <FunnelIcon className="w-6 h-6 inline" />
@@ -216,8 +238,44 @@ export default function Home() {
       {showFilters && (
         <>
           <p className="mt-4 uppercase font-bold text-xs text-gray-400">
-            Shards
+            Régions
           </p>
+          <div className="mt-1 flex flex-wrap">
+            <button
+              onClick={() => {
+                setRegion("");
+                setSelectedShard("");
+                setLocation("");
+              }}
+              className={cls(
+                "rounded-lg px-2 py-1 font-bold mr-2 mb-3",
+                region === "" ? "bg-rose-700" : "bg-gray-500"
+              )}
+            >
+              Toutes
+            </button>
+            {regions.map((reg) => {
+              const isActive = region === reg.prefix;
+              return (
+                <button
+                  key={reg.prefix}
+                  onClick={() => {
+                    setRegion(isActive ? "" : reg.prefix);
+                    setSelectedShard("");
+                    setLocation("");
+                  }}
+                  className={cls(
+                    "relative rounded-lg px-2 py-1 font-bold mr-3 mb-3 hover:shadow-md",
+                    isActive ? "bg-rose-700" : "bg-gray-500"
+                  )}
+                >
+                  {reg.name}
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="uppercase font-bold text-xs text-gray-400">Shards</p>
           <div className="mt-1 flex flex-wrap">
             <button
               onClick={() => {
@@ -225,11 +283,18 @@ export default function Home() {
                 setLocation("");
               }}
               className={cls(
-                "rounded-lg px-2 py-1 font-bold mr-3 mb-3",
+                "rounded-lg px-2 py-1 font-bold mr-2 mb-3",
                 selectedShard === "" ? "bg-rose-700" : "bg-gray-500"
               )}
             >
               Toutes
+            </button>
+            <button
+              onClick={() => setSortShard(sortShard === "az" ? "num" : "az")}
+              className="rounded-lg px-2 font-bold mr-3 mb-3 bg-gray-800 active:bg-gray-800"
+            >
+              <ArrowsUpDownIcon className="w-4 h-4 inline" />
+              <span className="ml-1">{sortShard === "az" ? "aZ" : "Nb"}</span>
             </button>
             {shardIds.map((shardId) => {
               const isActive = selectedShard === shardId;
