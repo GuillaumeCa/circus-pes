@@ -4,11 +4,39 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { UserRole } from "../../utils/user";
-import { LinkButton } from "../Button";
+import { cls } from "../cls";
 import { BaseLayout } from "./BaseLayout";
+
+function AdminLinkItem({
+  path,
+  name,
+  icon,
+}: {
+  path: string;
+  name: string;
+  icon: React.ReactNode;
+}) {
+  const { pathname } = useRouter();
+  return (
+    <Link
+      href={path}
+      className={cls(
+        "font-semibold p-2 rounded-lg outline-transparent",
+        pathname === path
+          ? "text-rose-600 bg-rose-500/10"
+          : "text-gray-300 hover:bg-gray-500/20"
+      )}
+    >
+      {icon}
+
+      <span className="ml-2">{name}</span>
+    </Link>
+  );
+}
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -17,7 +45,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, title }: AdminLayoutProps) {
   const { data, status } = useSession();
-  const { replace } = useRouter();
+  const { replace, pathname } = useRouter();
 
   useEffect(() => {
     if (
@@ -30,8 +58,24 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
 
   return (
     <BaseLayout>
-      <div className="mt-2 flex space-x-2">
-        <LinkButton href="/admin/items" btnType="secondary">
+      <div className="my-5 flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
+        <AdminLinkItem
+          path="/admin/items"
+          icon={<InboxArrowDownIcon className="h-6 w-6 inline" />}
+          name="Publications"
+        />
+        <AdminLinkItem
+          path="/admin/patch-versions"
+          icon={<RectangleStackIcon className="h-6 w-6 inline" />}
+          name="Versions"
+        />
+        <AdminLinkItem
+          path="/admin/users"
+          icon={<UserCircleIcon className="h-6 w-6 inline" />}
+          name="Utilisateurs"
+        />
+
+        {/* <LinkButton href="/admin/items" btnType="secondary">
           <InboxArrowDownIcon className="h-6 w-6" />
           <span className="ml-1">Publications</span>
         </LinkButton>
@@ -42,10 +86,10 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
         <LinkButton href="/admin/users" btnType="secondary">
           <UserCircleIcon className="h-6 w-6" />
           <span className="ml-1">Utilisateurs</span>
-        </LinkButton>
+        </LinkButton> */}
       </div>
 
-      <h2 className="text-2xl mt-3">{title}</h2>
+      {/* <h2 className="text-2xl mt-3">{title}</h2> */}
 
       {children}
     </BaseLayout>
