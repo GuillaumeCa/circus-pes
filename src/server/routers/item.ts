@@ -274,40 +274,6 @@ export const itemRouter = router({
       });
     }),
 
-  _tmpConvertImages: adminProcedure.mutation(async ({ ctx }) => {
-    const items = await ctx.prisma.item.findMany();
-
-    await Promise.all(
-      items.map(async (item) => {
-        if (item.image) {
-          console.log("creating preview for:", item.image);
-          // retrieve the uploaded image
-          const readableStream = await minioClient.getObject(
-            IMAGE_BUCKET_NAME,
-            item.image
-          );
-
-          const imgBuffer = await stream2buffer(readableStream);
-          // create preview image
-          const previewImgBuffer = await sharp(imgBuffer)
-            .resize({ width: 1000 })
-            .toFormat("webp")
-            .toBuffer();
-
-          await minioClient.putObject(
-            IMAGE_BUCKET_NAME,
-            formatPreviewImageKey(item.patchVersionId, item.id, "webp"),
-            previewImgBuffer,
-            {
-              "content-type": "image/webp",
-              "cache-control": "public, max-age=1296000", // cache for 15 days
-            }
-          );
-        }
-      })
-    );
-  }),
-
   deleteItem: writeProcedure
     .input(z.string())
     .mutation(async ({ input: id, ctx }) => {
