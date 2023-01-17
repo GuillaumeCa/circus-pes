@@ -11,7 +11,7 @@ interface BaseLayoutProps {
   overrideSEO?: boolean;
 }
 
-const isTestEnv = process.env.VERCEL_GIT_COMMIT_REF === "dev";
+const isTestEnv = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF === "dev";
 
 export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
   const { data, status } = useSession();

@@ -74,22 +74,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
           icon={<UserCircleIcon className="h-6 w-6 inline" />}
           name="Utilisateurs"
         />
-
-        {/* <LinkButton href="/admin/items" btnType="secondary">
-          <InboxArrowDownIcon className="h-6 w-6" />
-          <span className="ml-1">Publications</span>
-        </LinkButton>
-        <LinkButton href="/admin/patch-versions" btnType="secondary">
-          <RectangleStackIcon className="h-6 w-6" />
-          <span className="ml-1">Versions</span>
-        </LinkButton>
-        <LinkButton href="/admin/users" btnType="secondary">
-          <UserCircleIcon className="h-6 w-6" />
-          <span className="ml-1">Utilisateurs</span>
-        </LinkButton> */}
       </div>
-
-      {/* <h2 className="text-2xl mt-3">{title}</h2> */}
 
       {children}
     </BaseLayout>
