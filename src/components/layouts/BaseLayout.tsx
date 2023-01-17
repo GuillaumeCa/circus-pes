@@ -11,13 +11,15 @@ interface BaseLayoutProps {
   overrideSEO?: boolean;
 }
 
+const isTestEnv = process.env.VERCEL_GIT_COMMIT_REF === "dev";
+
 export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
   const { data, status } = useSession();
 
   return (
     <>
       <Head>
-        <title>Circus PES</title>
+        <title>{isTestEnv ? "[TEST] Circus PES" : "Circus PES"}</title>
         <meta
           name="description"
           content="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
@@ -65,6 +67,12 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
 
         <div className="max-w-5xl mx-auto">
           <header>
+            {isTestEnv && (
+              <p className="bg-red-500 mb-2 text-center text-white text-xl rounded p-2 font-bold">
+                ENVIRONNEMENT DE TEST
+              </p>
+            )}
+
             <div className="flex justify-between items-center">
               <Link href="/">
                 <div className="flex items-center space-x-2">
@@ -106,6 +114,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
                 </Link>
               )}
             </div>
+
             <p className="text-gray-400 max-w-xl text-sm mt-2">
               Bienvenue sur le guide du cirque ! Le test ultime de la
               persistence dans Star Citizen. Ici vous pourrez explorer toutes
