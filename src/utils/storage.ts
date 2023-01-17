@@ -5,8 +5,11 @@ export const PRESIGNED_UPLOAD_IMAGE_EXPIRATION_DURATION = 5 * 60; // 5min
 export const formatPreviewImageUrl = (patchId: string, itemId: string) =>
   STORAGE_BASE_URL + formatPreviewImageKey(patchId, itemId);
 
-export const formatPreviewImageKey = (patchId: string, itemId: string) =>
-  `${patchId}/${itemId}_preview.webp`;
+export const formatPreviewImageKey = (
+  patchId: string,
+  itemId: string,
+  format = "webp"
+) => `${patchId}/${itemId}_preview.${format}`;
 
 export const formatImageUrl = (imageKey: string) => STORAGE_BASE_URL + imageKey;
 
