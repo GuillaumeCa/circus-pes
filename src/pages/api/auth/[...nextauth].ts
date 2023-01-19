@@ -1,6 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import NextAuth, { NextAuthOptions } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
+import DiscordProvider, { DiscordProfile } from "next-auth/providers/discord";
 import { prisma } from "../../../server/db/client";
 import { UserRole } from "../../../utils/user";
 
@@ -10,7 +10,7 @@ export const authOptions: NextAuthOptions = {
     DiscordProvider({
       clientId: process.env.DISCORD_ID || "",
       clientSecret: process.env.DISCORD_SECRET || "",
-      profile: (profile) => {
+      profile: (profile: DiscordProfile) => {
         if (profile.avatar === null) {
           const defaultAvatarNumber = parseInt(profile.discriminator) % 5;
           profile.image_url = `https://cdn.discordapp.com/embed/avatars/${defaultAvatarNumber}.png`;
@@ -37,6 +37,21 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (user.email && account?.provider === "discord") {
+        const p = profile as DiscordProfile;
+        await prisma.user.update({
+          where: { email: user.email },
+          data: {
+            image: p.image_url,
+            name: p.username,
+          },
+        });
+      }
+
+      return true;
+    },
+
     async session({ session, user }) {
       session.user.role = user.role ?? UserRole.INVITED; // Add role value to user object so it is passed along with session
       session.user.discriminator = user.discriminator ?? "";
