@@ -47,9 +47,10 @@ model User {
   sessions      Session[]
 
   discriminator String?
-  role          Int?    @default(0)
+  role          Int?       @default(0)
   Item          Item[]
   Like          Like[]
+  Response      Response[]
 
   @@map("user")
 }
@@ -76,6 +77,7 @@ model Item {
   userId         String
   patchVersionId String
   likes          Like[]
+  Response       Response[]
 
   @@map("item")
 }
@@ -97,4 +99,19 @@ model Like {
 
   @@id([userId, itemId])
   @@map("like")
+}
+
+model Response {
+  id        String   @id @default(cuid())
+  item      Item     @relation(fields: [itemId], references: [id])
+  itemId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  isFound   Boolean
+  comment   String
+  image     String
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("response")
 }

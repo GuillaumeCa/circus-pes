@@ -372,63 +372,61 @@ export default function Home() {
 
         {!error && items && (
           <ul className="bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
-            {typeof window !== undefined &&
-              itemsFiltered?.map((item) => (
-                <ItemRow
-                  key={item.id}
-                  id={item.id}
-                  location={item.location}
-                  description={item.description}
-                  authorId={item.userId}
-                  author={item.userName}
-                  avatarUrl={item.userImage}
-                  shard={item.shardId}
-                  likes={item.likesCount}
-                  hasLiked={item.hasLiked === 1}
-                  imagePath={
-                    item.image ? formatImageUrl(item.image) : undefined
+            {itemsFiltered?.map((item) => (
+              <ItemRow
+                key={item.id}
+                id={item.id}
+                location={item.location}
+                description={item.description}
+                authorId={item.userId}
+                author={item.userName}
+                avatarUrl={item.userImage}
+                shard={item.shardId}
+                likes={item.likesCount}
+                hasLiked={item.hasLiked === 1}
+                imagePath={item.image ? formatImageUrl(item.image) : undefined}
+                previewImagePath={
+                  item.image
+                    ? formatPreviewImageUrl(item.patchVersionId, item.id)
+                    : undefined
+                }
+                date={new Date(item.createdAt)}
+                isPublic={item.public}
+                onAnswer={() => {}}
+                onLike={(like) => {
+                  if (!selectedPatch) {
+                    return;
                   }
-                  previewImagePath={
-                    item.image
-                      ? formatPreviewImageUrl(item.patchVersionId, item.id)
-                      : undefined
+
+                  const currentInput: ItemRouterInput["getItems"] = {
+                    patchVersion: selectedPatch.id ?? "",
+                    sortBy: sortOpt,
+                  };
+
+                  const items = utils.item.getItems.getData(currentInput);
+
+                  if (items) {
+                    utils.item.getItems.setData(
+                      currentInput,
+                      items.map((it) => {
+                        if (it.id === item.id) {
+                          return {
+                            ...it,
+                            hasLiked: like === 1 ? 1 : 0,
+                            likesCount: it.likesCount + like,
+                          };
+                        }
+
+                        return it;
+                      })
+                    );
                   }
-                  date={new Date(item.createdAt)}
-                  isPublic={item.public}
-                  onLike={(like) => {
-                    if (!selectedPatch) {
-                      return;
-                    }
-
-                    const currentInput: ItemRouterInput["getItems"] = {
-                      patchVersion: selectedPatch.id ?? "",
-                      sortBy: sortOpt,
-                    };
-
-                    const items = utils.item.getItems.getData(currentInput);
-
-                    if (items) {
-                      utils.item.getItems.setData(
-                        currentInput,
-                        items.map((it) => {
-                          if (it.id === item.id) {
-                            return {
-                              ...it,
-                              hasLiked: like === 1 ? 1 : 0,
-                              likesCount: it.likesCount + like,
-                            };
-                          }
-
-                          return it;
-                        })
-                      );
-                    }
-                  }}
-                  onDelete={() => {
-                    refetch();
-                  }}
-                />
-              ))}
+                }}
+                onDelete={() => {
+                  refetch();
+                }}
+              />
+            ))}
           </ul>
         )}
       </div>

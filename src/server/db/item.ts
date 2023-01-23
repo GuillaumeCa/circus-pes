@@ -16,6 +16,8 @@ export interface LocationInfo {
   hasLiked?: number;
   createdAt: number;
   public: boolean;
+  found?: number;
+  notFound?: number;
 }
 
 export function getItemsQuery(
@@ -40,7 +42,11 @@ export function getItemsQuery(
     i.image,
     u.image as "userImage",
     u.name as "userName",
-    count(l."itemId")::int as "likesCount"
+    count(l."itemId")::int as "likesCount",
+    coalesce((select sum(case when r."isFound" = true then 1 else 0 end) 
+    from response r where r.id in (SELECT r.id from response r where r."itemId" = i.id order by r."createdAt" limit 2)), 0)::int as "found",
+    coalesce((select sum(case when r."isFound" = false then 1 else 0 end) 
+    from response r where r.id in (SELECT r.id from response r where r."itemId" = i.id order by r."createdAt" limit 2)), 0)::int as "notFound"
     ${
       userId
         ? Prisma.sql`, (select count(*)::int from "like" l1 where l1."itemId" = i.id and l1."userId" = ${userId}) as "hasLiked"`
