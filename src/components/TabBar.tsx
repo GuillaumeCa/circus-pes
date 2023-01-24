@@ -27,8 +27,9 @@ export function TabBar<T extends React.Key>({
           key={item.key}
           className={cls(
             i === 0 && "rounded-l-lg",
+            i < items.length - 1 && "border-r",
             i === items.length - 1 && "rounded-r-lg",
-            "px-2 py-1 border-r font-semibold focus:z-10 border-gray-600 outline-offset-1",
+            "px-2 py-1 flex items-center font-semibold focus:z-10 border-gray-700 outline-offset-1",
             selectedItem === item.key
               ? type === "primary"
                 ? "bg-rose-700 outline-rose-500"

@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
 import SuperJSON from "superjson";
 import { LinkButton } from "../../components/Button";
-import { calculateIndicator, ItemRow } from "../../components/ItemRow";
+import { calculateIndicator, ItemRow } from "../../components/Items";
 import { BaseLayout } from "../../components/layouts/BaseLayout";
 import { BASE_URL, SEO } from "../../components/Seo";
 import { createStaticContext } from "../../server/context";

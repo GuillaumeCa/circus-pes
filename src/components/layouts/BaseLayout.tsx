@@ -136,11 +136,25 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
           <span className="ml-2">Github</span>
         </Link>
 
-        <p className="mt-4 text-gray-500 text-sm max-w-lg mx-auto">
-          Circus PES est un outil créé par la communauté de Star Citizen. Il
-          n&apos;est pas affilié aux sociétés Cloud Imperium ou Roberts Space
-          Industries.
-        </p>
+        <div className="max-w-2xl mx-auto">
+          <p className="mt-4 text-gray-500 text-sm">
+            Circus PES est un outil créé par la communauté de Star Citizen.{" "}
+            <br />
+            This site is not endorsed by or affiliated with the Cloud Imperium
+            or Roberts Space Industries group of companies. All game content and
+            materials are copyright Cloud Imperium Rights LLC and Cloud Imperium
+            Rights Ltd.. Star Citizen®, Squadron 42®, Roberts Space Industries®,
+            and Cloud Imperium® are registered trademarks of Cloud Imperium
+            Rights LLC. All rights reserved.
+          </p>
+          <img
+            src="/MadeByTheCommunity_White.png"
+            width={90}
+            height={90}
+            alt="made by the community of star citizen"
+            className="mx-auto mt-3 opacity-30 mix-blend-lighten"
+          />
+        </div>
       </footer>
     </>
   );

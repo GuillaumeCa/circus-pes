@@ -2,30 +2,28 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   ChatBubbleLeftEllipsisIcon,
-  CheckCircleIcon,
   ClockIcon,
-  ExclamationCircleIcon,
   LinkIcon,
-  XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { LocationInfo } from "../server/db/item";
-import { ItemRouterInput } from "../server/routers/item";
-import { PatchVersionRouterOutput } from "../server/routers/patch-version";
 import { formatImageUrl, formatPreviewImageUrl } from "../utils/storage";
 import { getParagraphs } from "../utils/text";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
 import { AddResponseForm } from "./AddResponseForm";
-import { cls } from "./cls";
 import { TrashIcon } from "./Icons";
 import { ConfirmModal, Modal } from "./Modal";
 import { ResponsesList } from "./Responses";
 import { TimeFormatted } from "./TimeFormatted";
+
+import type { LocationInfo } from "../server/db/item";
+import type { ItemRouterInput } from "../server/routers/item";
+import type { PatchVersionRouterOutput } from "../server/routers/patch-version";
+import { FoundIndicator } from "./FoundIndicator";
 
 export type SortOption = ItemRouterInput["getItems"]["sortBy"];
 export type SortShard = "az" | "num";
@@ -81,7 +79,7 @@ export function ItemList({
         )}
 
       {!hasError && itemsFiltered && (
-        <ul className="bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
+        <ul className="bg-gray-600 rounded-none sm:rounded-xl -mx-3 sm:mx-auto divide-y-2 divide-gray-700">
           {itemsFiltered.map((item) => (
             <ItemRow
               key={item.id}
@@ -187,6 +185,7 @@ export function ItemRow({
   const { mutateAsync: deleteItem } = trpc.item.deleteItem.useMutation();
   const { mutateAsync: likeItem } = trpc.item.like.useMutation();
   const { mutateAsync: unLikeItem } = trpc.item.unLike.useMutation();
+  const trpcCtx = trpc.useContext();
 
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [showResponseForm, setShowResponseForm] = useState(false);
@@ -229,39 +228,7 @@ export function ItemRow({
               </span>
             </div>
           )}
-          {foundIndicator !== null && (
-            <div
-              title="Indique la présence de cette création sur ce shard"
-              className="ml-3 flex bg-gray-700 rounded-lg p-1 space-x-1 items-center"
-            >
-              {foundIndicator === 0 && (
-                <XCircleIcon className="h-5 w-5 text-red-500" />
-              )}
-              {foundIndicator === 1 && (
-                <ExclamationCircleIcon className="h-5 w-5 text-orange-500" />
-              )}
-              {foundIndicator === 2 && (
-                <CheckCircleIcon className="h-5 w-5 text-green-500" />
-              )}
-              {Array(3)
-                .fill("")
-                .map((_, i) => {
-                  const isActive = i <= foundIndicator;
-                  return (
-                    <div
-                      key={i}
-                      className={cls(
-                        "h-5 w-4 rounded-md",
-                        !isActive && "bg-gray-600",
-                        isActive && foundIndicator === 0 && "bg-red-500",
-                        isActive && foundIndicator === 1 && "bg-orange-500",
-                        isActive && foundIndicator === 2 && "bg-green-500"
-                      )}
-                    ></div>
-                  );
-                })}
-            </div>
-          )}
+          {foundIndicator !== null && <FoundIndicator value={foundIndicator} />}
         </div>
 
         <div className="flex space-x-4">
@@ -397,6 +364,7 @@ export function ItemRow({
             onSuccess={() => {
               setHistory(true);
               onAnswer();
+              trpcCtx.response.getForItem.refetch();
             }}
             onClose={() => setShowResponseForm(false)}
           />

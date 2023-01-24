@@ -6,12 +6,38 @@ import { RouterOutput } from "./_app";
 
 export type ResponseRouterOutput = RouterOutput["response"];
 
+export const RESPONSES_PAGE_SIZE = 5;
+
 export const responseRouter = router({
   getForItem: publicProcedure
-    .input(z.string())
-    .query(async ({ ctx, input: id }) => {
-      return await ctx.prisma.response.findMany({
-        where: { itemId: id },
+    .input(
+      z.object({ itemId: z.string(), cursor: z.number().min(0).default(0) })
+    )
+    .query(async ({ ctx, input: { itemId, cursor: page } }) => {
+      const isUserAdmin = ctx.session?.user.role === UserRole.ADMIN;
+      const responses = await ctx.prisma.response.findMany({
+        where: {
+          AND: [
+            {
+              itemId,
+            },
+            {
+              OR: [
+                {
+                  isPublic: isUserAdmin ? undefined : true,
+                },
+                ctx.session
+                  ? {
+                      userId: ctx.session?.user.id,
+                      isPublic: false,
+                    }
+                  : {},
+              ],
+            },
+          ],
+        },
+        skip: page * RESPONSES_PAGE_SIZE,
+        take: RESPONSES_PAGE_SIZE + 1,
         orderBy: {
           createdAt: "desc",
         },
@@ -19,6 +45,14 @@ export const responseRouter = router({
           user: true,
         },
       });
+
+      const nextCursor =
+        responses.length <= RESPONSES_PAGE_SIZE ? undefined : page + 1;
+      console.log(responses.length);
+      return {
+        responses,
+        nextCursor,
+      };
     }),
 
   create: writeProcedure

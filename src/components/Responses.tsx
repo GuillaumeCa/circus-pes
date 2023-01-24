@@ -3,11 +3,12 @@ import {
   HandThumbUpIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
-import { ResponseRouterOutput } from "../server/routers/response";
 import { trpc } from "../utils/trpc";
 import { TrashIcon } from "./Icons";
 import { ConfirmModal } from "./Modal";
 import { TimeFormatted } from "./TimeFormatted";
+
+import { ResponseRouterOutput } from "../server/routers/response";
 
 export function ResponsesList({
   itemId,
@@ -20,31 +21,50 @@ export function ResponsesList({
     data: histories,
     isLoading,
     refetch,
-  } = trpc.response.getForItem.useQuery(itemId);
+    fetchNextPage,
+    hasNextPage,
+  } = trpc.response.getForItem.useInfiniteQuery(
+    { itemId },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
 
   if (isLoading) {
     return null;
   }
 
-  if (!histories || histories.length === 0) {
+  if (!histories || histories.pages[0].responses.length === 0) {
     return (
       <p className="py-3 text-gray-400">Aucune réponse pour l&apos;instant !</p>
     );
   }
 
   return (
-    <ul className="divide-y-2 divide-gray-500/30">
-      {histories?.map((response) => (
-        <ResponseRow
-          key={response.id}
-          response={response}
-          onAnswer={() => {
-            refetch();
-            onAnswer();
-          }}
-        />
-      ))}
-    </ul>
+    <>
+      <ul className="divide-y-2 divide-gray-500/30">
+        {histories?.pages.map((page) =>
+          page.responses.map((response) => (
+            <ResponseRow
+              key={response.id}
+              response={response}
+              onAnswer={() => {
+                refetch();
+                onAnswer();
+              }}
+            />
+          ))
+        )}
+      </ul>
+      {hasNextPage && (
+        <button
+          onClick={() => fetchNextPage()}
+          className="w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-800 font-semibold uppercase text-gray-300"
+        >
+          Voir plus
+        </button>
+      )}
+    </>
   );
 }
 
@@ -52,7 +72,7 @@ export function ResponseRow({
   response,
   onAnswer,
 }: {
-  response: ResponseRouterOutput["getForItem"][number];
+  response: ResponseRouterOutput["getForItem"]["responses"][number];
   onAnswer(): void;
 }) {
   const [showDeletePopup, setShowDeletePopup] = useState(false);

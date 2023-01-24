@@ -2,12 +2,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { PatchVersionRouterOutput } from "../server/routers/patch-version";
 import { LOCATIONS } from "../utils/locations";
 import { MAX_IMAGE_UPLOAD_SIZE, MIN_IMAGE_UPLOAD_SIZE } from "../utils/storage";
 import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
 import { XMarkIcon } from "./Icons";
+
+import type { PatchVersionRouterOutput } from "../server/routers/patch-version";
 
 type LocationFormData = z.infer<typeof itemFormSchema>;
 

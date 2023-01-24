@@ -15,7 +15,7 @@ import SuperJSON from "superjson";
 import { AddItemForm } from "../components/AddItemForm";
 import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
-import { ItemList, SortOption, SortShard } from "../components/ItemRow";
+import { ItemList, SortOption, SortShard } from "../components/Items";
 import { BaseLayout } from "../components/layouts/BaseLayout";
 import { Modal } from "../components/Modal";
 import { TabBar } from "../components/TabBar";

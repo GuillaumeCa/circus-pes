@@ -5,10 +5,11 @@ import { Button } from "../../components/Button";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { TabBar } from "../../components/TabBar";
 import { TimeFormatted } from "../../components/TimeFormatted";
-import { LocationInfo } from "../../server/db/item";
 import { formatImageUrl, formatPreviewImageUrl } from "../../utils/storage";
 import { getParagraphs } from "../../utils/text";
 import { trpc } from "../../utils/trpc";
+
+import type { LocationInfo } from "../../server/db/item";
 
 function ItemMgtRow({
   item,
