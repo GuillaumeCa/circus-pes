@@ -2,23 +2,145 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   ChatBubbleLeftEllipsisIcon,
+  CheckCircleIcon,
   ClockIcon,
-  HandThumbDownIcon,
-  HandThumbUpIcon,
+  ExclamationCircleIcon,
   LinkIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { LocationInfo } from "../server/db/item";
+import { ItemRouterInput } from "../server/routers/item";
+import { PatchVersionRouterOutput } from "../server/routers/patch-version";
+import { formatImageUrl, formatPreviewImageUrl } from "../utils/storage";
 import { getParagraphs } from "../utils/text";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
 import { AddResponseForm } from "./AddResponseForm";
+import { cls } from "./cls";
 import { TrashIcon } from "./Icons";
 import { ConfirmModal, Modal } from "./Modal";
+import { ResponsesList } from "./Responses";
 import { TimeFormatted } from "./TimeFormatted";
+
+export type SortOption = ItemRouterInput["getItems"]["sortBy"];
+export type SortShard = "az" | "num";
+
+type PatchVersion = PatchVersionRouterOutput["getPatchVersions"][number];
+
+export function calculateIndicator(found: number, notFound: number) {
+  if (found === 0 && notFound === 0) {
+    return null;
+  }
+  const sum = found - notFound;
+
+  if (sum === 0) {
+    return 1;
+  }
+
+  if (sum < 0) {
+    return 0;
+  } else {
+    return 2;
+  }
+}
+
+export function ItemList({
+  isLoading,
+  hasError,
+  selectedPatch,
+  itemsFiltered,
+  sortOpt,
+  onUpdateItems,
+}: {
+  isLoading: boolean;
+  hasError: boolean;
+  selectedPatch?: PatchVersion;
+  itemsFiltered: LocationInfo[];
+  sortOpt: SortOption;
+  onUpdateItems(): void;
+}) {
+  const utils = trpc.useContext();
+
+  return (
+    <>
+      {isLoading && <p className="text-gray-400">Chargement...</p>}
+      {hasError && (
+        <p className="text-gray-400">
+          Erreur de chargement, veuillez recharger la page
+        </p>
+      )}
+      {!hasError &&
+        !isLoading &&
+        (!selectedPatch || itemsFiltered.length === 0) && (
+          <p className="text-gray-400">Aucune création</p>
+        )}
+
+      {!hasError && itemsFiltered && (
+        <ul className="bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
+          {itemsFiltered.map((item) => (
+            <ItemRow
+              key={item.id}
+              id={item.id}
+              location={item.location}
+              description={item.description}
+              authorId={item.userId}
+              author={item.userName}
+              avatarUrl={item.userImage}
+              shard={item.shardId}
+              likes={item.likesCount}
+              hasLiked={item.hasLiked === 1}
+              foundIndicator={calculateIndicator(item.found, item.notFound)}
+              imagePath={item.image ? formatImageUrl(item.image) : undefined}
+              previewImagePath={
+                item.image
+                  ? formatPreviewImageUrl(item.patchVersionId, item.id)
+                  : undefined
+              }
+              date={new Date(item.createdAt)}
+              isPublic={item.public}
+              onAnswer={onUpdateItems}
+              onLike={(like) => {
+                if (!selectedPatch) {
+                  return;
+                }
+
+                const currentInput: ItemRouterInput["getItems"] = {
+                  patchVersion: selectedPatch.id ?? "",
+                  sortBy: sortOpt,
+                };
+
+                const items = utils.item.getItems.getData(currentInput);
+
+                if (items) {
+                  utils.item.getItems.setData(
+                    currentInput,
+                    items.map((it) => {
+                      if (it.id === item.id) {
+                        return {
+                          ...it,
+                          hasLiked: like === 1 ? 1 : 0,
+                          likesCount: it.likesCount + like,
+                        };
+                      }
+
+                      return it;
+                    })
+                  );
+                }
+              }}
+              onDelete={onUpdateItems}
+            />
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
 
 interface ItemRowProps {
   id: string;
@@ -34,96 +156,11 @@ interface ItemRowProps {
   previewImagePath?: string;
   imagePath?: string;
   isPublic: boolean;
+  foundIndicator: number | null;
 
   onDelete(): void;
   onLike(like: number): void;
   onAnswer(): void;
-}
-
-function HistoryList({ itemId }: { itemId: string }) {
-  const {
-    data: histories,
-    isLoading,
-    refetch,
-  } = trpc.response.getForItem.useQuery(itemId);
-  const deleteResponse = trpc.response.delete.useMutation();
-
-  if (isLoading) {
-    return null;
-  }
-
-  if (!histories || histories.length === 0) {
-    return (
-      <p className="py-3 text-gray-400">Aucune réponse pour l&apos;instant !</p>
-    );
-  }
-
-  return (
-    <ul className="divide-y-2 divide-gray-500/30">
-      {histories?.map((response) => (
-        <li key={response.id} className="py-2 flex items-start">
-          <div className="py-2 px-4 w-auto lg:w-40 flex items-center justify-center rounded-full text-yellow-500 bg-yellow-400/20">
-            {response.isFound ? (
-              <>
-                <HandThumbUpIcon className="h-7 w-7" />
-                <span className="font-semibold ml-2 hidden lg:inline">
-                  Trouvé
-                </span>
-              </>
-            ) : (
-              <>
-                <HandThumbDownIcon className="h-7 w-7" />
-                <span className="font-semibold ml-2 hidden lg:inline">
-                  Pas trouvé
-                </span>
-              </>
-            )}
-          </div>
-          <div className="flex flex-col px-3 mb-3">
-            {response.comment && <p className="p-2 mb-2">{response.comment}</p>}
-            {/* {response.image && (
-            <Link href={imagePath!} target="_blank">
-              <Image
-                width={400}
-                height={250}
-                className="overflow-hidden rounded-lg shadow-md h-auto"
-                alt="image de la création"
-                src={previewImagePath!}
-                unoptimized={true}
-              />
-            </Link>
-          )} */}
-          </div>
-          <div className="ml-auto flex items-center">
-            <p className="text-gray-400 p-2">
-              {response.user.image && (
-                <img
-                  alt="photo de profil"
-                  className="inline w-5 h-5 rounded-full"
-                  src={response.user.image}
-                />
-              )}{" "}
-              <span className="italic font-bold text-gray-300">
-                {response.user.name}
-              </span>
-              <TimeFormatted className="ml-3 text-sm">
-                {response.createdAt}
-              </TimeFormatted>
-            </p>
-            <button
-              className="ml-2"
-              onClick={async () => {
-                await deleteResponse.mutateAsync(response.id);
-                refetch();
-              }}
-            >
-              <TrashIcon />
-            </button>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
 }
 
 export function ItemRow({
@@ -140,6 +177,7 @@ export function ItemRow({
   previewImagePath,
   imagePath,
   isPublic,
+  foundIndicator,
 
   onDelete,
   onLike,
@@ -167,13 +205,6 @@ export function ItemRow({
     deleteItem(id).then(() => onDelete());
   }
 
-  // const lastResponseNb = 2;
-  // let foundIndicator = histories.slice(0, lastResponseNb).reduce((all, e) => {
-  //   return all + (e.isFound ? 1 : 0);
-  // }, 0);
-  // foundIndicator = Math.max(0.1, foundIndicator / lastResponseNb);
-  const foundIndicator = 0;
-
   return (
     <li className="flex flex-col p-4">
       <div className="flex justify-between">
@@ -198,15 +229,41 @@ export function ItemRow({
               </span>
             </div>
           )}
-          <div className="ml-2 h-6 overflow-hidden rounded-full bg-gray-500">
+          {foundIndicator !== null && (
             <div
-              className="w-full h-full transition-all overflow-hidden"
-              style={{ width: `${foundIndicator * 100}%` }}
+              title="Indique la présence de cette création sur ce shard"
+              className="ml-3 flex bg-gray-700 rounded-lg p-1 space-x-1 items-center"
             >
-              <div className="w-36 h-full saturate-150 bg-gradient-to-r from-red-500 to-green-600"></div>
+              {foundIndicator === 0 && (
+                <XCircleIcon className="h-5 w-5 text-red-500" />
+              )}
+              {foundIndicator === 1 && (
+                <ExclamationCircleIcon className="h-5 w-5 text-orange-500" />
+              )}
+              {foundIndicator === 2 && (
+                <CheckCircleIcon className="h-5 w-5 text-green-500" />
+              )}
+              {Array(3)
+                .fill("")
+                .map((_, i) => {
+                  const isActive = i <= foundIndicator;
+                  return (
+                    <div
+                      key={i}
+                      className={cls(
+                        "h-5 w-4 rounded-md",
+                        !isActive && "bg-gray-600",
+                        isActive && foundIndicator === 0 && "bg-red-500",
+                        isActive && foundIndicator === 1 && "bg-orange-500",
+                        isActive && foundIndicator === 2 && "bg-green-500"
+                      )}
+                    ></div>
+                  );
+                })}
             </div>
-          </div>
+          )}
         </div>
+
         <div className="flex space-x-4">
           <button
             title="Copier le lien"
@@ -290,7 +347,7 @@ export function ItemRow({
             onClick={handleLike}
             className="flex px-1 py-1 text-gray-200 disabled:bg-gray-700 bg-gray-700 hover:bg-gray-800 rounded-md"
           >
-            <span className="mx-2">{likes}</span>
+            <span className="mx-2 font-semibold">{likes}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill={
@@ -314,17 +371,17 @@ export function ItemRow({
             className="flex items-center px-2 py-1 font-semibold text-gray-200 disabled:bg-gray-700 bg-gray-700 hover:bg-gray-800 rounded-md"
             onClick={() => setShowResponseForm(true)}
           >
-            <ChatBubbleLeftEllipsisIcon className="h-5 w-5 inline-block" />
+            <ChatBubbleLeftEllipsisIcon className="h-5 w-5 inline-block text-yellow-500" />
             <span className="ml-2">Répondre</span>
           </button>
           <button
-            className="flex items-center px-2 py-1 font-semibold text-gray-200 bg-rose-700 hover:bg-rose-800 rounded-md"
+            className="flex items-center px-2 py-1 font-semibold text-gray-200 bg-gray-700 hover:bg-gray-800 rounded-md"
             onClick={() => setHistory(!history)}
           >
             {history ? (
-              <ArrowUpIcon className="h-5 w-5 inline-block" />
+              <ArrowUpIcon className="h-5 w-5 inline-block text-yellow-500" />
             ) : (
-              <ArrowDownIcon className="h-5 w-5 inline-block" />
+              <ArrowDownIcon className="h-5 w-5 inline-block text-yellow-500" />
             )}
             <span className="ml-2">Historique</span>
           </button>
@@ -339,6 +396,7 @@ export function ItemRow({
             itemId={id}
             onSuccess={() => {
               setHistory(true);
+              onAnswer();
             }}
             onClose={() => setShowResponseForm(false)}
           />
@@ -357,7 +415,7 @@ export function ItemRow({
 
       {history && (
         <div className="mt-3 border-t-4 border-gray-500/30">
-          <HistoryList itemId={id} />
+          <ResponsesList itemId={id} onAnswer={onAnswer} />
         </div>
       )}
     </li>

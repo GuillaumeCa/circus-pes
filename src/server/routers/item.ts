@@ -13,7 +13,7 @@ import {
 } from "../../utils/storage";
 import { stream2buffer } from "../../utils/stream";
 import { UserRole } from "../../utils/user";
-import { getItemById, getItemsQuery } from "../db/item";
+import { getItemById, getItemsQuery, sortOptions } from "../db/item";
 import {
   adminProcedure,
   protectedProcedure,
@@ -30,7 +30,7 @@ export const itemRouter = router({
     .input(
       z.object({
         patchVersion: z.string(),
-        sortBy: z.enum(["recent", "like"]),
+        sortBy: z.enum(sortOptions),
       })
     )
     .query(async ({ ctx, input }) => {

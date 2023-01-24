@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
 import SuperJSON from "superjson";
 import { LinkButton } from "../../components/Button";
-import { ItemRow } from "../../components/ItemRow";
+import { calculateIndicator, ItemRow } from "../../components/ItemRow";
 import { BaseLayout } from "../../components/layouts/BaseLayout";
 import { BASE_URL, SEO } from "../../components/Seo";
 import { createStaticContext } from "../../server/context";
@@ -60,6 +60,8 @@ export default function Item() {
               shard={item.shardId}
               likes={item.likesCount}
               hasLiked={item.hasLiked === 1}
+              foundIndicator={calculateIndicator(item.found, item.notFound)}
+              onAnswer={() => refetch()}
               imagePath={item.image ? formatImageUrl(item.image) : undefined}
               previewImagePath={
                 item.image

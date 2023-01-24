@@ -2,6 +2,9 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { UserRole } from "../../utils/user";
 import { publicProcedure, router, writeProcedure } from "../trpc";
+import { RouterOutput } from "./_app";
+
+export type ResponseRouterOutput = RouterOutput["response"];
 
 export const responseRouter = router({
   getForItem: publicProcedure
