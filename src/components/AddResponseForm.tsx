@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
@@ -19,20 +20,20 @@ const responseFormSchema = z.object({
     typeof window === "undefined"
       ? z.null()
       : z
-          .instanceof(FileList, { message: "Une image est requise" })
-          .refine((f: FileList) => {
+          .instanceof(FileList)
+          .refine((f) => {
             return (
-              f &&
-              f.length > 0 &&
-              ["image/jpg", "image/jpeg", "image/png"].includes(f[0].type)
+              f.length === 0 ||
+              (f.length > 0 &&
+                ["image/jpg", "image/jpeg", "image/png"].includes(f[0].type))
             );
           }, "Le fichier n'est pas une image au format valide: jpeg, jpg ou png")
-          .refine((f: FileList) => {
+          .refine((f) => {
             return (
-              f &&
-              f.length > 0 &&
-              f[0].size >= MIN_IMAGE_UPLOAD_SIZE &&
-              f[0].size <= MAX_IMAGE_UPLOAD_SIZE
+              f.length === 0 ||
+              (f.length > 0 &&
+                f[0].size >= MIN_IMAGE_UPLOAD_SIZE &&
+                f[0].size <= MAX_IMAGE_UPLOAD_SIZE)
             );
           }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
 });
@@ -48,6 +49,9 @@ export function AddResponseForm({
   onClose(): void;
   onSuccess(): void;
 }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
   const ctx = trpc.useContext();
   const { mutateAsync: createResponse } = trpc.response.create.useMutation();
   const { mutateAsync: getImageUploadUrl } =
@@ -73,39 +77,48 @@ export function AddResponseForm({
   const isFound = watch("isFound");
 
   async function onSubmit(form: ResponseFormData) {
-    const createdResponse = await createResponse({
-      comment: form.comment,
-      isFound: form.isFound,
-      itemId,
-    });
-    const file = form.image?.item(0);
-    if (createdResponse && file) {
-      const ext = getFileExtension(file);
-      const postPolicyResult = await getImageUploadUrl({
-        id: createdResponse.id,
-        ext: ext as "jpeg" | "jpg" | "png",
+    setLoading(true);
+    setError(false);
+    try {
+      const file = form.image?.item(0);
+      const createdResponse = await createResponse({
+        comment: form.comment,
+        isFound: form.isFound,
+        itemId,
+        withImage: !!file,
       });
+      if (createdResponse && file) {
+        const ext = getFileExtension(file);
+        const postPolicyResult = await getImageUploadUrl({
+          id: createdResponse.id,
+          ext: ext as "jpeg" | "jpg" | "png",
+        });
+        const formData = new FormData();
+        for (let key in postPolicyResult.formData) {
+          formData.append(key, postPolicyResult.formData[key]);
+        }
+        formData.append("file", file);
 
-      const formData = new FormData();
-      for (let key in postPolicyResult.formData) {
-        formData.append(key, postPolicyResult.formData[key]);
+        const res = await fetch(postPolicyResult.postURL, {
+          method: "POST",
+          body: formData,
+        });
+
+        const key = postPolicyResult.formData["key"];
+
+        if (!res.ok) {
+          throw new Error("failed to upload image");
+        }
+        await setImage({ id: createdResponse.id, image: key });
       }
-      formData.append("file", file);
-
-      const res = await fetch(postPolicyResult.postURL, {
-        method: "POST",
-        body: formData,
-      });
-
-      const key = postPolicyResult.formData["key"];
-
-      if (!res.ok) {
-        throw new Error("failed to upload image");
-      }
-      await setImage({ id: createdResponse.id, image: key });
       onSuccess();
+      onClose();
+    } catch (err) {
+      console.error("Failed to add response", err);
+      setError(true);
     }
-    onClose();
+
+    setLoading(false);
     ctx.response.getForItem.refetch();
   }
 
@@ -184,11 +197,18 @@ export function AddResponseForm({
             )}
           </div>
         </FormRow>
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-end items-center space-x-2">
+          {error && (
+            <p className="text-red-500">
+              Impossible d&apos;ajouter la réponse, veuillez réessayer
+            </p>
+          )}
           <Button type="button" btnType="secondary" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit">Valider</Button>
+          <Button disabled={loading} type="submit">
+            {loading ? "Chargement..." : "Valider"}
+          </Button>
         </div>
       </form>
     </>

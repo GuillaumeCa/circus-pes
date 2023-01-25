@@ -6,7 +6,7 @@ import { LOCATIONS } from "../utils/locations";
 import {
   getFileExtension,
   MAX_IMAGE_UPLOAD_SIZE,
-  MIN_IMAGE_UPLOAD_SIZE,
+  MIN_IMAGE_UPLOAD_SIZE
 } from "../utils/storage";
 import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
@@ -101,8 +101,8 @@ export function AddItemForm({
 
   const onSubmit = async (formData: LocationFormData) => {
     setLoading(true);
-
     setError(false);
+
     const file = formData.image!.item(0)!;
     try {
       const ext = getFileExtension(file);
@@ -140,7 +140,8 @@ export function AddItemForm({
 
       reset();
       onCreated();
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to add item", err);
       setError(true);
     }
     setLoading(false);

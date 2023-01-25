@@ -143,22 +143,26 @@ export const responseRouter = router({
         itemId: z.string(),
         isFound: z.boolean(),
         comment: z.string(),
+        withImage: z.boolean(),
       })
     )
-    .mutation(async ({ ctx, input: { comment, isFound, itemId } }) => {
-      return await ctx.prisma.response.create({
-        data: {
-          comment,
-          isFound,
-          itemId,
-          userId: ctx.session.user.id,
-          public: false,
-        },
-        select: {
-          id: true,
-        },
-      });
-    }),
+    .mutation(
+      async ({ ctx, input: { comment, isFound, itemId, withImage } }) => {
+        const isUserAdmin = ctx.session.user.role === UserRole.ADMIN;
+        return await ctx.prisma.response.create({
+          data: {
+            comment,
+            isFound,
+            itemId,
+            userId: ctx.session.user.id,
+            public: isUserAdmin && !withImage ? true : false,
+          },
+          select: {
+            id: true,
+          },
+        });
+      }
+    ),
 
   imageUploadUrl: writeProcedure
     .input(
