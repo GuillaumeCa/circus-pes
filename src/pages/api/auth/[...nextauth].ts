@@ -40,13 +40,19 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       if (user.email && account?.provider === "discord") {
         const p = profile as DiscordProfile;
-        await prisma.user.update({
+        const u = await prisma.user.findFirst({
           where: { email: user.email },
-          data: {
-            image: p.image_url,
-            name: p.username,
-          },
+          select: { id: true },
         });
+        if (u) {
+          await prisma.user.update({
+            where: { email: user.email },
+            data: {
+              image: p.image_url,
+              name: p.username,
+            },
+          });
+        }
       }
 
       return true;
