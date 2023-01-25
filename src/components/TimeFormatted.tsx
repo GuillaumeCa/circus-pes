@@ -28,7 +28,7 @@ export function TimeFormatted({
       datetime: t.format(),
       label: t.format(format),
     });
-  }, []);
+  }, [children, format]);
 
   return (
     <time

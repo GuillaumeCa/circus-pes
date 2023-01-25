@@ -145,8 +145,8 @@ interface ItemRowProps {
   authorId?: string;
   location: string;
   description: string;
-  author?: string;
-  avatarUrl?: string;
+  author: string | null;
+  avatarUrl: string | null;
   date: Date;
   shard: string;
   likes: number;
@@ -374,11 +374,13 @@ export function ItemRow({
         </Modal>
 
         <p className="text-gray-400">
-          <img
-            alt="photo de profil"
-            className="inline w-5 h-5 rounded-full"
-            src={avatarUrl}
-          />{" "}
+          {avatarUrl && (
+            <img
+              alt="photo de profil"
+              className="inline w-5 h-5 rounded-full"
+              src={avatarUrl}
+            />
+          )}{" "}
           <span className="italic font-bold text-gray-300">{author}</span>
           <TimeFormatted className="ml-3 text-sm">{date}</TimeFormatted>
         </p>

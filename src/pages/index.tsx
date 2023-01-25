@@ -96,7 +96,7 @@ export default function Home() {
         shards[sid]++;
       });
     return shards;
-  }, [items, selectedPatch, region]);
+  }, [items, selectedPatch, region, location]);
 
   const shardIds = Object.keys(groupedShards).sort((a, b) =>
     sortShard === "az"
