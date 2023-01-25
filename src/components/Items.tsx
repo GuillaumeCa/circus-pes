@@ -334,13 +334,16 @@ export function ItemRow({
               />
             </svg>
           </button>
-          <button
-            className="flex items-center px-2 py-1 font-semibold text-gray-200 disabled:bg-gray-700 bg-gray-700 hover:bg-gray-800 rounded-md"
-            onClick={() => setShowResponseForm(true)}
-          >
-            <ChatBubbleLeftEllipsisIcon className="h-5 w-5 inline-block text-yellow-500" />
-            <span className="ml-2">Répondre</span>
-          </button>
+          {status === "authenticated" &&
+            data.user.role !== UserRole.INVITED && (
+              <button
+                className="flex items-center px-2 py-1 font-semibold text-gray-200 disabled:bg-gray-700 bg-gray-700 hover:bg-gray-800 rounded-md"
+                onClick={() => setShowResponseForm(true)}
+              >
+                <ChatBubbleLeftEllipsisIcon className="h-5 w-5 inline-block text-yellow-500" />
+                <span className="ml-2">Répondre</span>
+              </button>
+            )}
           <button
             className="flex items-center px-2 py-1 font-semibold text-gray-200 bg-gray-700 hover:bg-gray-800 rounded-md"
             onClick={() => setHistory(!history)}

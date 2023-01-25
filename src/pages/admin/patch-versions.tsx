@@ -90,7 +90,7 @@ export default function PatchVersions() {
   const [patchName, setPatchName] = useState("");
 
   return (
-    <AdminLayout title="Versions de patch">
+    <AdminLayout>
       <form
         onSubmit={async (e) => {
           e.preventDefault();

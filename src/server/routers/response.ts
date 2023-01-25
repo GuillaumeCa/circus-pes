@@ -22,7 +22,8 @@ import { RouterOutput } from "./_app";
 
 export type ResponseRouterOutput = RouterOutput["response"];
 
-export const RESPONSES_PAGE_SIZE = 5;
+const RESPONSES_PAGE_SIZE = 5;
+const ADMIN_RESPONSE_PAGE_SIZE = 3;
 
 export const responseRouter = router({
   getForItem: publicProcedure
@@ -69,32 +70,72 @@ export const responseRouter = router({
         },
       });
 
-      const nextCursor =
-        responses.length <= RESPONSES_PAGE_SIZE ? undefined : page + 1;
+      let nextCursor: number | undefined;
+      if (responses.length > RESPONSES_PAGE_SIZE) {
+        nextCursor = page + 1;
+        responses.pop();
+      }
+
       return {
         responses,
         nextCursor,
       };
     }),
 
-  getAdminResponses: adminProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.response.findMany({
-      where: {
-        public: false,
-      },
-      include: {
-        item: {
-          select: {
-            image: true,
-            description: true,
-            location: true,
-            patchVersionId: true,
-            shardId: true,
+  getAdminResponses: adminProcedure
+    .input(
+      z.object({
+        public: z.boolean().default(false).optional(),
+        cursor: z.number().min(0).default(0),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const responses = await ctx.prisma.response.findMany({
+        where: {
+          public: input.public,
+        },
+        include: {
+          item: {
+            select: {
+              image: true,
+              description: true,
+              location: true,
+              patchVersionId: true,
+              shardId: true,
+              createdAt: true,
+              user: {
+                select: {
+                  name: true,
+                  image: true,
+                },
+              },
+            },
+          },
+          user: {
+            select: {
+              image: true,
+              name: true,
+            },
           },
         },
-      },
-    });
-  }),
+        skip: input.cursor * ADMIN_RESPONSE_PAGE_SIZE,
+        take: ADMIN_RESPONSE_PAGE_SIZE + 1,
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      let nextCursor: number | undefined;
+      if (responses.length > ADMIN_RESPONSE_PAGE_SIZE) {
+        nextCursor = input.cursor + 1;
+        responses.pop();
+      }
+
+      return {
+        responses,
+        nextCursor,
+      };
+    }),
 
   create: writeProcedure
     .input(
@@ -247,6 +288,24 @@ export const responseRouter = router({
         }
 
         return deletedResponse;
+      });
+    }),
+
+  updateVisibility: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        public: z.boolean(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.response.update({
+        data: {
+          public: input.public,
+        },
+        where: {
+          id: input.id,
+        },
       });
     }),
 });

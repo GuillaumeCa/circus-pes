@@ -43,7 +43,7 @@ export function ResponsesList({
     return null;
   }
 
-  if (!histories || histories.pages[0].responses.length === 0) {
+  if (!histories || histories.pages.some((p) => p.responses.length === 0)) {
     return (
       <p className="py-3 text-gray-400">Aucune réponse pour l&apos;instant !</p>
     );
@@ -113,7 +113,7 @@ export function ResponseRow({
               width={400}
               height={250}
               className="overflow-hidden rounded-lg shadow-md h-auto"
-              alt="image de la création"
+              alt="image de la réponse"
               src={formatPreviewResponseImageUrl(response.id)}
               unoptimized={true}
             />

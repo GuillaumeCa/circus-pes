@@ -1,4 +1,5 @@
 import {
+  ChatBubbleLeftEllipsisIcon,
   InboxArrowDownIcon,
   RectangleStackIcon,
   UserCircleIcon,
@@ -40,12 +41,11 @@ function AdminLinkItem({
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  title: string;
 }
 
-export function AdminLayout({ children, title }: AdminLayoutProps) {
+export function AdminLayout({ children }: AdminLayoutProps) {
   const { data, status } = useSession();
-  const { replace, pathname } = useRouter();
+  const { replace } = useRouter();
 
   useEffect(() => {
     if (
@@ -63,6 +63,11 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
           path="/admin/items"
           icon={<InboxArrowDownIcon className="h-6 w-6 inline" />}
           name="Publications"
+        />
+        <AdminLinkItem
+          path="/admin/responses"
+          icon={<ChatBubbleLeftEllipsisIcon className="h-6 w-6 inline" />}
+          name="Réponses"
         />
         <AdminLinkItem
           path="/admin/patch-versions"

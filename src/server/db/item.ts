@@ -40,10 +40,10 @@ export interface LocationInfo {
   shardId: string;
   location: string;
   description: string;
-  image?: string;
+  image: string | null;
   userId?: string;
-  userImage?: string;
-  userName?: string;
+  userImage: string | null;
+  userName: string | null;
   likesCount: number;
   hasLiked?: number;
   createdAt: number;

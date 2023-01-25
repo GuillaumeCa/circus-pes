@@ -11,6 +11,79 @@ import { trpc } from "../../utils/trpc";
 
 import type { LocationInfo } from "../../server/db/item";
 
+export function AdminItemRow({
+  id,
+  image,
+  patchVersionId,
+  location,
+  shardId,
+  createdAt,
+  description,
+  userImage,
+  userName,
+}: {
+  id: string;
+  patchVersionId: string;
+  location: string;
+  shardId: string;
+  image: string | null;
+  createdAt: number;
+  description: string;
+  userImage: string | null;
+  userName: string | null;
+}) {
+  return (
+    <div className="flex flex-col-reverse lg:flex-row items-start">
+      <div className="min-w-fit">
+        {image && (
+          <Link href={formatImageUrl(image)} target="_blank">
+            <img
+              alt="image de la création"
+              className="rounded-lg shadow-md w-full lg:w-52"
+              src={formatPreviewItemImageUrl(patchVersionId, id)}
+              width={200}
+            />
+          </Link>
+        )}
+      </div>
+      <div className="ml-0 lg:ml-2 flex flex-col h-full">
+        <div className="flex space-x-3 flex-wrap text-sm">
+          <span
+            title="Lieu"
+            className="bg-rose-700 px-3 py-1 rounded-full uppercase font-bold"
+          >
+            {location}
+          </span>
+          <span
+            title="ID de Shard"
+            className="font-bold bg-gray-700 p-1 rounded-md"
+          >
+            {shardId}
+          </span>
+          <p className="text-gray-400">
+            {userImage && (
+              <img
+                alt="photo de profil"
+                className="inline w-5 h-5 rounded-full"
+                src={userImage}
+              />
+            )}{" "}
+            <span className="italic font-bold text-gray-300">{userName}</span>
+            <TimeFormatted className="ml-2">
+              {new Date(createdAt)}
+            </TimeFormatted>
+          </p>
+        </div>
+        <div className="p-2">
+          {getParagraphs(description).map((paragraph, i) => (
+            <p key={i}>{paragraph}</p>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ItemMgtRow({
   item,
   onUpdate,
@@ -27,54 +100,17 @@ function ItemMgtRow({
       key={item.id}
       className="p-2 lg:p-3 flex flex-col lg:flex-row justify-between"
     >
-      <div className="flex flex-col-reverse lg:flex-row items-start">
-        <div className="min-w-fit">
-          {item.image && (
-            <Link href={formatImageUrl(item.image)} target="_blank">
-              <img
-                alt="image de la création"
-                className="rounded-lg shadow-md w-full lg:w-52"
-                src={formatPreviewItemImageUrl(item.patchVersionId, item.id)}
-                width={200}
-              />
-            </Link>
-          )}
-        </div>
-        <div className="ml-0 lg:ml-2 flex flex-col h-full">
-          <div className="flex space-x-3 flex-wrap text-sm">
-            <span
-              title="Lieu"
-              className="bg-rose-700 px-3 py-1 rounded-full uppercase font-bold"
-            >
-              {item.location}
-            </span>
-            <span
-              title="ID de Shard"
-              className="font-bold bg-gray-700 p-1 rounded-md"
-            >
-              {item.shardId}
-            </span>
-            <p className="text-gray-400">
-              <img
-                alt="photo de profil"
-                className="inline w-5 h-5 rounded-full"
-                src={item.userImage}
-              />{" "}
-              <span className="italic font-bold text-gray-300">
-                {item.userName}
-              </span>
-              <TimeFormatted className="ml-2">
-                {new Date(item.createdAt)}
-              </TimeFormatted>
-            </p>
-          </div>
-          <div className="p-2">
-            {getParagraphs(item.description).map((paragraph, i) => (
-              <p key={i}>{paragraph}</p>
-            ))}
-          </div>
-        </div>
-      </div>
+      <AdminItemRow
+        id={item.id}
+        image={item.image}
+        patchVersionId={item.patchVersionId}
+        location={item.location}
+        shardId={item.shardId}
+        createdAt={item.createdAt}
+        description={item.description}
+        userImage={item.userImage}
+        userName={item.userName}
+      />
       <div className="flex mt-2 lg:mt-0 items-center justify-end lg:justify-start space-x-2">
         {!item.public ? (
           <Button
@@ -116,7 +152,7 @@ export default function ItemsManagement() {
   const [patchVersionId, setPatchVersionId] = useState(0);
   const [filterPublic, setFilterPublic] = useState<
     "all" | "public" | "private"
-  >("all");
+  >("private");
   const { data: patchVersions } =
     trpc.patchVersion.getAllPatchVersions.useQuery();
 
@@ -146,7 +182,7 @@ export default function ItemsManagement() {
   );
 
   return (
-    <AdminLayout title="Gestion des publications">
+    <AdminLayout>
       <div className="flex space-y-2 lg:space-x-2 flex-col lg:flex-row  items-start lg:items-end justify-between">
         <div>
           <label
@@ -176,16 +212,16 @@ export default function ItemsManagement() {
           <TabBar
             items={[
               {
-                key: "all",
-                label: "Tout",
+                key: "private",
+                label: "En attente",
               },
               {
                 key: "public",
                 label: "Validé",
               },
               {
-                key: "private",
-                label: "En attente",
+                key: "all",
+                label: "Tout",
               },
             ]}
             selectedItem={filterPublic}
@@ -202,7 +238,19 @@ export default function ItemsManagement() {
           </p>
         )}
         {!isLoading && items?.length === 0 && (
-          <p className="text-gray-400">Aucune création</p>
+          <>
+            {filterPublic === "private" && (
+              <p className="text-gray-400">
+                Aucune création en attente de validation, c'est tout bon !
+              </p>
+            )}
+            {filterPublic === "public" && (
+              <p className="text-gray-400">Aucune création validé</p>
+            )}
+            {filterPublic === "all" && (
+              <p className="text-gray-400">Aucune création</p>
+            )}
+          </>
         )}
 
         {items && (
