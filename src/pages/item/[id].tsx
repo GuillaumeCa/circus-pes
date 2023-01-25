@@ -63,6 +63,7 @@ export default function Item() {
               foundIndicator={calculateIndicator(item.found, item.notFound)}
               onAnswer={() => refetch()}
               imagePath={item.image ? formatImageUrl(item.image) : undefined}
+              responsesCount={item.responsesCount}
               previewImagePath={
                 item.image
                   ? formatPreviewItemImageUrl(item.patchVersionId, item.id)

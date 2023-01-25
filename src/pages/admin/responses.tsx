@@ -6,6 +6,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../../components/Button";
+import { cls } from "../../components/cls";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { TabBar } from "../../components/TabBar";
 import { TimeFormatted } from "../../components/TimeFormatted";
@@ -96,9 +97,16 @@ export default function ResponseManagement() {
           p.responses?.map((r) => (
             <li key={r.id} className="p-3 bg-gray-600 rounded-lg">
               <div className="flex flex-col lg:flex-row mb-3">
-                <div className="mr-3">
-                  <div className="flex space-x-2">
-                    <p className="uppercase flex items-center font-bold rounded-md px-2 py-1 bg-yellow-500/20 text-yellow-500">
+                <div className="flex-1">
+                  <div className="flex space-x-2 items-center">
+                    <p
+                      className={cls(
+                        "uppercase flex items-center font-bold rounded-md px-2 py-1",
+                        r.isFound
+                          ? "text-green-500 bg-green-400/20"
+                          : "text-red-500 bg-red-400/20"
+                      )}
+                    >
                       {r.isFound ? (
                         <>
                           <HandThumbUpIcon className="w-5 h-5 mr-2" />
@@ -111,15 +119,15 @@ export default function ResponseManagement() {
                         </>
                       )}
                     </p>
-                    <p className="text-gray-400">
+                    <p className="text-gray-400 flex items-center">
                       {r.user.image && (
                         <img
                           alt="photo de profil"
                           className="inline w-5 h-5 rounded-full"
                           src={r.user.image}
                         />
-                      )}{" "}
-                      <span className="italic font-bold text-gray-300">
+                      )}
+                      <span className="ml-1 italic font-bold text-gray-300">
                         {r.user.name}
                       </span>
                       <TimeFormatted className="ml-2">
@@ -127,18 +135,21 @@ export default function ResponseManagement() {
                       </TimeFormatted>
                     </p>
                   </div>
-                  <p className="p-1">{r.comment}</p>
+                  <div className="flex mt-2">
+                    {r.image && (
+                      <Link href={formatImageUrl(r.image)} target="_blank">
+                        <img
+                          alt="image de la réponse"
+                          className="mr-3 rounded-lg shadow-md w-full lg:w-60"
+                          src={formatPreviewResponseImageUrl(r.id)}
+                          width={200}
+                        />
+                      </Link>
+                    )}
+                    <p className="p-1">{r.comment}</p>
+                  </div>
                 </div>
-                {r.image && (
-                  <Link href={formatImageUrl(r.image)} target="_blank">
-                    <img
-                      alt="image de la réponse"
-                      className="rounded-lg shadow-md w-full lg:w-60"
-                      src={formatPreviewResponseImageUrl(r.id)}
-                      width={200}
-                    />
-                  </Link>
-                )}
+
                 <div className="flex mt-2 ml-auto lg:mt-0 items-center justify-end lg:justify-start space-x-2">
                   {!r.public ? (
                     <Button

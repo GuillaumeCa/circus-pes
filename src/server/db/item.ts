@@ -17,6 +17,7 @@ function getItemBaseQuery(userId?: string) {
     u.image as "userImage",
     u.name as "userName",
     count(l."itemId")::int as "likesCount",
+    (select count(*)::int from response r where r."itemId" = i.id and r.public = true) as "responsesCount",
     coalesce((select sum(case when r."isFound" = true then 1 else 0 end) 
     from response r where r.id in (SELECT r.id from response r where r."itemId" = i.id and r."public" = true order by r."createdAt" desc limit 2)), 0)::int as "found",
     coalesce((select sum(case when r."isFound" = false then 1 else 0 end) 
@@ -50,6 +51,7 @@ export interface LocationInfo {
   public: boolean;
   found: number;
   notFound: number;
+  responsesCount: number;
 }
 
 export const sortOptions = ["recent", "like", "found"] as const;

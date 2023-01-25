@@ -101,6 +101,7 @@ export function ItemList({
               }
               date={new Date(item.createdAt)}
               isPublic={item.public}
+              responsesCount={item.responsesCount}
               onAnswer={onUpdateItems}
               onLike={(like) => {
                 if (!selectedPatch) {
@@ -155,6 +156,7 @@ interface ItemRowProps {
   imagePath?: string;
   isPublic: boolean;
   foundIndicator: number | null;
+  responsesCount: number;
 
   onDelete(): void;
   onLike(like: number): void;
@@ -176,6 +178,7 @@ export function ItemRow({
   imagePath,
   isPublic,
   foundIndicator,
+  responsesCount,
 
   onDelete,
   onLike,
@@ -344,17 +347,22 @@ export function ItemRow({
                 <span className="ml-2">Répondre</span>
               </button>
             )}
-          <button
-            className="flex items-center px-2 py-1 font-semibold text-gray-200 bg-gray-700 hover:bg-gray-800 rounded-md"
-            onClick={() => setHistory(!history)}
-          >
-            {history ? (
-              <ArrowUpIcon className="h-5 w-5 inline-block text-yellow-500" />
-            ) : (
-              <ArrowDownIcon className="h-5 w-5 inline-block text-yellow-500" />
-            )}
-            <span className="ml-2">Historique</span>
-          </button>
+          {responsesCount > 0 && (
+            <button
+              className="flex relative items-center px-2 py-1 font-semibold text-gray-200 bg-gray-700 hover:bg-gray-800 rounded-md"
+              onClick={() => setHistory(!history)}
+            >
+              <span className="absolute z-10 -top-2 -right-3 px-1 min-w-[1.25rem] h-5 mr-1 text-sm shadow-md rounded-full inline-flex text-gray-700 justify-center items-center bg-yellow-500">
+                {responsesCount}
+              </span>
+              {history ? (
+                <ArrowUpIcon className="h-5 w-5 inline-block text-yellow-500" />
+              ) : (
+                <ArrowDownIcon className="h-5 w-5 inline-block text-yellow-500" />
+              )}
+              <span className="ml-2">Historique</span>
+            </button>
+          )}
         </div>
 
         <Modal

@@ -18,6 +18,7 @@ import {
   formatPreviewResponseImageUrl,
 } from "../utils/storage";
 import { UserRole } from "../utils/user";
+import { cls } from "./cls";
 
 export function ResponsesList({
   itemId,
@@ -90,7 +91,14 @@ export function ResponseRow({
 
   return (
     <li className="py-2 flex items-start">
-      <div className="py-2 px-4 w-auto lg:w-40 flex items-center justify-center rounded-full text-yellow-500 bg-yellow-400/20">
+      <div
+        className={cls(
+          "py-2 px-4 w-auto lg:w-40 flex items-center justify-center rounded-full",
+          response.isFound
+            ? "text-green-500 bg-green-400/20"
+            : "text-red-500 bg-red-400/20"
+        )}
+      >
         {response.isFound ? (
           <>
             <HandThumbUpIcon className="h-7 w-7" />

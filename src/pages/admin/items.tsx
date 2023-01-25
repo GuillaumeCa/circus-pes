@@ -60,15 +60,17 @@ export function AdminItemRow({
           >
             {shardId}
           </span>
-          <p className="text-gray-400">
+          <p className="text-gray-400 flex items-center">
             {userImage && (
               <img
                 alt="photo de profil"
                 className="inline w-5 h-5 rounded-full"
                 src={userImage}
               />
-            )}{" "}
-            <span className="italic font-bold text-gray-300">{userName}</span>
+            )}
+            <span className="ml-1 italic font-bold text-gray-300">
+              {userName}
+            </span>
             <TimeFormatted className="ml-2">
               {new Date(createdAt)}
             </TimeFormatted>
