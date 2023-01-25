@@ -18,9 +18,9 @@ function getItemBaseQuery(userId?: string) {
     u.name as "userName",
     count(l."itemId")::int as "likesCount",
     coalesce((select sum(case when r."isFound" = true then 1 else 0 end) 
-    from response r where r.id in (SELECT r.id from response r where r."itemId" = i.id and r."isPublic" = true order by r."createdAt" desc limit 2)), 0)::int as "found",
+    from response r where r.id in (SELECT r.id from response r where r."itemId" = i.id and r."public" = true order by r."createdAt" desc limit 2)), 0)::int as "found",
     coalesce((select sum(case when r."isFound" = false then 1 else 0 end) 
-    from response r where r.id in (SELECT r.id from response r where r."itemId" = i.id and r."isPublic" = true order by r."createdAt" desc limit 2)), 0)::int as "notFound"
+    from response r where r.id in (SELECT r.id from response r where r."itemId" = i.id and r."public" = true order by r."createdAt" desc limit 2)), 0)::int as "notFound"
     ${
       userId
         ? Prisma.sql`, (select count(*)::int from "like" l1 where l1."itemId" = i.id and l1."userId" = ${userId}) as "hasLiked"`

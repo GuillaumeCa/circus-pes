@@ -213,7 +213,7 @@ export default function Home() {
             items={[
               {
                 key: "found",
-                label: "Trouvé",
+                label: "Fiable",
                 icon: <CheckCircleIcon className="w-5 h-5 inline" />,
               },
               {

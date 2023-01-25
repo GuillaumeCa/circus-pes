@@ -9,6 +9,7 @@ import { TrashIcon } from "./Icons";
 import { ConfirmModal } from "./Modal";
 import { TimeFormatted } from "./TimeFormatted";
 
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { ResponseRouterOutput } from "../server/routers/response";
@@ -16,6 +17,7 @@ import {
   formatImageUrl,
   formatPreviewResponseImageUrl,
 } from "../utils/storage";
+import { UserRole } from "../utils/user";
 
 export function ResponsesList({
   itemId,
@@ -82,6 +84,7 @@ export function ResponseRow({
   response: ResponseRouterOutput["getForItem"]["responses"][number];
   onAnswer(): void;
 }) {
+  const { data: session } = useSession();
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const deleteResponse = trpc.response.delete.useMutation();
 
@@ -116,12 +119,14 @@ export function ResponseRow({
             />
           </Link>
         )}
-        {!response.isPublic && (
-          <div className="inline-flex items-center ml-2 bg-gray-500 p-1 px-2 rounded-md">
-            <ClockIcon className="w-4 h-4" />
-            <span className="ml-1 text-sm uppercase font-bold">
-              En validation
-            </span>
+        {!response.public && (
+          <div className="mt-2">
+            <div className="inline-flex items-center bg-gray-500 p-1 px-2 rounded-md">
+              <ClockIcon className="w-4 h-4" />
+              <span className="ml-1 text-sm uppercase font-bold">
+                En validation
+              </span>
+            </div>
           </div>
         )}
       </div>
@@ -157,9 +162,13 @@ export function ResponseRow({
             {response.createdAt}
           </TimeFormatted>
         </p>
-        <button className="ml-2" onClick={() => setShowDeletePopup(true)}>
-          <TrashIcon />
-        </button>
+        {session &&
+          (response.userId === session.user?.id ||
+            session.user?.role === UserRole.ADMIN) && (
+            <button className="ml-2" onClick={() => setShowDeletePopup(true)}>
+              <TrashIcon />
+            </button>
+          )}
       </div>
     </li>
   );

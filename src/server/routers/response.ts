@@ -12,7 +12,12 @@ import {
   createImageUploadUrl,
   isImageValid,
 } from "../storage";
-import { publicProcedure, router, writeProcedure } from "../trpc";
+import {
+  adminProcedure,
+  publicProcedure,
+  router,
+  writeProcedure,
+} from "../trpc";
 import { RouterOutput } from "./_app";
 
 export type ResponseRouterOutput = RouterOutput["response"];
@@ -38,12 +43,12 @@ export const responseRouter = router({
                   OR: [
                     ctx.session
                       ? {
-                          isPublic: false,
+                          public: false,
                           userId: ctx.session?.user.id,
                         }
                       : {},
                     {
-                      isPublic: true,
+                      public: true,
                     },
                   ],
                 },
@@ -72,6 +77,25 @@ export const responseRouter = router({
       };
     }),
 
+  getAdminResponses: adminProcedure.query(async ({ ctx }) => {
+    return ctx.prisma.response.findMany({
+      where: {
+        public: false,
+      },
+      include: {
+        item: {
+          select: {
+            image: true,
+            description: true,
+            location: true,
+            patchVersionId: true,
+            shardId: true,
+          },
+        },
+      },
+    });
+  }),
+
   create: writeProcedure
     .input(
       z.object({
@@ -87,6 +111,10 @@ export const responseRouter = router({
           isFound,
           itemId,
           userId: ctx.session.user.id,
+          public: false,
+        },
+        select: {
+          id: true,
         },
       });
     }),
@@ -175,7 +203,7 @@ export const responseRouter = router({
       await ctx.prisma.response.update({
         data: {
           image: input.image,
-          isPublic: ctx.session.user.role === UserRole.ADMIN, // make item public by default only for admins
+          public: ctx.session.user.role === UserRole.ADMIN, // make item public by default only for admins
         },
         where: {
           id: input.id,
@@ -199,9 +227,12 @@ export const responseRouter = router({
 
         const user = ctx.session.user;
         if (user.role !== UserRole.ADMIN && user.id !== response.userId) {
+          console.error(
+            "user with role contributor can only delete their item"
+          );
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "cannot delete this response",
+            message: "user with role contributor can only delete their item",
           });
         }
 

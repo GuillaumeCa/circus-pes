@@ -265,10 +265,8 @@ export const itemRouter = router({
           });
         }
 
-        if (
-          ctx.session.user.role === UserRole.CONTRIBUTOR &&
-          item?.userId !== ctx.session.user.id
-        ) {
+        const user = ctx.session.user;
+        if (user.role === UserRole.CONTRIBUTOR && item?.userId !== user.id) {
           console.error(
             "user with role contributor can only delete their item"
           );

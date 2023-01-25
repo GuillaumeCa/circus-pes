@@ -110,7 +110,7 @@ model Response {
   isFound   Boolean
   comment   String
   image     String?
-  isPublic  Boolean  @default(false)
+  public    Boolean  @default(false)
   createdAt DateTime @default(now())
 
   @@map("response")
