@@ -109,7 +109,7 @@ model Response {
   userId    String
   isFound   Boolean
   comment   String
-  image     String
+  image     String?
   isPublic  Boolean  @default(false)
   createdAt DateTime @default(now())
 

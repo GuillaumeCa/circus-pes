@@ -10,7 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { formatImageUrl, formatPreviewImageUrl } from "../utils/storage";
+import { formatImageUrl, formatPreviewItemImageUrl } from "../utils/storage";
 import { getParagraphs } from "../utils/text";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
@@ -96,7 +96,7 @@ export function ItemList({
               imagePath={item.image ? formatImageUrl(item.image) : undefined}
               previewImagePath={
                 item.image
-                  ? formatPreviewImageUrl(item.patchVersionId, item.id)
+                  ? formatPreviewItemImageUrl(item.patchVersionId, item.id)
                   : undefined
               }
               date={new Date(item.createdAt)}

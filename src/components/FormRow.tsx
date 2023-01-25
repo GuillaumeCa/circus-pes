@@ -2,9 +2,11 @@ export function FormRow({
   id,
   label,
   children,
+  errorMessage,
 }: {
   id: string;
   label: string;
+  errorMessage?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -13,6 +15,9 @@ export function FormRow({
         {label}
       </label>
       {children}
+      {errorMessage && (
+        <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import {
+  ClockIcon,
   HandThumbDownIcon,
   HandThumbUpIcon,
 } from "@heroicons/react/24/outline";
@@ -8,7 +9,13 @@ import { TrashIcon } from "./Icons";
 import { ConfirmModal } from "./Modal";
 import { TimeFormatted } from "./TimeFormatted";
 
+import Image from "next/image";
+import Link from "next/link";
 import { ResponseRouterOutput } from "../server/routers/response";
+import {
+  formatImageUrl,
+  formatPreviewResponseImageUrl,
+} from "../utils/storage";
 
 export function ResponsesList({
   itemId,
@@ -97,18 +104,26 @@ export function ResponseRow({
       </div>
       <div className="flex flex-col px-3 mb-3">
         {response.comment && <p className="p-2 mb-2">{response.comment}</p>}
-        {/* {response.image && (
-            <Link href={imagePath!} target="_blank">
-              <Image
-                width={400}
-                height={250}
-                className="overflow-hidden rounded-lg shadow-md h-auto"
-                alt="image de la création"
-                src={previewImagePath!}
-                unoptimized={true}
-              />
-            </Link>
-          )} */}
+        {response.image && (
+          <Link href={formatImageUrl(response.image)} target="_blank">
+            <Image
+              width={400}
+              height={250}
+              className="overflow-hidden rounded-lg shadow-md h-auto"
+              alt="image de la création"
+              src={formatPreviewResponseImageUrl(response.id)}
+              unoptimized={true}
+            />
+          </Link>
+        )}
+        {!response.isPublic && (
+          <div className="inline-flex items-center ml-2 bg-gray-500 p-1 px-2 rounded-md">
+            <ClockIcon className="w-4 h-4" />
+            <span className="ml-1 text-sm uppercase font-bold">
+              En validation
+            </span>
+          </div>
+        )}
       </div>
 
       <ConfirmModal

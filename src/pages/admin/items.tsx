@@ -5,7 +5,7 @@ import { Button } from "../../components/Button";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { TabBar } from "../../components/TabBar";
 import { TimeFormatted } from "../../components/TimeFormatted";
-import { formatImageUrl, formatPreviewImageUrl } from "../../utils/storage";
+import { formatImageUrl, formatPreviewItemImageUrl } from "../../utils/storage";
 import { getParagraphs } from "../../utils/text";
 import { trpc } from "../../utils/trpc";
 
@@ -34,7 +34,7 @@ function ItemMgtRow({
               <img
                 alt="image de la création"
                 className="rounded-lg shadow-md w-full lg:w-52"
-                src={formatPreviewImageUrl(item.patchVersionId, item.id)}
+                src={formatPreviewItemImageUrl(item.patchVersionId, item.id)}
                 width={200}
               />
             </Link>

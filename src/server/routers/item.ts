@@ -1,19 +1,19 @@
 import { TRPCError } from "@trpc/server";
-import { fileTypeFromBuffer } from "file-type";
-import sharp from "sharp";
 import { z } from "zod";
 
 import { minioClient } from "../../lib/minio";
 import {
-  formatPreviewImageKey,
+  formatPreviewItemImageKey,
   IMAGE_BUCKET_NAME,
-  MAX_IMAGE_UPLOAD_SIZE,
-  MIN_IMAGE_UPLOAD_SIZE,
-  PRESIGNED_UPLOAD_IMAGE_EXPIRATION_DURATION,
 } from "../../utils/storage";
 import { stream2buffer } from "../../utils/stream";
 import { UserRole } from "../../utils/user";
 import { getItemById, getItemsQuery, sortOptions } from "../db/item";
+import {
+  createAndStorePreviewImage,
+  createImageUploadUrl,
+  isImageValid,
+} from "../storage";
 import {
   adminProcedure,
   protectedProcedure,
@@ -185,20 +185,11 @@ export const itemRouter = router({
           message: "image already exist",
         });
       }
-      const policy = minioClient.newPostPolicy();
-      policy.setBucket(IMAGE_BUCKET_NAME);
-      policy.setKey(`${item.patchVersionId}/${item.id}.${input.ext}`);
 
-      var expires = new Date();
-      expires.setSeconds(PRESIGNED_UPLOAD_IMAGE_EXPIRATION_DURATION); // expires in 2min
-      policy.setExpires(expires);
-      policy.setContentType("image/" + input.ext);
-      policy.setContentLengthRange(
-        MIN_IMAGE_UPLOAD_SIZE,
-        MAX_IMAGE_UPLOAD_SIZE
-      ); // up to 5MB
-
-      return await minioClient.presignedPostPolicy(policy);
+      return createImageUploadUrl(
+        `${item.patchVersionId}/${item.id}.${input.ext}`,
+        input.ext
+      );
     }),
 
   setItemImage: writeProcedure
@@ -235,8 +226,8 @@ export const itemRouter = router({
       const imgBuffer = await stream2buffer(readableStream);
 
       // check if uploaded image has the correct file type, otherwise delete it and the item entity
-      const fileType = await fileTypeFromBuffer(imgBuffer);
-      if (!fileType || !["jpg", "jpeg", "png"].includes(fileType.ext)) {
+      const isValid = await isImageValid(imgBuffer);
+      if (!isValid) {
         await minioClient.removeObject(IMAGE_BUCKET_NAME, input.image);
         await ctx.prisma.item.delete({ where: { id: input.itemId } });
 
@@ -246,21 +237,9 @@ export const itemRouter = router({
         });
       }
 
-      const previewFormat = "webp";
-      // create preview image
-      const previewImgBuffer = await sharp(imgBuffer)
-        .resize({ width: 1000 })
-        .toFormat(previewFormat)
-        .toBuffer();
-
-      await minioClient.putObject(
-        IMAGE_BUCKET_NAME,
-        formatPreviewImageKey(item.patchVersionId, item.id, previewFormat),
-        previewImgBuffer,
-        {
-          "content-type": "image/" + previewFormat,
-          "cache-control": "public, max-age=1296000", // cache for 15 days
-        }
+      await createAndStorePreviewImage(
+        imgBuffer,
+        formatPreviewItemImageKey(item.patchVersionId, item.id)
       );
 
       await ctx.prisma.item.update({
@@ -312,7 +291,7 @@ export const itemRouter = router({
           await minioClient.removeObject(IMAGE_BUCKET_NAME, item.image);
           await minioClient.removeObject(
             IMAGE_BUCKET_NAME,
-            formatPreviewImageKey(item.patchVersionId, item.id)
+            formatPreviewItemImageKey(item.patchVersionId, item.id)
           );
         }
 

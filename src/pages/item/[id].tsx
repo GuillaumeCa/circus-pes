@@ -10,7 +10,7 @@ import { BaseLayout } from "../../components/layouts/BaseLayout";
 import { BASE_URL, SEO } from "../../components/Seo";
 import { createStaticContext } from "../../server/context";
 import { appRouter } from "../../server/routers/_app";
-import { formatImageUrl, formatPreviewImageUrl } from "../../utils/storage";
+import { formatImageUrl, formatPreviewItemImageUrl } from "../../utils/storage";
 import { trpc } from "../../utils/trpc";
 
 function getId(query: ParsedUrlQuery): string | undefined {
@@ -46,7 +46,7 @@ export default function Item() {
             title={`Une création près de ${item.location} sur la shard ${item.shardId} (${item.patchVersion})`}
             desc={item.description}
             url={BASE_URL + "/item/" + item.id}
-            imageUrl={formatPreviewImageUrl(item.patchVersionId, item.id)}
+            imageUrl={formatPreviewItemImageUrl(item.patchVersionId, item.id)}
           />
 
           <ul className="mt-5 space-y-2 bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
@@ -65,7 +65,7 @@ export default function Item() {
               imagePath={item.image ? formatImageUrl(item.image) : undefined}
               previewImagePath={
                 item.image
-                  ? formatPreviewImageUrl(item.patchVersionId, item.id)
+                  ? formatPreviewItemImageUrl(item.patchVersionId, item.id)
                   : undefined
               }
               date={new Date(item.createdAt)}

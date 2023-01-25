@@ -3,7 +3,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LOCATIONS } from "../utils/locations";
-import { MAX_IMAGE_UPLOAD_SIZE, MIN_IMAGE_UPLOAD_SIZE } from "../utils/storage";
+import {
+  getFileExtension,
+  MAX_IMAGE_UPLOAD_SIZE,
+  MIN_IMAGE_UPLOAD_SIZE,
+} from "../utils/storage";
 import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
 import { XMarkIcon } from "./Icons";
@@ -101,10 +105,7 @@ export function AddItemForm({
     setError(false);
     const file = formData.image!.item(0)!;
     try {
-      const ext = file.type.split("/")[1];
-      if (!ext || !["jpg", "jpeg", "png"].includes(ext)) {
-        throw new Error("invalid file type: " + file.type);
-      }
+      const ext = getFileExtension(file);
 
       const createdItem = await createItem({
         description: formData.description,

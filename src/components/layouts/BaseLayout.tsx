@@ -95,6 +95,14 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
                   </UserButton>
                 </div>
               )}
+              {status === "loading" && (
+                <div className="flex items-center hover:bg-gray-600 p-2 rounded-full">
+                  <div className="p-2 hidden lg:block">
+                    <div className="h-4 w-11 rounded-md bg-gray-500 animate-pulse" />
+                  </div>
+                  <div className="w-9 h-9 rounded-full animate-pulse bg-gray-500" />
+                </div>
+              )}
               {status === "authenticated" && (
                 <Link href="/account">
                   <div className="flex items-center hover:bg-gray-600 p-2 rounded-full">
@@ -107,8 +115,8 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
                       className="rounded-full h-10 w-10"
                       src={data.user?.image ?? ""}
                       alt="photo de profil"
-                      width={30}
-                      height={30}
+                      width={36}
+                      height={36}
                     />
                   </div>
                 </Link>
@@ -139,7 +147,8 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
         <div className="max-w-2xl mx-auto">
           <p className="mt-4 text-gray-500 text-sm">
             Circus PES est un outil créé par la communauté de Star Citizen.{" "}
-            <br />
+          </p>
+          <p className="mt-2 text-gray-500 text-sm">
             This site is not endorsed by or affiliated with the Cloud Imperium
             or Roberts Space Industries group of companies. All game content and
             materials are copyright Cloud Imperium Rights LLC and Cloud Imperium
