@@ -241,7 +241,7 @@ export default function ItemsManagement() {
           <>
             {filterPublic === "private" && (
               <p className="text-gray-400">
-                Aucune création en attente de validation, c'est tout bon !
+                Aucune création en attente de validation, c&apos;est tout bon !
               </p>
             )}
             {filterPublic === "public" && (

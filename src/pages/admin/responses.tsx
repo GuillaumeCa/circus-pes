@@ -79,7 +79,7 @@ export default function ResponseManagement() {
           <>
             {filterPublic === "private" && (
               <p className="text-gray-400">
-                Aucune réponse en attente de validation, c'est tout bon !
+                Aucune réponse en attente de validation, c&apos;est tout bon !
               </p>
             )}
             {filterPublic === "public" && (
