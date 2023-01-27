@@ -71,6 +71,7 @@ export default function Item() {
               }
               date={new Date(item.createdAt)}
               isPublic={item.public}
+              pinnedResponses
               onLike={() => {
                 refetch();
               }}
@@ -102,6 +103,8 @@ export async function getStaticProps(
   const id = context.params?.id as string;
   // prefetch `post.byId`
   await ssg.item.byId.prefetch(id);
+  await ssg.response.getForItem.prefetchInfinite({ itemId: id });
+
   return {
     props: {
       trpcState: ssg.dehydrate(),

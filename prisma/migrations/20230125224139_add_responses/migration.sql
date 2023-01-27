@@ -13,7 +13,7 @@ CREATE TABLE "response" (
 );
 
 -- AddForeignKey
-ALTER TABLE "response" ADD CONSTRAINT "response_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "item"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "response" ADD CONSTRAINT "response_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "response" ADD CONSTRAINT "response_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

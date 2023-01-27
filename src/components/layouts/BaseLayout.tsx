@@ -91,7 +91,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
               {status === "unauthenticated" && (
                 <div>
                   <UserButton onClick={() => signIn("discord")}>
-                    Connexion
+                    <span className="ml-1">Connexion</span>
                   </UserButton>
                 </div>
               )}

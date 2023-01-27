@@ -41,7 +41,7 @@ export function ResponsesList({
   );
 
   if (isLoading) {
-    return null;
+    return <p className="py-3 text-gray-400">Chargement...</p>;
   }
 
   if (!histories || histories.pages.some((p) => p.responses.length === 0)) {
@@ -90,26 +90,24 @@ export function ResponseRow({
   const deleteResponse = trpc.response.delete.useMutation();
 
   return (
-    <li className="py-2 flex items-start">
+    <li className="py-2 flex flex-col md:flex-row items-start">
       <div
         className={cls(
           "py-2 px-4 w-auto lg:w-40 flex items-center justify-center rounded-full",
           response.isFound
-            ? "text-green-500 bg-green-400/20"
-            : "text-red-500 bg-red-400/20"
+            ? "text-green-500 bg-green-400/10"
+            : "text-red-500 bg-red-400/10"
         )}
       >
         {response.isFound ? (
           <>
             <HandThumbUpIcon className="h-7 w-7" />
-            <span className="font-semibold ml-2 hidden lg:inline">Trouvé</span>
+            <span className="font-semibold ml-2">Trouvé</span>
           </>
         ) : (
           <>
             <HandThumbDownIcon className="h-7 w-7" />
-            <span className="font-semibold ml-2 hidden lg:inline">
-              Pas trouvé
-            </span>
+            <span className="font-semibold ml-2">Pas trouvé</span>
           </>
         )}
       </div>

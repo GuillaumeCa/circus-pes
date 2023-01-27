@@ -23,7 +23,7 @@ import { RouterOutput } from "./_app";
 export type ResponseRouterOutput = RouterOutput["response"];
 
 const RESPONSES_PAGE_SIZE = 5;
-const ADMIN_RESPONSE_PAGE_SIZE = 3;
+const ADMIN_RESPONSE_PAGE_SIZE = 10;
 
 export const responseRouter = router({
   getForItem: publicProcedure

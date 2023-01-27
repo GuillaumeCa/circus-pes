@@ -4,6 +4,7 @@ import { z } from "zod";
 import { minioClient } from "../../lib/minio";
 import {
   formatPreviewItemImageKey,
+  formatPreviewResponseImageKey,
   IMAGE_BUCKET_NAME,
 } from "../../utils/storage";
 import { stream2buffer } from "../../utils/stream";
@@ -275,6 +276,20 @@ export const itemRouter = router({
             message: "user with role contributor can only delete their item",
           });
         }
+
+        const responses = await tx.response.findMany({ where: { itemId: id } });
+
+        await Promise.all(
+          responses.map(async (r) => {
+            if (r.image) {
+              await minioClient.removeObject(IMAGE_BUCKET_NAME, r.image);
+              await minioClient.removeObject(
+                IMAGE_BUCKET_NAME,
+                formatPreviewResponseImageKey(r.id)
+              );
+            }
+          })
+        );
 
         const deletedItem = await tx.item.delete({
           where: {

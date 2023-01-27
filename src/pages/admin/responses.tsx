@@ -103,8 +103,8 @@ export default function ResponseManagement() {
                       className={cls(
                         "uppercase flex items-center font-bold rounded-md px-2 py-1",
                         r.isFound
-                          ? "text-green-500 bg-green-400/20"
-                          : "text-red-500 bg-red-400/20"
+                          ? "text-green-500 bg-green-400/10"
+                          : "text-red-500 bg-red-400/10"
                       )}
                     >
                       {r.isFound ? (

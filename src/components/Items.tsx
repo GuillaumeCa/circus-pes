@@ -157,6 +157,7 @@ interface ItemRowProps {
   isPublic: boolean;
   foundIndicator: number | null;
   responsesCount: number;
+  pinnedResponses?: boolean;
 
   onDelete(): void;
   onLike(like: number): void;
@@ -179,6 +180,7 @@ export function ItemRow({
   isPublic,
   foundIndicator,
   responsesCount,
+  pinnedResponses,
 
   onDelete,
   onLike,
@@ -208,33 +210,40 @@ export function ItemRow({
   }
 
   return (
-    <li className="flex flex-col p-4">
+    <li className="flex flex-col p-3 sm:p-4">
       <div className="flex justify-between">
-        <div className="flex items-center">
-          <p
-            title="Lieu"
-            className="bg-rose-700 px-3 py-1 rounded-full uppercase font-bold text-sm"
-          >
-            {location}
-          </p>
-          <p
-            title="ID de Shard"
-            className="ml-2 text-sm font-bold bg-gray-700 py-1 px-2 rounded-md"
-          >
-            <span>{shard}</span>
-          </p>
-          {!isPublic && (
-            <div className="inline-flex items-center ml-2 bg-gray-500 p-1 px-2 rounded-md">
-              <ClockIcon className="w-4 h-4" />
-              <span className="ml-1 text-sm uppercase font-bold">
-                En validation
-              </span>
-            </div>
-          )}
-          {foundIndicator !== null && <FoundIndicator value={foundIndicator} />}
+        <div className="flex flex-col sm:flex-row">
+          <div className="flex items-center">
+            <p
+              title="Lieu"
+              className="bg-rose-700 px-3 py-1 rounded-full uppercase font-bold text-sm"
+            >
+              {location}
+            </p>
+            <p
+              title="ID de Shard"
+              className="ml-2 text-sm font-bold bg-gray-700 py-1 px-2 rounded-md"
+            >
+              <span>{shard}</span>
+            </p>
+          </div>
+          <div className="flex mt-2 sm:mt-0 items-center">
+            {!isPublic && (
+              <div className="ml-0 sm:ml-2 mr-3 sm:mr-0 p-1 px-2 inline-flex items-center bg-gray-500 rounded-md">
+                <ClockIcon className="w-4 h-4" />
+                <span className="ml-1 text-sm uppercase font-bold">
+                  En validation
+                </span>
+              </div>
+            )}
+
+            {foundIndicator !== null && (
+              <FoundIndicator value={foundIndicator} />
+            )}
+          </div>
         </div>
 
-        <div className="flex space-x-4">
+        <div className="flex justify-end space-x-4">
           <button
             title="Copier le lien"
             className="active:text-gray-500"
@@ -285,7 +294,7 @@ export function ItemRow({
         }}
       />
 
-      <div className="flex flex-col lg:flex-row mt-4 space-y-2 lg:space-y-0">
+      <div className="flex flex-col lg:flex-row mt-3 sm:mt-4 space-y-2 lg:space-y-0">
         {imagePath && previewImagePath && (
           <div className="mr-4 w-full lg:w-auto lg:min-w-fit max-w-md">
             <Link href={imagePath} target="_blank">
@@ -318,24 +327,28 @@ export function ItemRow({
             className="flex px-1 py-1 text-gray-200 disabled:bg-gray-700 bg-gray-700 hover:bg-gray-800 rounded-md"
           >
             <span className="mx-2 font-semibold">{likes}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill={
-                hasLiked || status === "unauthenticated"
-                  ? "currentColor"
-                  : "none"
-              }
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6 inline text-yellow-500"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-              />
-            </svg>
+            {location === "Microtech" ? (
+              <img src="/pico.png" className="w-6 h-6 inline" />
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill={
+                  hasLiked || status === "unauthenticated"
+                    ? "currentColor"
+                    : "none"
+                }
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6 inline text-yellow-500"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                />
+              </svg>
+            )}
           </button>
           {status === "authenticated" &&
             data.user.role !== UserRole.INVITED && (
@@ -343,11 +356,11 @@ export function ItemRow({
                 className="flex items-center px-2 py-1 font-semibold text-gray-200 disabled:bg-gray-700 bg-gray-700 hover:bg-gray-800 rounded-md"
                 onClick={() => setShowResponseForm(true)}
               >
-                <ChatBubbleLeftEllipsisIcon className="h-5 w-5 inline-block text-yellow-500" />
-                <span className="ml-2">Répondre</span>
+                <ChatBubbleLeftEllipsisIcon className="h-6 w-6 inline-block text-yellow-500" />
+                <span className="ml-2 hidden sm:inline">Répondre</span>
               </button>
             )}
-          {responsesCount > 0 && (
+          {responsesCount > 0 && !pinnedResponses && (
             <button
               className="flex relative items-center px-2 py-1 font-semibold text-gray-200 bg-gray-700 hover:bg-gray-800 rounded-md"
               onClick={() => setHistory(!history)}
@@ -381,7 +394,7 @@ export function ItemRow({
           />
         </Modal>
 
-        <p className="text-gray-400">
+        <p className="ml-4 text-gray-400">
           {avatarUrl && (
             <img
               alt="photo de profil"
@@ -394,7 +407,7 @@ export function ItemRow({
         </p>
       </div>
 
-      {history && (
+      {(history || pinnedResponses) && (
         <div className="mt-3 border-t-4 border-gray-500/30">
           <ResponsesList itemId={id} onAnswer={onAnswer} />
         </div>

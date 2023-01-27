@@ -6,7 +6,7 @@ import { LOCATIONS } from "../utils/locations";
 import {
   getFileExtension,
   MAX_IMAGE_UPLOAD_SIZE,
-  MIN_IMAGE_UPLOAD_SIZE
+  MIN_IMAGE_UPLOAD_SIZE,
 } from "../utils/storage";
 import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
@@ -225,10 +225,11 @@ export function AddItemForm({
             setValue("shardId", e.target.value.toUpperCase());
           }}
         />
-        <div className="flex space-x-2 mt-2 items-center">
+        <div className="flex flex-nowrap space-x-2 mt-2 items-center overflow-auto">
           {shardsFiltered.slice(0, 4).map((shard) => (
             <Button
               key={shard}
+              className="whitespace-nowrap"
               type="button"
               onClick={() =>
                 setValue("shardId", shard, { shouldValidate: false })

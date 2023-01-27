@@ -2,8 +2,28 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
 import relativeTime from "dayjs/plugin/relativeTime";
+import updateLocale from "dayjs/plugin/updateLocale";
 
 dayjs.extend(relativeTime);
+dayjs.extend(updateLocale);
+
+dayjs.updateLocale("fr", {
+  relativeTime: {
+    future: "dans %s",
+    past: "il y a %s",
+    s: "<1 min",
+    m: "1 min",
+    mm: "%d min",
+    h: "1h",
+    hh: "%dh",
+    d: "1j",
+    dd: "%dj",
+    M: "1 mois",
+    MM: "%d mois",
+    y: "1 an",
+    yy: "%d ans",
+  },
+});
 
 export function TimeFormatted({
   children,

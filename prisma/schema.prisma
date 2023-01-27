@@ -103,7 +103,7 @@ model Like {
 
 model Response {
   id        String   @id @default(cuid())
-  item      Item     @relation(fields: [itemId], references: [id])
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemId    String
   user      User     @relation(fields: [userId], references: [id])
   userId    String
