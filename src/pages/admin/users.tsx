@@ -104,7 +104,7 @@ export default function Users() {
   const [search, setSearch] = useState("");
 
   return (
-    <AdminLayout title="Utilisateurs">
+    <AdminLayout>
       <p className="text-sm text-gray-400">
         Les utilisateurs avec le rôle invité ne peuvent pas ajouter de créations
         et peuvent uniquement liker. Les admin peuvent modifier le rôle des

@@ -2,12 +2,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { PatchVersionRouterOutput } from "../server/routers/patch-version";
 import { LOCATIONS } from "../utils/locations";
-import { MAX_IMAGE_UPLOAD_SIZE, MIN_IMAGE_UPLOAD_SIZE } from "../utils/storage";
+import {
+  getFileExtension,
+  MAX_IMAGE_UPLOAD_SIZE,
+  MIN_IMAGE_UPLOAD_SIZE,
+} from "../utils/storage";
 import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
 import { XMarkIcon } from "./Icons";
+
+import type { PatchVersionRouterOutput } from "../server/routers/patch-version";
 
 type LocationFormData = z.infer<typeof itemFormSchema>;
 
@@ -96,14 +101,11 @@ export function AddItemForm({
 
   const onSubmit = async (formData: LocationFormData) => {
     setLoading(true);
-
     setError(false);
+
     const file = formData.image!.item(0)!;
     try {
-      const ext = file.type.split("/")[1];
-      if (!ext || !["jpg", "jpeg", "png"].includes(ext)) {
-        throw new Error("invalid file type: " + file.type);
-      }
+      const ext = getFileExtension(file);
 
       const createdItem = await createItem({
         description: formData.description,
@@ -138,7 +140,8 @@ export function AddItemForm({
 
       reset();
       onCreated();
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to add item", err);
       setError(true);
     }
     setLoading(false);
@@ -165,13 +168,13 @@ export function AddItemForm({
       </div>
       <div>
         <label
-          htmlFor="gameVersion"
+          htmlFor="gameVersionForm"
           className="text-xs uppercase font-bold text-gray-400"
         >
           Version
         </label>
         <select
-          id="gameVersion"
+          id="gameVersionForm"
           className="w-full"
           {...register("gameVersion")}
         >
@@ -222,10 +225,11 @@ export function AddItemForm({
             setValue("shardId", e.target.value.toUpperCase());
           }}
         />
-        <div className="flex space-x-2 mt-2 items-center">
+        <div className="flex flex-nowrap space-x-2 mt-2 p-1 items-center overflow-auto">
           {shardsFiltered.slice(0, 4).map((shard) => (
             <Button
               key={shard}
+              className="whitespace-nowrap"
               type="button"
               onClick={() =>
                 setValue("shardId", shard, { shouldValidate: false })

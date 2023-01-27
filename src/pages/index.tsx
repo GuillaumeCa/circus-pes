@@ -1,5 +1,6 @@
 import {
   ArrowsUpDownIcon,
+  CheckCircleIcon,
   ClockIcon,
   CogIcon,
   FunnelIcon,
@@ -14,19 +15,14 @@ import SuperJSON from "superjson";
 import { AddItemForm } from "../components/AddItemForm";
 import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
-import { ItemRow } from "../components/ItemRow";
+import { ItemList, SortOption, SortShard } from "../components/Items";
 import { BaseLayout } from "../components/layouts/BaseLayout";
 import { Modal } from "../components/Modal";
 import { TabBar } from "../components/TabBar";
 import { createStaticContext } from "../server/context";
-import { ItemRouterInput } from "../server/routers/item";
 import { appRouter } from "../server/routers/_app";
-import { formatImageUrl, formatPreviewImageUrl } from "../utils/storage";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
-
-export type SortOption = ItemRouterInput["getItems"]["sortBy"];
-export type SortShard = "az" | "num";
 
 const regions = [
   {
@@ -60,7 +56,6 @@ export default function Home() {
 
   // data
   const { data, status } = useSession();
-  const utils = trpc.useContext();
   const { data: patchVersions, isLoading: isLoadingVersions } =
     trpc.patchVersion.getPatchVersions.useQuery();
   const selectedPatch = patchVersions?.[gameVersionId];
@@ -101,7 +96,7 @@ export default function Home() {
         shards[sid]++;
       });
     return shards;
-  }, [items, selectedPatch, region]);
+  }, [items, selectedPatch, region, location]);
 
   const shardIds = Object.keys(groupedShards).sort((a, b) =>
     sortShard === "az"
@@ -216,6 +211,11 @@ export default function Home() {
           <TabBar
             className="mt-1"
             items={[
+              {
+                key: "found",
+                label: "Fiable",
+                icon: <CheckCircleIcon className="w-5 h-5 inline" />,
+              },
               {
                 key: "recent",
                 label: "Récents",
@@ -355,82 +355,14 @@ export default function Home() {
       )}
 
       <div className="mt-4">
-        {(isLoadingItems || isLoadingVersions) && (
-          <p className="text-gray-400">Chargement...</p>
-        )}
-        {error && (
-          <p className="text-gray-400">
-            Erreur de chargement, veuillez recharger la page
-          </p>
-        )}
-        {!error &&
-          !isLoadingItems &&
-          !isLoadingVersions &&
-          (!selectedPatch || itemsFiltered.length === 0) && (
-            <p className="text-gray-400">Aucune création</p>
-          )}
-
-        {!error && items && (
-          <ul className="bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
-            {typeof window !== undefined &&
-              itemsFiltered?.map((item) => (
-                <ItemRow
-                  key={item.id}
-                  id={item.id}
-                  location={item.location}
-                  description={item.description}
-                  authorId={item.userId}
-                  author={item.userName}
-                  avatarUrl={item.userImage}
-                  shard={item.shardId}
-                  likes={item.likesCount}
-                  hasLiked={item.hasLiked === 1}
-                  imagePath={
-                    item.image ? formatImageUrl(item.image) : undefined
-                  }
-                  previewImagePath={
-                    item.image
-                      ? formatPreviewImageUrl(item.patchVersionId, item.id)
-                      : undefined
-                  }
-                  date={new Date(item.createdAt)}
-                  isPublic={item.public}
-                  onLike={(like) => {
-                    if (!selectedPatch) {
-                      return;
-                    }
-
-                    const currentInput: ItemRouterInput["getItems"] = {
-                      patchVersion: selectedPatch.id ?? "",
-                      sortBy: sortOpt,
-                    };
-
-                    const items = utils.item.getItems.getData(currentInput);
-
-                    if (items) {
-                      utils.item.getItems.setData(
-                        currentInput,
-                        items.map((it) => {
-                          if (it.id === item.id) {
-                            return {
-                              ...it,
-                              hasLiked: like === 1 ? 1 : 0,
-                              likesCount: it.likesCount + like,
-                            };
-                          }
-
-                          return it;
-                        })
-                      );
-                    }
-                  }}
-                  onDelete={() => {
-                    refetch();
-                  }}
-                />
-              ))}
-          </ul>
-        )}
+        <ItemList
+          isLoading={isLoadingItems && isLoadingVersions}
+          itemsFiltered={itemsFiltered}
+          hasError={!!error}
+          sortOpt={sortOpt}
+          selectedPatch={selectedPatch}
+          onUpdateItems={() => refetch()}
+        />
       </div>
     </BaseLayout>
   );

@@ -5,12 +5,12 @@ import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
 import SuperJSON from "superjson";
 import { LinkButton } from "../../components/Button";
-import { ItemRow } from "../../components/ItemRow";
+import { calculateIndicator, ItemRow } from "../../components/Items";
 import { BaseLayout } from "../../components/layouts/BaseLayout";
 import { BASE_URL, SEO } from "../../components/Seo";
 import { createStaticContext } from "../../server/context";
 import { appRouter } from "../../server/routers/_app";
-import { formatImageUrl, formatPreviewImageUrl } from "../../utils/storage";
+import { formatImageUrl, formatPreviewItemImageUrl } from "../../utils/storage";
 import { trpc } from "../../utils/trpc";
 
 function getId(query: ParsedUrlQuery): string | undefined {
@@ -46,7 +46,7 @@ export default function Item() {
             title={`Une création près de ${item.location} sur la shard ${item.shardId} (${item.patchVersion})`}
             desc={item.description}
             url={BASE_URL + "/item/" + item.id}
-            imageUrl={formatPreviewImageUrl(item.patchVersionId, item.id)}
+            imageUrl={formatPreviewItemImageUrl(item.patchVersionId, item.id)}
           />
 
           <ul className="mt-5 space-y-2 bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
@@ -60,14 +60,18 @@ export default function Item() {
               shard={item.shardId}
               likes={item.likesCount}
               hasLiked={item.hasLiked === 1}
+              foundIndicator={calculateIndicator(item.found, item.notFound)}
+              onAnswer={() => refetch()}
               imagePath={item.image ? formatImageUrl(item.image) : undefined}
+              responsesCount={item.responsesCount}
               previewImagePath={
                 item.image
-                  ? formatPreviewImageUrl(item.patchVersionId, item.id)
+                  ? formatPreviewItemImageUrl(item.patchVersionId, item.id)
                   : undefined
               }
               date={new Date(item.createdAt)}
               isPublic={item.public}
+              pinnedResponses
               onLike={() => {
                 refetch();
               }}
@@ -99,6 +103,8 @@ export async function getStaticProps(
   const id = context.params?.id as string;
   // prefetch `post.byId`
   await ssg.item.byId.prefetch(id);
+  await ssg.response.getForItem.prefetchInfinite({ itemId: id });
+
   return {
     props: {
       trpcState: ssg.dehydrate(),
