@@ -329,7 +329,7 @@ export function ItemRow({
             className="flex px-1 py-1 text-gray-200 disabled:bg-gray-700 bg-gray-700 hover:bg-gray-800 rounded-md"
           >
             <span className="mx-2 font-semibold">{likes}</span>
-            {location === "Microtech" ? (
+            {location === "Microtech" && hasLiked ? (
               <img src="/pico.png" className="w-6 h-6" />
             ) : (
               <svg
