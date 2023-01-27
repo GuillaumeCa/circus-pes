@@ -364,7 +364,7 @@ export function ItemRow({
             )}
           {responsesCount > 0 && !pinnedResponses && (
             <button
-              className="flex relative items-center px-2 py-1 font-semibold text-gray-200 bg-gray-700 hover:bg-gray-800 rounded-md"
+              className="flex h-8 relative items-center px-2 py-1 font-semibold text-gray-200 bg-gray-700 hover:bg-gray-800 rounded-md"
               onClick={() => setHistory(!history)}
             >
               <span className="absolute z-10 -top-2 -right-3 px-1 min-w-[1.25rem] h-5 mr-1 text-sm shadow-md rounded-full inline-flex text-gray-700 justify-center items-center bg-yellow-500">
@@ -376,7 +376,7 @@ export function ItemRow({
                 <ArrowDownIcon className="h-5 w-5 inline-block text-yellow-500" />
               )}
               <span className="ml-2 hidden sm:inline">Historique</span>
-              <ChatBubbleBottomCenterTextIcon className="ml-1 h-5 w-5 inline sm:hidden" />
+              <ChatBubbleBottomCenterTextIcon className="ml-1 h-5 w-5 block sm:hidden" />
             </button>
           )}
         </div>

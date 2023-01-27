@@ -24,7 +24,10 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
           name="description"
           content="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
         />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1"
+        />
         <link
           rel="apple-touch-icon"
           sizes="180x180"

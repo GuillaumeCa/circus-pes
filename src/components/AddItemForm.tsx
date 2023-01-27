@@ -168,13 +168,13 @@ export function AddItemForm({
       </div>
       <div>
         <label
-          htmlFor="gameVersion"
+          htmlFor="gameVersionForm"
           className="text-xs uppercase font-bold text-gray-400"
         >
           Version
         </label>
         <select
-          id="gameVersion"
+          id="gameVersionForm"
           className="w-full"
           {...register("gameVersion")}
         >
@@ -225,7 +225,7 @@ export function AddItemForm({
             setValue("shardId", e.target.value.toUpperCase());
           }}
         />
-        <div className="flex flex-nowrap space-x-2 mt-2 items-center overflow-auto">
+        <div className="flex flex-nowrap space-x-2 mt-2 p-1 items-center overflow-auto">
           {shardsFiltered.slice(0, 4).map((shard) => (
             <Button
               key={shard}
