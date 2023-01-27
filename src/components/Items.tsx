@@ -1,6 +1,7 @@
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  ChatBubbleBottomCenterTextIcon,
   ChatBubbleLeftEllipsisIcon,
   ClockIcon,
   LinkIcon,
@@ -64,21 +65,22 @@ export function ItemList({
 }) {
   const utils = trpc.useContext();
 
+  if (isLoading) {
+    return <p className="text-gray-400">Chargement...</p>;
+  }
+
+  if (!selectedPatch || itemsFiltered.length === 0) {
+    return <p className="text-gray-400">Aucune création</p>;
+  }
+
   return (
     <>
-      {isLoading && <p className="text-gray-400">Chargement...</p>}
       {hasError && (
-        <p className="text-gray-400">
+        <p className="text-gray-400 mb-2">
           Erreur de chargement, veuillez recharger la page
         </p>
       )}
-      {!hasError &&
-        !isLoading &&
-        (!selectedPatch || itemsFiltered.length === 0) && (
-          <p className="text-gray-400">Aucune création</p>
-        )}
-
-      {!hasError && itemsFiltered && (
+      {itemsFiltered && (
         <ul className="bg-gray-600 rounded-none sm:rounded-xl -mx-3 sm:mx-auto divide-y-2 divide-gray-700">
           {itemsFiltered.map((item) => (
             <ItemRow
@@ -328,7 +330,7 @@ export function ItemRow({
           >
             <span className="mx-2 font-semibold">{likes}</span>
             {location === "Microtech" ? (
-              <img src="/pico.png" className="w-6 h-6 inline" />
+              <img src="/pico.png" className="w-6 h-6" />
             ) : (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -373,7 +375,8 @@ export function ItemRow({
               ) : (
                 <ArrowDownIcon className="h-5 w-5 inline-block text-yellow-500" />
               )}
-              <span className="ml-2">Historique</span>
+              <span className="ml-2 hidden sm:inline">Historique</span>
+              <ChatBubbleBottomCenterTextIcon className="ml-1 h-5 w-5 inline sm:hidden" />
             </button>
           )}
         </div>
