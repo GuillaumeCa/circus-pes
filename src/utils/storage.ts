@@ -1,3 +1,5 @@
+import { useLocalStorage } from "../hooks/useLocaleStorage";
+
 export const MIN_IMAGE_UPLOAD_SIZE = 1024; // 1KB;
 export const MAX_IMAGE_UPLOAD_SIZE = 5e6; // 5MB
 export const PRESIGNED_UPLOAD_IMAGE_EXPIRATION_DURATION = 5 * 60; // 5min
@@ -33,3 +35,9 @@ export const IMAGE_BUCKET_NAME =
 export const STORAGE_BASE_URL = `https://${
   process.env.NEXT_PUBLIC_MINIO_ENDPOINT || ""
 }/${IMAGE_BUCKET_NAME}/`;
+
+export function useOpts() {
+  return useLocalStorage("opts", {
+    likeFinley: true,
+  });
+}
