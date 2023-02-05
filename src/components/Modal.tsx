@@ -52,7 +52,7 @@ export function Modal({
             >
               <Dialog.Panel
                 className={
-                  "w-full max-w-md transform overflow-hidden text-gray-300 bg-gray-700 rounded-lg shadow-xl transition-all " +
+                  "w-full transform overflow-hidden text-gray-300 bg-gray-700 rounded-lg shadow-xl transition-all " +
                   className
                 }
               >
