@@ -1,4 +1,4 @@
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../../components/Button";
@@ -9,6 +9,8 @@ import { formatImageUrl, formatPreviewItemImageUrl } from "../../utils/storage";
 import { getParagraphs } from "../../utils/text";
 import { trpc } from "../../utils/trpc";
 
+import { ItemForm } from "../../components/ItemForm";
+import { Modal } from "../../components/Modal";
 import type { LocationInfo } from "../../server/db/item";
 
 export function AdminItemRow({
@@ -96,12 +98,29 @@ function ItemMgtRow({
   const { mutateAsync: updateVisibility } =
     trpc.item.updateVisibility.useMutation();
   const { mutateAsync: deleteItem } = trpc.item.deleteItem.useMutation();
+  const [showEditForm, setShowEditForm] = useState(false);
 
   return (
     <li
       key={item.id}
       className="p-2 lg:p-3 flex flex-col lg:flex-row justify-between"
     >
+      <Modal
+        open={showEditForm}
+        onClose={() => setShowEditForm(false)}
+        className="max-w-2xl"
+      >
+        <ItemForm
+          item={item}
+          shardIds={[]}
+          onCancel={() => setShowEditForm(false)}
+          onCreated={() => {
+            onUpdate();
+            setShowEditForm(false);
+          }}
+        />
+      </Modal>
+
       <AdminItemRow
         id={item.id}
         image={item.image}
@@ -135,6 +154,13 @@ function ItemMgtRow({
           </Button>
         )}
 
+        <Button
+          btnType="secondary"
+          icon={<PencilSquareIcon className="w-5 h-5" />}
+          onClick={() => setShowEditForm(true)}
+        >
+          Modifier
+        </Button>
         <Button
           icon={<TrashIcon className="w-5 h-5" />}
           onClick={async () => {

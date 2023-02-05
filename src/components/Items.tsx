@@ -28,8 +28,8 @@ import { TimeFormatted } from "./TimeFormatted";
 
 import type { LocationInfo } from "../server/db/item";
 import type { ItemRouterInput } from "../server/routers/item";
-import { AddItemForm } from "./AddItemForm";
 import { FoundIndicator } from "./FoundIndicator";
+import { ItemForm } from "./ItemForm";
 
 export type SortOption = ItemRouterInput["getItems"]["sortBy"];
 export type SortShard = "az" | "num";
@@ -211,7 +211,7 @@ export function ItemRow({
         onClose={() => setShowEditForm(false)}
         className="max-w-2xl"
       >
-        <AddItemForm
+        <ItemForm
           item={item}
           shardIds={[]}
           onCancel={() => setShowEditForm(false)}
@@ -280,7 +280,7 @@ export function ItemRow({
           {data &&
             (authorId === data.user?.id ||
               data.user?.role === UserRole.ADMIN) &&
-            !item.public && (
+            (data.user.role !== UserRole.ADMIN ? !item.public : true) && (
               <>
                 <button
                   title="Editer"

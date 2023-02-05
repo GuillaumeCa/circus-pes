@@ -12,9 +12,9 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import SuperJSON from "superjson";
 
-import { AddItemForm } from "../components/AddItemForm";
 import { AddButton, LinkButton } from "../components/Button";
 import { cls } from "../components/cls";
+import { ItemForm } from "../components/ItemForm";
 import { ItemList, SortOption, SortShard } from "../components/Items";
 import { BaseLayout } from "../components/layouts/BaseLayout";
 import { Modal } from "../components/Modal";
@@ -154,7 +154,7 @@ export default function Home() {
         className="max-w-2xl"
       >
         {showAddForm && patchVersions && (
-          <AddItemForm
+          <ItemForm
             shardIds={shardIds}
             patchVersionList={patchVersions}
             onCancel={() => setShowAddForm(false)}

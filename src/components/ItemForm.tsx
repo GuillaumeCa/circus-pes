@@ -68,7 +68,7 @@ export const itemFormSchema = z
     return true;
   });
 
-export function AddItemForm({
+export function ItemForm({
   item,
   shardIds,
 
@@ -178,7 +178,6 @@ export function AddItemForm({
         }
       }
 
-      reset();
       onCreated();
     } catch (err) {
       console.error("Failed to add item", err);
@@ -358,7 +357,9 @@ export function AddItemForm({
       <div className="flex items-center justify-end space-x-2 mt-3">
         {error && (
           <p className="text-red-500">
-            Impossible d&apos;ajouter la création, veuillez réessayer
+            {isUpdateItem
+              ? "Impossible de modifier la création, veuillez réessayer"
+              : "Impossible d'ajouter la création, veuillez réessayer"}
           </p>
         )}
         <Button type="button" btnType="secondary" onClick={handleCancel}>

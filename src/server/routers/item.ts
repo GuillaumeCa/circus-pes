@@ -184,6 +184,8 @@ export const itemRouter = router({
         ctx,
         input: { patchId, id, description, location, shardId },
       }) => {
+        const user = ctx.session.user;
+
         const patch = await ctx.prisma.patchVersion.findFirst({
           where: { id: patchId },
         });
@@ -201,14 +203,13 @@ export const itemRouter = router({
             message: "cannot find item to edit",
           });
         }
-        if (item.public) {
+        if (item.public && user.role !== UserRole.ADMIN) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: "FORBIDDEN",
             message: "cannot edit an item that is validated",
           });
         }
 
-        const user = ctx.session.user;
         if (
           user.role !== UserRole.ADMIN &&
           !patch.visible &&
@@ -226,7 +227,7 @@ export const itemRouter = router({
             location,
             shardId,
             userId: ctx.session.user.id,
-            public: false,
+            public: user.role === UserRole.ADMIN ? item.public : false,
           },
           where: {
             id,
