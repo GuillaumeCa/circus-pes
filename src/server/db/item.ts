@@ -102,3 +102,12 @@ export function getItemById(
   group by (i.id, u.id, pv.id)
 `;
 }
+
+export function getItemsByUser(prismaClient: MyPrismaClient, userId: string) {
+  return prismaClient.$queryRaw<LocationInfo[]>`
+  ${getItemBaseQuery(userId)}
+  where u.id = ${userId}
+  group by (i.id, u.id, pv.id)
+  order by i."createdAt" desc
+`;
+}

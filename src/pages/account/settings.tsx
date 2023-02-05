@@ -1,44 +1,16 @@
-import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { Button } from "../components/Button";
-import { BaseLayout } from "../components/layouts/BaseLayout";
-import { TimeFormatted } from "../components/TimeFormatted";
-import { useOpts } from "../utils/storage";
-import { formatRole, formatRoleDescription } from "../utils/user";
+import { useSession } from "next-auth/react";
+import AccountLayout from "../../components/layouts/AccountLayout";
+import { TimeFormatted } from "../../components/TimeFormatted";
+import { useOpts } from "../../utils/storage";
+import { formatRole, formatRoleDescription } from "../../utils/user";
 
-export default function Account() {
+export default function AccountSettings() {
   const { data, status } = useSession();
-  const router = useRouter();
   const [opt, setOpt] = useOpts();
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace("/");
-    }
-  }, [router, status]);
-
-  if (status === "authenticated") {
-    return (
-      <BaseLayout>
-        <div className="mt-5 p-4 bg-gray-600 rounded-lg">
-          <h2 className="text-3xl font-semibold">Mon compte</h2>
-          <p className="mt-2 text-gray-400 text-md">
-            Bonjour, {data?.user.name}.
-          </p>
-          <div className="mt-3">
-            <Button
-              onClick={async () => {
-                await signOut();
-                router.push("/");
-              }}
-              btnType="secondary"
-            >
-              Se déconnecter
-            </Button>
-          </div>
-        </div>
-
+  return (
+    <AccountLayout>
+      {status === "authenticated" && (
         <ul className="space-y-2 mt-5">
           <li className="bg-gray-600 p-5 font-semibold rounded-lg">
             <h3 className="text-sm text-gray-400 uppercase">Mon rôle</h3>
@@ -74,9 +46,7 @@ export default function Account() {
             </span>
           </li>
         </ul>
-      </BaseLayout>
-    );
-  }
-
-  return null;
+      )}
+    </AccountLayout>
+  );
 }

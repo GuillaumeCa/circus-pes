@@ -9,7 +9,12 @@ import {
 } from "../../utils/storage";
 import { stream2buffer } from "../../utils/stream";
 import { UserRole } from "../../utils/user";
-import { getItemById, getItemsQuery, sortOptions } from "../db/item";
+import {
+  getItemById,
+  getItemsByUser,
+  getItemsQuery,
+  sortOptions,
+} from "../db/item";
 import {
   createAndStorePreviewImage,
   createImageUploadUrl,
@@ -60,6 +65,10 @@ export const itemRouter = router({
         console.error("could not query items", e);
       }
     }),
+
+  byUser: protectedProcedure.query(async ({ ctx }) => {
+    return getItemsByUser(ctx.prisma, ctx.session.user.id);
+  }),
 
   getAllItems: adminProcedure
     .input(

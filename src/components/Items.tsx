@@ -27,13 +27,10 @@ import { TimeFormatted } from "./TimeFormatted";
 
 import type { LocationInfo } from "../server/db/item";
 import type { ItemRouterInput } from "../server/routers/item";
-import type { PatchVersionRouterOutput } from "../server/routers/patch-version";
 import { FoundIndicator } from "./FoundIndicator";
 
 export type SortOption = ItemRouterInput["getItems"]["sortBy"];
 export type SortShard = "az" | "num";
-
-type PatchVersion = PatchVersionRouterOutput["getPatchVersions"][number];
 
 export function calculateIndicator(found: number, notFound: number) {
   if (found === 0 && notFound === 0) {
@@ -55,25 +52,24 @@ export function calculateIndicator(found: number, notFound: number) {
 export function ItemList({
   isLoading,
   hasError,
-  selectedPatch,
-  itemsFiltered,
-  sortOpt,
+  hasItems,
+  items,
   onUpdateItems,
+  onLike,
 }: {
   isLoading: boolean;
   hasError: boolean;
-  selectedPatch?: PatchVersion;
-  itemsFiltered: LocationInfo[];
-  sortOpt: SortOption;
+  hasItems: boolean;
+  items?: LocationInfo[];
+  onLike(item: LocationInfo, like: number): void;
   onUpdateItems(): void;
 }) {
-  const utils = trpc.useContext();
-
   if (isLoading) {
     return <p className="text-gray-400">Chargement...</p>;
   }
 
-  if (!selectedPatch || itemsFiltered.length === 0) {
+  //!selectedPatch || itemsFiltered.length === 0
+  if (!hasItems) {
     return <p className="text-gray-400">Aucune création</p>;
   }
 
@@ -84,9 +80,9 @@ export function ItemList({
           Erreur de chargement, veuillez recharger la page
         </p>
       )}
-      {itemsFiltered && (
+      {items && (
         <ul className="bg-gray-600 rounded-none sm:rounded-xl -mx-3 sm:mx-auto divide-y-2 divide-gray-700">
-          {itemsFiltered.map((item) => (
+          {items.map((item) => (
             <ItemRow
               key={item.id}
               id={item.id}
@@ -109,35 +105,7 @@ export function ItemList({
               isPublic={item.public}
               responsesCount={item.responsesCount}
               onAnswer={onUpdateItems}
-              onLike={(like) => {
-                if (!selectedPatch) {
-                  return;
-                }
-
-                const currentInput: ItemRouterInput["getItems"] = {
-                  patchVersion: selectedPatch.id ?? "",
-                  sortBy: sortOpt,
-                };
-
-                const items = utils.item.getItems.getData(currentInput);
-
-                if (items) {
-                  utils.item.getItems.setData(
-                    currentInput,
-                    items.map((it) => {
-                      if (it.id === item.id) {
-                        return {
-                          ...it,
-                          hasLiked: like === 1 ? 1 : 0,
-                          likesCount: it.likesCount + like,
-                        };
-                      }
-
-                      return it;
-                    })
-                  );
-                }
-              }}
+              onLike={(like) => onLike(item, like)}
               onDelete={onUpdateItems}
             />
           ))}

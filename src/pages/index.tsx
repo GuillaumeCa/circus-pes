@@ -20,6 +20,7 @@ import { BaseLayout } from "../components/layouts/BaseLayout";
 import { Modal } from "../components/Modal";
 import { TabBar } from "../components/TabBar";
 import { createStaticContext } from "../server/context";
+import { ItemRouterInput } from "../server/routers/item";
 import { appRouter } from "../server/routers/_app";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
@@ -55,6 +56,7 @@ export default function Home() {
   const [showAddForm, setShowAddForm] = useState(false);
 
   // data
+  const utils = trpc.useContext();
   const { data, status } = useSession();
   const { data: patchVersions, isLoading: isLoadingVersions } =
     trpc.patchVersion.getPatchVersions.useQuery();
@@ -357,10 +359,38 @@ export default function Home() {
       <div className="mt-4">
         <ItemList
           isLoading={isLoadingItems && isLoadingVersions}
-          itemsFiltered={itemsFiltered}
+          items={itemsFiltered}
+          hasItems={!!selectedPatch && itemsFiltered.length !== 0}
           hasError={!!error}
-          sortOpt={sortOpt}
-          selectedPatch={selectedPatch}
+          onLike={(item, like) => {
+            if (!selectedPatch) {
+              return;
+            }
+
+            const currentInput: ItemRouterInput["getItems"] = {
+              patchVersion: selectedPatch.id ?? "",
+              sortBy: sortOpt,
+            };
+
+            const items = utils.item.getItems.getData(currentInput);
+
+            if (items) {
+              utils.item.getItems.setData(
+                currentInput,
+                items.map((it) => {
+                  if (it.id === item.id) {
+                    return {
+                      ...it,
+                      hasLiked: like === 1 ? 1 : 0,
+                      likesCount: it.likesCount + like,
+                    };
+                  }
+
+                  return it;
+                })
+              );
+            }
+          }}
           onUpdateItems={() => refetch()}
         />
       </div>
