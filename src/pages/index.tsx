@@ -156,7 +156,6 @@ export default function Home() {
         {showAddForm && patchVersions && (
           <ItemForm
             shardIds={shardIds}
-            patchVersionList={patchVersions}
             onCancel={() => setShowAddForm(false)}
             onCreated={() => {
               refetch();
