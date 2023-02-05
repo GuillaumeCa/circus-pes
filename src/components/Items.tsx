@@ -5,6 +5,7 @@ import {
   ChatBubbleLeftEllipsisIcon,
   ClockIcon,
   LinkIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -27,6 +28,7 @@ import { TimeFormatted } from "./TimeFormatted";
 
 import type { LocationInfo } from "../server/db/item";
 import type { ItemRouterInput } from "../server/routers/item";
+import { AddItemForm } from "./AddItemForm";
 import { FoundIndicator } from "./FoundIndicator";
 
 export type SortOption = ItemRouterInput["getItems"]["sortBy"];
@@ -85,27 +87,9 @@ export function ItemList({
           {items.map((item) => (
             <ItemRow
               key={item.id}
-              id={item.id}
-              location={item.location}
-              description={item.description}
-              authorId={item.userId}
-              author={item.userName}
-              avatarUrl={item.userImage}
-              shard={item.shardId}
-              likes={item.likesCount}
-              hasLiked={item.hasLiked === 1}
-              foundIndicator={calculateIndicator(item.found, item.notFound)}
-              imagePath={item.image ? formatImageUrl(item.image) : undefined}
-              previewImagePath={
-                item.image
-                  ? formatPreviewItemImageUrl(item.patchVersionId, item.id)
-                  : undefined
-              }
-              date={new Date(item.createdAt)}
-              isPublic={item.public}
-              responsesCount={item.responsesCount}
-              onAnswer={onUpdateItems}
+              item={item}
               onLike={(like) => onLike(item, like)}
+              onUpdateItems={onUpdateItems}
               onDelete={onUpdateItems}
             />
           ))}
@@ -158,56 +142,51 @@ function LikeIcon({
 }
 
 interface ItemRowProps {
-  id: string;
-  authorId?: string;
-  location: string;
-  description: string;
-  author: string | null;
-  avatarUrl: string | null;
-  date: Date;
-  shard: string;
-  likes: number;
-  hasLiked: boolean;
-  previewImagePath?: string;
-  imagePath?: string;
-  isPublic: boolean;
-  foundIndicator: number | null;
-  responsesCount: number;
+  item: LocationInfo;
   pinnedResponses?: boolean;
 
-  onDelete(): void;
   onLike(like: number): void;
-  onAnswer(): void;
+  onUpdateItems(): void;
+  onDelete(): void;
 }
 
 export function ItemRow({
-  id,
-  location,
-  description,
-  authorId,
-  author,
-  avatarUrl,
-  shard,
-  date,
-  likes,
-  hasLiked,
-  previewImagePath,
-  imagePath,
-  isPublic,
-  foundIndicator,
-  responsesCount,
+  item,
   pinnedResponses,
 
-  onDelete,
   onLike,
-  onAnswer,
+  onDelete,
+  onUpdateItems,
 }: ItemRowProps) {
+  const {
+    id,
+    location,
+    description,
+    userId: authorId,
+    userName: author,
+    userImage: avatarUrl,
+    shardId: shard,
+    likesCount: likes,
+    public: isPublic,
+    responsesCount,
+  } = item;
+
+  const hasLiked = item.hasLiked === 1;
+  const foundIndicator = calculateIndicator(item.found, item.notFound);
+  const imagePath = item.image ? formatImageUrl(item.image) : undefined;
+  const previewImagePath = item.image
+    ? formatPreviewItemImageUrl(item.patchVersionId, item.id)
+    : undefined;
+
+  const date = new Date(item.createdAt);
+
   const { data, status } = useSession();
   const { mutateAsync: deleteItem } = trpc.item.deleteItem.useMutation();
   const { mutateAsync: likeItem } = trpc.item.like.useMutation();
   const { mutateAsync: unLikeItem } = trpc.item.unLike.useMutation();
   const trpcCtx = trpc.useContext();
 
+  const [showEditForm, setShowEditForm] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [showResponseForm, setShowResponseForm] = useState(false);
 
@@ -227,6 +206,22 @@ export function ItemRow({
 
   return (
     <li className="flex flex-col p-3 sm:p-4">
+      <Modal
+        open={showEditForm}
+        onClose={() => setShowEditForm(false)}
+        className="max-w-2xl"
+      >
+        <AddItemForm
+          item={item}
+          shardIds={[]}
+          onCancel={() => setShowEditForm(false)}
+          onCreated={() => {
+            onUpdateItems();
+            setShowEditForm(false);
+          }}
+        />
+      </Modal>
+
       <div className="flex justify-between">
         <div className="flex flex-col sm:flex-row">
           <div className="flex items-center">
@@ -284,14 +279,24 @@ export function ItemRow({
           </button>
           {data &&
             (authorId === data.user?.id ||
-              data.user?.role === UserRole.ADMIN) && (
-              <button
-                className="active:text-gray-500"
-                title="Supprimer"
-                onClick={() => setShowDeletePopup(true)}
-              >
-                <TrashIcon />
-              </button>
+              data.user?.role === UserRole.ADMIN) &&
+            !item.public && (
+              <>
+                <button
+                  title="Editer"
+                  className="active:text-gray-500"
+                  onClick={() => setShowEditForm(true)}
+                >
+                  <PencilSquareIcon className="w-5 h-5" />
+                </button>
+                <button
+                  className="active:text-gray-500"
+                  title="Supprimer"
+                  onClick={() => setShowDeletePopup(true)}
+                >
+                  <TrashIcon />
+                </button>
+              </>
             )}
         </div>
       </div>
@@ -387,7 +392,7 @@ export function ItemRow({
             itemId={id}
             onSuccess={() => {
               setHistory(true);
-              onAnswer();
+              onUpdateItems();
               trpcCtx.response.getForItem.refetch();
             }}
             onClose={() => setShowResponseForm(false)}
@@ -409,7 +414,7 @@ export function ItemRow({
 
       {(history || pinnedResponses) && (
         <div className="mt-3 border-t-4 border-gray-500/30">
-          <ResponsesList itemId={id} onAnswer={onAnswer} />
+          <ResponsesList itemId={id} onAnswer={onUpdateItems} />
         </div>
       )}
     </li>

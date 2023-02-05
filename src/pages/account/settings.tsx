@@ -1,6 +1,5 @@
 import { useSession } from "next-auth/react";
 import AccountLayout from "../../components/layouts/AccountLayout";
-import { TimeFormatted } from "../../components/TimeFormatted";
 import { useOpts } from "../../utils/storage";
 import { formatRole, formatRoleDescription } from "../../utils/user";
 
@@ -36,14 +35,6 @@ export default function AccountSettings() {
           <li className="bg-gray-600 p-5 font-semibold rounded-lg">
             <h3 className="text-sm text-gray-400 uppercase">Mon email</h3>
             <span className="text-lg">{data.user.email}</span>
-          </li>
-          <li className="bg-gray-600 p-5 font-semibold rounded-lg">
-            <h3 className="text-sm text-gray-400 uppercase">
-              Expiration de la session
-            </h3>
-            <span className="text-lg">
-              <TimeFormatted>{new Date(data.expires)}</TimeFormatted>
-            </span>
           </li>
         </ul>
       )}
