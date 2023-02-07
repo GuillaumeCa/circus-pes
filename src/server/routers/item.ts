@@ -106,7 +106,7 @@ export const itemRouter = router({
           });
         }
 
-        const userId = ctx.session?.user?.id;
+        const userId = ctx.session.user.id;
 
         return getItemsQuery(
           ctx.prisma,
@@ -257,7 +257,11 @@ export const itemRouter = router({
         });
       }
 
-      if (item.image) {
+      if (
+        item.public &&
+        ctx.session.user.role !== UserRole.ADMIN &&
+        item.image
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "image already exist",
@@ -288,7 +292,11 @@ export const itemRouter = router({
       }
 
       // check if the item already has an imaage set
-      if (item.image) {
+      if (
+        item.public &&
+        ctx.session.user.role !== UserRole.ADMIN &&
+        item.image
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "image already exist",
