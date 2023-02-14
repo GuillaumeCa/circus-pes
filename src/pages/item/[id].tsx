@@ -49,7 +49,16 @@ export default function Item() {
             imageUrl={formatPreviewItemImageUrl(item.patchVersionId, item.id)}
           />
 
-          <ul className="mt-5 space-y-2 bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
+          <div className="mt-5 bg-gray-600 inline-block p-3 rounded-lg">
+            <p className="uppercase text-xs text-gray-400 font-bold mb-1">
+              Version
+            </p>
+            <p className="text-lg font-semibold leading-none">
+              {item.patchVersion}
+            </p>
+          </div>
+
+          <ul className="mt-3 space-y-2 bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
             <ItemRow
               item={item}
               pinnedResponses
