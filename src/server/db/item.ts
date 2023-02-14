@@ -12,6 +12,7 @@ function getItemBaseQuery(userId?: string) {
     i."shardId",
     i.public,
     i."createdAt",
+    i."updatedAt",
     i."userId",
     i.image,
     u.image as "userImage",
@@ -47,11 +48,12 @@ export interface LocationInfo {
   userName: string | null;
   likesCount: number;
   hasLiked?: number;
-  createdAt: number;
   public: boolean;
   found: number;
   notFound: number;
   responsesCount: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const sortOptions = ["recent", "like", "found"] as const;

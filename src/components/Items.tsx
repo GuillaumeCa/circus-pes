@@ -175,7 +175,9 @@ export function ItemRow({
   const foundIndicator = calculateIndicator(item.found, item.notFound);
   const imagePath = item.image ? formatImageUrl(item.image) : undefined;
   const previewImagePath = item.image
-    ? formatPreviewItemImageUrl(item.patchVersionId, item.id)
+    ? formatPreviewItemImageUrl(item.patchVersionId, item.id) +
+      "?t=" +
+      item.updatedAt.getTime()
     : undefined;
 
   const date = new Date(item.createdAt);
