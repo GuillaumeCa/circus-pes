@@ -105,10 +105,14 @@ export function getItemById(
 `;
 }
 
-export function getItemsByUser(prismaClient: MyPrismaClient, userId: string) {
+export function getItemsByUser(
+  prismaClient: MyPrismaClient,
+  userId: string,
+  patchVersionId: string
+) {
   return prismaClient.$queryRaw<LocationInfo[]>`
   ${getItemBaseQuery(userId)}
-  where u.id = ${userId}
+  where u.id = ${userId} and i."patchVersionId" = ${patchVersionId}
   group by (i.id, u.id, pv.id)
   order by i."createdAt" desc
 `;

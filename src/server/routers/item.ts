@@ -5,7 +5,7 @@ import { minioClient } from "../../lib/minio";
 import {
   formatPreviewItemImageKey,
   formatPreviewResponseImageKey,
-  IMAGE_BUCKET_NAME
+  IMAGE_BUCKET_NAME,
 } from "../../utils/storage";
 import { stream2buffer } from "../../utils/stream";
 import { UserRole } from "../../utils/user";
@@ -13,19 +13,19 @@ import {
   getItemById,
   getItemsByUser,
   getItemsQuery,
-  sortOptions
+  sortOptions,
 } from "../db/item";
 import {
   createAndStorePreviewImage,
   createImageUploadUrl,
-  isImageValid
+  isImageValid,
 } from "../storage";
 import {
   adminProcedure,
   protectedProcedure,
   publicProcedure,
   router,
-  writeProcedure
+  writeProcedure,
 } from "../trpc";
 import { RouterInput } from "./_app";
 
@@ -81,9 +81,11 @@ export const itemRouter = router({
       }
     }),
 
-  byUser: protectedProcedure.query(async ({ ctx }) => {
-    return getItemsByUser(ctx.prisma, ctx.session.user.id);
-  }),
+  byUser: protectedProcedure
+    .input(z.object({ patchVersionId: z.string() }))
+    .query(async ({ ctx, input: { patchVersionId } }) => {
+      return getItemsByUser(ctx.prisma, ctx.session.user.id, patchVersionId);
+    }),
 
   getAllItems: adminProcedure
     .input(

@@ -189,7 +189,7 @@ export default function ItemsManagement() {
   const { data: patchVersions } =
     trpc.patchVersion.getAllPatchVersions.useQuery();
 
-  const selectedPatchId = patchVersions?.[patchVersionId];
+  const selectedPatch = patchVersions?.[patchVersionId];
 
   let isPublic: boolean | undefined;
   if (filterPublic === "private") {
@@ -206,11 +206,11 @@ export default function ItemsManagement() {
   } = trpc.item.getAllItems.useQuery(
     {
       sortBy: "recent",
-      patchVersion: selectedPatchId?.id ?? "",
+      patchVersion: selectedPatch?.id ?? "",
       public: isPublic,
     },
     {
-      enabled: !!selectedPatchId,
+      enabled: !!selectedPatch,
     }
   );
 
