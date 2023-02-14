@@ -191,7 +191,8 @@ export default function ResponseManagement() {
                   patchVersionId={r.item.patchVersionId}
                   location={r.item.location}
                   shardId={r.item.shardId}
-                  createdAt={r.item.createdAt.getTime()}
+                  createdAt={r.item.createdAt}
+                  updatedAt={r.item.updatedAt}
                   description={r.item.description}
                   userImage={r.item.user.image}
                   userName={r.item.user.name}

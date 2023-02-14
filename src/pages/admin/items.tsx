@@ -20,6 +20,7 @@ export function AdminItemRow({
   location,
   shardId,
   createdAt,
+  updatedAt,
   description,
   userImage,
   userName,
@@ -29,7 +30,8 @@ export function AdminItemRow({
   location: string;
   shardId: string;
   image: string | null;
-  createdAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   description: string;
   userImage: string | null;
   userName: string | null;
@@ -42,7 +44,11 @@ export function AdminItemRow({
             <img
               alt="image de la création"
               className="rounded-lg shadow-md w-full lg:w-52"
-              src={formatPreviewItemImageUrl(patchVersionId, id)}
+              src={
+                formatPreviewItemImageUrl(patchVersionId, id) +
+                "?t=" +
+                updatedAt.getTime()
+              }
               width={200}
             />
           </Link>
@@ -73,9 +79,7 @@ export function AdminItemRow({
             <span className="ml-1 italic font-bold text-gray-300">
               {userName}
             </span>
-            <TimeFormatted className="ml-2">
-              {new Date(createdAt)}
-            </TimeFormatted>
+            <TimeFormatted className="ml-2">{createdAt}</TimeFormatted>
           </p>
         </div>
         <div className="p-2">
@@ -128,6 +132,7 @@ function ItemMgtRow({
         location={item.location}
         shardId={item.shardId}
         createdAt={item.createdAt}
+        updatedAt={item.updatedAt}
         description={item.description}
         userImage={item.userImage}
         userName={item.userName}

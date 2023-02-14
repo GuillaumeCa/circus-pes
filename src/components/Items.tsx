@@ -180,7 +180,7 @@ export function ItemRow({
       item.updatedAt.getTime()
     : undefined;
 
-  const date = new Date(item.createdAt);
+  const date = item.createdAt;
 
   const { data, status } = useSession();
   const { mutateAsync: deleteItem } = trpc.item.deleteItem.useMutation();

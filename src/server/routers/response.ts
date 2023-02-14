@@ -103,6 +103,7 @@ export const responseRouter = router({
               patchVersionId: true,
               shardId: true,
               createdAt: true,
+              updatedAt: true,
               user: {
                 select: {
                   name: true,
