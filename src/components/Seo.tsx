@@ -15,7 +15,7 @@ export function SEO(props: {
     <Head>
       <meta property="og:url" content={props.url ?? BASE_URL} />
       <meta property="og:type" content="website" />
-      <meta property="og:site_name" content="Circus PES" />
+      <meta property="og:site_name" content="🎪 Circus PES - circuspes.fr" />
       <meta property="og:locale" content="fr_FR" />
       <meta property="og:title" content={props.title} />
       <meta property="og:description" content={props.desc} />
