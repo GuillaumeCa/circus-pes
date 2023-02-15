@@ -30,6 +30,11 @@ export const patchVersionRouter = router({
         id: true,
         name: true,
         visible: true,
+        _count: {
+          select: {
+            Item: true,
+          },
+        },
       },
       orderBy: [
         {
