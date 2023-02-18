@@ -5,12 +5,12 @@ import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
 import SuperJSON from "superjson";
 import { LinkButton } from "../../components/Button";
-import { calculateIndicator, ItemRow } from "../../components/Items";
+import { ItemRow } from "../../components/Items";
 import { BaseLayout } from "../../components/layouts/BaseLayout";
 import { BASE_URL, SEO } from "../../components/Seo";
 import { createStaticContext } from "../../server/context";
 import { appRouter } from "../../server/routers/_app";
-import { formatImageUrl, formatPreviewItemImageUrl } from "../../utils/storage";
+import { formatPreviewItemImageUrl } from "../../utils/storage";
 import { trpc } from "../../utils/trpc";
 
 function getId(query: ParsedUrlQuery): string | undefined {
@@ -49,29 +49,20 @@ export default function Item() {
             imageUrl={formatPreviewItemImageUrl(item.patchVersionId, item.id)}
           />
 
-          <ul className="mt-5 space-y-2 bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
+          <div className="mt-5 bg-gray-600 inline-block p-3 rounded-lg">
+            <p className="uppercase text-xs text-gray-400 font-bold mb-1">
+              Version
+            </p>
+            <p className="text-lg font-semibold leading-none">
+              {item.patchVersion}
+            </p>
+          </div>
+
+          <ul className="mt-3 space-y-2 bg-gray-600 rounded-lg divide-y-2 divide-gray-700">
             <ItemRow
-              id={item.id}
-              location={item.location}
-              description={item.description}
-              authorId={item.userId}
-              author={item.userName}
-              avatarUrl={item.userImage}
-              shard={item.shardId}
-              likes={item.likesCount}
-              hasLiked={item.hasLiked === 1}
-              foundIndicator={calculateIndicator(item.found, item.notFound)}
-              onAnswer={() => refetch()}
-              imagePath={item.image ? formatImageUrl(item.image) : undefined}
-              responsesCount={item.responsesCount}
-              previewImagePath={
-                item.image
-                  ? formatPreviewItemImageUrl(item.patchVersionId, item.id)
-                  : undefined
-              }
-              date={new Date(item.createdAt)}
-              isPublic={item.public}
+              item={item}
               pinnedResponses
+              onUpdateItems={() => refetch()}
               onLike={() => {
                 refetch();
               }}

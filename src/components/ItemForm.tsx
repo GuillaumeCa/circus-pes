@@ -12,55 +12,64 @@ import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
 import { XMarkIcon } from "./Icons";
 
-import type { PatchVersionRouterOutput } from "../server/routers/patch-version";
+import { LocationInfo } from "../server/db/item";
 
 type LocationFormData = z.infer<typeof itemFormSchema>;
 
 interface AddLocationFormProps {
-  patchVersionList: PatchVersionRouterOutput["getPatchVersions"];
+  item?: Partial<LocationInfo>;
   shardIds: string[];
 
   onCancel(): void;
   onCreated(): void;
 }
 
-export const itemFormSchema = z.object({
-  gameVersion: z.string(),
-  shardId: z
-    .string()
-    .regex(
-      /(US|EU|AP)(E|S|W)[0-9][A-Z]-[0-9]{3}/,
-      "L'identifiant doit être au format EUE1A-000"
-    ),
-  description: z
-    .string()
-    .min(1, "Le champ ne doit pas être vide")
-    .max(255, "La description ne doit pas dépasser 255 caractères"),
-  location: z.string().min(1, "Le champ ne doit pas être vide").default(""),
-  image:
-    typeof window === "undefined"
-      ? z.null()
-      : z
-          .instanceof(FileList, { message: "Une image est requise" })
-          .refine((f: FileList) => {
-            return (
-              f &&
-              f.length > 0 &&
-              ["image/jpg", "image/jpeg", "image/png"].includes(f[0].type)
-            );
-          }, "Le fichier n'est pas une image au format valide: jpeg, jpg ou png")
-          .refine((f: FileList) => {
-            return (
-              f &&
-              f.length > 0 &&
-              f[0].size >= MIN_IMAGE_UPLOAD_SIZE &&
-              f[0].size <= MAX_IMAGE_UPLOAD_SIZE
-            );
-          }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
-});
+export const itemFormSchema = z
+  .object({
+    isEdit: z.boolean().default(false),
+    gameVersion: z.string(),
+    shardId: z
+      .string()
+      .regex(
+        /(US|EU|AP)(E|S|W)[0-9][A-Z]-[0-9]{3}/,
+        "L'identifiant doit être au format EUE1A-000"
+      ),
+    description: z
+      .string()
+      .min(1, "Le champ ne doit pas être vide")
+      .max(255, "La description ne doit pas dépasser 255 caractères"),
+    location: z.string().min(1, "Le champ ne doit pas être vide").default(""),
+    image:
+      typeof window === "undefined"
+        ? z.null()
+        : z
+            .instanceof(FileList, { message: "Une image est requise" })
+            .refine((f: FileList) => {
+              return (
+                f.length === 0 ||
+                (f.length > 0 &&
+                  ["image/jpg", "image/jpeg", "image/png"].includes(f[0].type))
+              );
+            }, "Le fichier n'est pas une image au format valide: jpeg, jpg ou png")
+            .refine((f: FileList) => {
+              return (
+                f.length === 0 ||
+                (f.length > 0 &&
+                  f[0].size >= MIN_IMAGE_UPLOAD_SIZE &&
+                  f[0].size <= MAX_IMAGE_UPLOAD_SIZE)
+              );
+            }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
+  })
+  .refine((input) => {
+    if (!input.isEdit && input.image?.length === 0) {
+      return false;
+    }
 
-export function AddItemForm({
-  patchVersionList,
+    return true;
+  });
+
+export function ItemForm({
+  item,
   shardIds,
 
   onCancel,
@@ -68,13 +77,17 @@ export function AddItemForm({
 }: AddLocationFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const { data: patchVersions } = trpc.patchVersion.getPatchVersions.useQuery();
 
+  const { mutateAsync: updateItem } = trpc.item.edit.useMutation();
   const { mutateAsync: createItem } = trpc.item.create.useMutation();
 
   const { mutateAsync: getImageUploadUrl } =
     trpc.item.imageUploadUrl.useMutation();
 
   const { mutateAsync: setItemImage } = trpc.item.setItemImage.useMutation();
+
+  const isUpdateItem = !!item?.id;
 
   const {
     register,
@@ -86,9 +99,18 @@ export function AddItemForm({
     formState: { errors },
   } = useForm<LocationFormData>({
     resolver: zodResolver(itemFormSchema),
-    defaultValues: {
-      image: undefined,
-    },
+    defaultValues: item
+      ? {
+          isEdit: true,
+          gameVersion: item.patchVersionId,
+          shardId: item.shardId,
+          description: item.description,
+          location: item.location,
+          image: undefined,
+        }
+      : {
+          image: undefined,
+        },
   });
 
   const image = watch("image");
@@ -99,46 +121,63 @@ export function AddItemForm({
     (s) => !shardId || s.toUpperCase().includes(shardId.toUpperCase())
   );
 
+  async function handleImageUpload(file: File, itemId: string, ext: string) {
+    const postPolicyResult = await getImageUploadUrl({
+      itemId,
+      ext: ext as "jpeg" | "jpg" | "png",
+    });
+
+    const formData = new FormData();
+    for (let key in postPolicyResult.formData) {
+      formData.append(key, postPolicyResult.formData[key]);
+    }
+    formData.append("file", file);
+
+    const res = await fetch(postPolicyResult.postURL, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error("failed to upload image");
+    }
+
+    const key = postPolicyResult.formData["key"];
+    await setItemImage({ itemId, image: key });
+  }
+
   const onSubmit = async (formData: LocationFormData) => {
     setLoading(true);
     setError(false);
 
-    const file = formData.image!.item(0)!;
     try {
-      const ext = getFileExtension(file);
-
-      const createdItem = await createItem({
-        description: formData.description,
-        location: formData.location,
-        patchId: formData.gameVersion,
-        shardId: formData.shardId,
-      });
-      if (createdItem) {
-        const postPolicyResult = await getImageUploadUrl({
-          itemId: createdItem.id,
-          ext: ext as "jpeg" | "jpg" | "png",
+      if (item?.id) {
+        const updatedItem = await updateItem({
+          id: item.id,
+          description: formData.description,
+          location: formData.location,
+          patchId: formData.gameVersion,
+          shardId: formData.shardId,
         });
-
-        const formData = new FormData();
-        for (let key in postPolicyResult.formData) {
-          formData.append(key, postPolicyResult.formData[key]);
+        const file = formData.image!.item(0)!;
+        if (updatedItem && file) {
+          const ext = getFileExtension(file);
+          await handleImageUpload(file, updatedItem.id, ext);
         }
-        formData.append("file", file);
-
-        const res = await fetch(postPolicyResult.postURL, {
-          method: "POST",
-          body: formData,
+      } else {
+        const createdItem = await createItem({
+          description: formData.description,
+          location: formData.location,
+          patchId: formData.gameVersion,
+          shardId: formData.shardId,
         });
-
-        const key = postPolicyResult.formData["key"];
-
-        if (!res.ok) {
-          throw new Error("failed to upload image");
+        if (createdItem) {
+          const file = formData.image!.item(0)!;
+          const ext = getFileExtension(file);
+          await handleImageUpload(file, createdItem.id, ext);
         }
-        await setItemImage({ itemId: createdItem.id, image: key });
       }
 
-      reset();
       onCreated();
     } catch (err) {
       console.error("Failed to add item", err);
@@ -157,7 +196,9 @@ export function AddItemForm({
       className="p-4 flex flex-col space-y-2 border border-gray-600 rounded-lg"
     >
       <div className="flex items-start justify-between">
-        <h2 className="text-2xl font-bold mb-3">Nouvelle création</h2>
+        <h2 className="text-2xl font-bold mb-3">
+          {isUpdateItem ? "Modifier la création" : "Nouvelle création"}
+        </h2>
         <button
           type="button"
           className="text-gray-400 bg-transparent hover:bg-gray-600 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
@@ -175,10 +216,11 @@ export function AddItemForm({
         </label>
         <select
           id="gameVersionForm"
+          disabled={isUpdateItem}
           className="w-full"
           {...register("gameVersion")}
         >
-          {patchVersionList.map((pv) => (
+          {patchVersions?.map((pv) => (
             <option key={pv.id} value={pv.id}>
               {pv.name}
             </option>
@@ -315,14 +357,16 @@ export function AddItemForm({
       <div className="flex items-center justify-end space-x-2 mt-3">
         {error && (
           <p className="text-red-500">
-            Impossible d&apos;ajouter la création, veuillez réessayer
+            {isUpdateItem
+              ? "Impossible de modifier la création, veuillez réessayer"
+              : "Impossible d'ajouter la création, veuillez réessayer"}
           </p>
         )}
         <Button type="button" btnType="secondary" onClick={handleCancel}>
           Annuler
         </Button>
         <Button disabled={loading} type="submit">
-          {loading ? "Chargement..." : "Ajouter"}
+          {loading ? "Chargement..." : "Valider"}
         </Button>
       </div>
     </form>

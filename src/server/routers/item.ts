@@ -9,7 +9,12 @@ import {
 } from "../../utils/storage";
 import { stream2buffer } from "../../utils/stream";
 import { UserRole } from "../../utils/user";
-import { getItemById, getItemsQuery, sortOptions } from "../db/item";
+import {
+  getItemById,
+  getItemsByUser,
+  getItemsQuery,
+  sortOptions,
+} from "../db/item";
 import {
   createAndStorePreviewImage,
   createImageUploadUrl,
@@ -25,6 +30,21 @@ import {
 import { RouterInput } from "./_app";
 
 export type ItemRouterInput = RouterInput["item"];
+
+const itemFormSchema = z.object({
+  patchId: z.string(),
+  shardId: z
+    .string()
+    .regex(
+      /(US|EU|AP)(E|S|W)[0-9][A-Z]-[0-9]{3}/,
+      "L'identifiant doit être au format EUE1A-000"
+    ),
+  description: z
+    .string()
+    .min(1, "Le champ ne doit pas être vide")
+    .max(255, "La description ne doit pas dépasser 255 caractères"),
+  location: z.string().min(1, "Le champ ne doit pas être vide"),
+});
 
 export const itemRouter = router({
   getItems: publicProcedure
@@ -61,6 +81,12 @@ export const itemRouter = router({
       }
     }),
 
+  byUser: protectedProcedure
+    .input(z.object({ patchVersionId: z.string() }))
+    .query(async ({ ctx, input: { patchVersionId } }) => {
+      return getItemsByUser(ctx.prisma, ctx.session.user.id, patchVersionId);
+    }),
+
   getAllItems: adminProcedure
     .input(
       z.object({
@@ -82,7 +108,7 @@ export const itemRouter = router({
           });
         }
 
-        const userId = ctx.session?.user?.id;
+        const userId = ctx.session.user.id;
 
         return getItemsQuery(
           ctx.prisma,
@@ -112,22 +138,7 @@ export const itemRouter = router({
     }),
 
   create: writeProcedure
-    .input(
-      z.object({
-        patchId: z.string(),
-        shardId: z
-          .string()
-          .regex(
-            /(US|EU|AP)(E|S|W)[0-9][A-Z]-[0-9]{3}/,
-            "L'identifiant doit être au format EUE1A-000"
-          ),
-        description: z
-          .string()
-          .min(1, "Le champ ne doit pas être vide")
-          .max(255, "La description ne doit pas dépasser 255 caractères"),
-        location: z.string().min(1, "Le champ ne doit pas être vide"),
-      })
-    )
+    .input(itemFormSchema)
     .mutation(
       async ({ input: { description, patchId, location, shardId }, ctx }) => {
         const patch = await ctx.prisma.patchVersion.findFirst({
@@ -162,6 +173,74 @@ export const itemRouter = router({
       }
     ),
 
+  edit: writeProcedure
+    .input(
+      itemFormSchema.merge(
+        z.object({
+          id: z.string(),
+        })
+      )
+    )
+    .mutation(
+      async ({
+        ctx,
+        input: { patchId, id, description, location, shardId },
+      }) => {
+        const user = ctx.session.user;
+
+        const patch = await ctx.prisma.patchVersion.findFirst({
+          where: { id: patchId },
+        });
+        if (!patch) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "invalid patch version",
+          });
+        }
+
+        const item = await ctx.prisma.item.findFirst({ where: { id } });
+        if (!item) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "cannot find item to edit",
+          });
+        }
+        if (item.public && user.role !== UserRole.ADMIN) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "cannot edit an item that is validated",
+          });
+        }
+
+        if (
+          user.role !== UserRole.ADMIN &&
+          !patch.visible &&
+          user.id !== item.userId
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+          });
+        }
+
+        return await ctx.prisma.item.update({
+          data: {
+            description,
+            patchVersionId: patchId,
+            location,
+            shardId,
+            userId: ctx.session.user.id,
+            public: user.role === UserRole.ADMIN ? item.public : false,
+          },
+          where: {
+            id,
+          },
+          select: {
+            id: true,
+          },
+        });
+      }
+    ),
+
   imageUploadUrl: writeProcedure
     .input(
       z.object({
@@ -180,7 +259,11 @@ export const itemRouter = router({
         });
       }
 
-      if (item.image) {
+      if (
+        item.public &&
+        ctx.session.user.role !== UserRole.ADMIN &&
+        item.image
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "image already exist",
@@ -211,7 +294,11 @@ export const itemRouter = router({
       }
 
       // check if the item already has an imaage set
-      if (item.image) {
+      if (
+        item.public &&
+        ctx.session.user.role !== UserRole.ADMIN &&
+        item.image
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "image already exist",

@@ -12,6 +12,7 @@ function getItemBaseQuery(userId?: string) {
     i."shardId",
     i.public,
     i."createdAt",
+    i."updatedAt",
     i."userId",
     i.image,
     u.image as "userImage",
@@ -47,11 +48,12 @@ export interface LocationInfo {
   userName: string | null;
   likesCount: number;
   hasLiked?: number;
-  createdAt: number;
   public: boolean;
   found: number;
   notFound: number;
   responsesCount: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const sortOptions = ["recent", "like", "found"] as const;
@@ -100,5 +102,18 @@ export function getItemById(
   ${getItemBaseQuery(userId)}
   where i.id = ${itemId}
   group by (i.id, u.id, pv.id)
+`;
+}
+
+export function getItemsByUser(
+  prismaClient: MyPrismaClient,
+  userId: string,
+  patchVersionId: string
+) {
+  return prismaClient.$queryRaw<LocationInfo[]>`
+  ${getItemBaseQuery(userId)}
+  where u.id = ${userId} and i."patchVersionId" = ${patchVersionId}
+  group by (i.id, u.id, pv.id)
+  order by i."createdAt" desc
 `;
 }

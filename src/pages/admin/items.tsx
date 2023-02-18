@@ -1,4 +1,4 @@
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../../components/Button";
@@ -9,6 +9,8 @@ import { formatImageUrl, formatPreviewItemImageUrl } from "../../utils/storage";
 import { getParagraphs } from "../../utils/text";
 import { trpc } from "../../utils/trpc";
 
+import { ItemForm } from "../../components/ItemForm";
+import { Modal } from "../../components/Modal";
 import type { LocationInfo } from "../../server/db/item";
 
 export function AdminItemRow({
@@ -18,6 +20,7 @@ export function AdminItemRow({
   location,
   shardId,
   createdAt,
+  updatedAt,
   description,
   userImage,
   userName,
@@ -27,7 +30,8 @@ export function AdminItemRow({
   location: string;
   shardId: string;
   image: string | null;
-  createdAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   description: string;
   userImage: string | null;
   userName: string | null;
@@ -40,7 +44,11 @@ export function AdminItemRow({
             <img
               alt="image de la création"
               className="rounded-lg shadow-md w-full lg:w-52"
-              src={formatPreviewItemImageUrl(patchVersionId, id)}
+              src={
+                formatPreviewItemImageUrl(patchVersionId, id) +
+                "?t=" +
+                updatedAt.getTime()
+              }
               width={200}
             />
           </Link>
@@ -71,9 +79,7 @@ export function AdminItemRow({
             <span className="ml-1 italic font-bold text-gray-300">
               {userName}
             </span>
-            <TimeFormatted className="ml-2">
-              {new Date(createdAt)}
-            </TimeFormatted>
+            <TimeFormatted className="ml-2">{createdAt}</TimeFormatted>
           </p>
         </div>
         <div className="p-2">
@@ -96,12 +102,29 @@ function ItemMgtRow({
   const { mutateAsync: updateVisibility } =
     trpc.item.updateVisibility.useMutation();
   const { mutateAsync: deleteItem } = trpc.item.deleteItem.useMutation();
+  const [showEditForm, setShowEditForm] = useState(false);
 
   return (
     <li
       key={item.id}
       className="p-2 lg:p-3 flex flex-col lg:flex-row justify-between"
     >
+      <Modal
+        open={showEditForm}
+        onClose={() => setShowEditForm(false)}
+        className="max-w-2xl"
+      >
+        <ItemForm
+          item={item}
+          shardIds={[]}
+          onCancel={() => setShowEditForm(false)}
+          onCreated={() => {
+            onUpdate();
+            setShowEditForm(false);
+          }}
+        />
+      </Modal>
+
       <AdminItemRow
         id={item.id}
         image={item.image}
@@ -109,6 +132,7 @@ function ItemMgtRow({
         location={item.location}
         shardId={item.shardId}
         createdAt={item.createdAt}
+        updatedAt={item.updatedAt}
         description={item.description}
         userImage={item.userImage}
         userName={item.userName}
@@ -136,6 +160,13 @@ function ItemMgtRow({
         )}
 
         <Button
+          btnType="secondary"
+          icon={<PencilSquareIcon className="w-5 h-5" />}
+          onClick={() => setShowEditForm(true)}
+        >
+          Modifier
+        </Button>
+        <Button
           icon={<TrashIcon className="w-5 h-5" />}
           onClick={async () => {
             await deleteItem(item.id);
@@ -158,7 +189,7 @@ export default function ItemsManagement() {
   const { data: patchVersions } =
     trpc.patchVersion.getAllPatchVersions.useQuery();
 
-  const selectedPatchId = patchVersions?.[patchVersionId];
+  const selectedPatch = patchVersions?.[patchVersionId];
 
   let isPublic: boolean | undefined;
   if (filterPublic === "private") {
@@ -175,11 +206,11 @@ export default function ItemsManagement() {
   } = trpc.item.getAllItems.useQuery(
     {
       sortBy: "recent",
-      patchVersion: selectedPatchId?.id ?? "",
+      patchVersion: selectedPatch?.id ?? "",
       public: isPublic,
     },
     {
-      enabled: !!selectedPatchId,
+      enabled: !!selectedPatch,
     }
   );
 

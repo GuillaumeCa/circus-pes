@@ -10,11 +10,13 @@ function PatchVersionRow({
   id,
   name,
   isVisible,
+  itemCount,
   onUpdate,
 }: {
   id: string;
   name: string;
   isVisible: boolean;
+  itemCount: number;
   onUpdate(): void;
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -38,7 +40,12 @@ function PatchVersionRow({
 
   return (
     <li className="flex items-center justify-between p-3 bg-gray-600 rounded-lg">
-      <span className="font-bold text-lg">{name}</span>
+      <div>
+        <p className="font-bold text-lg">{name}</p>
+        <p className="text-gray-400">
+          {itemCount} publication{itemCount !== 1 && "s"}
+        </p>
+      </div>
       <div className="flex">
         <div className="flex items-center">
           <label
@@ -120,6 +127,7 @@ export default function PatchVersions() {
               key={v.id}
               id={v.id}
               name={v.name}
+              itemCount={v._count.Item}
               isVisible={v.visible}
               onUpdate={refetch}
             />

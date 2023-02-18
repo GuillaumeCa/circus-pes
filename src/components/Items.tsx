@@ -5,6 +5,7 @@ import {
   ChatBubbleLeftEllipsisIcon,
   ClockIcon,
   LinkIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -27,13 +28,11 @@ import { TimeFormatted } from "./TimeFormatted";
 
 import type { LocationInfo } from "../server/db/item";
 import type { ItemRouterInput } from "../server/routers/item";
-import type { PatchVersionRouterOutput } from "../server/routers/patch-version";
 import { FoundIndicator } from "./FoundIndicator";
+import { ItemForm } from "./ItemForm";
 
 export type SortOption = ItemRouterInput["getItems"]["sortBy"];
 export type SortShard = "az" | "num";
-
-type PatchVersion = PatchVersionRouterOutput["getPatchVersions"][number];
 
 export function calculateIndicator(found: number, notFound: number) {
   if (found === 0 && notFound === 0) {
@@ -55,25 +54,24 @@ export function calculateIndicator(found: number, notFound: number) {
 export function ItemList({
   isLoading,
   hasError,
-  selectedPatch,
-  itemsFiltered,
-  sortOpt,
+  hasItems,
+  items,
   onUpdateItems,
+  onLike,
 }: {
   isLoading: boolean;
   hasError: boolean;
-  selectedPatch?: PatchVersion;
-  itemsFiltered: LocationInfo[];
-  sortOpt: SortOption;
+  hasItems: boolean;
+  items?: LocationInfo[];
+  onLike(item: LocationInfo, like: number): void;
   onUpdateItems(): void;
 }) {
-  const utils = trpc.useContext();
-
   if (isLoading) {
     return <p className="text-gray-400">Chargement...</p>;
   }
 
-  if (!selectedPatch || itemsFiltered.length === 0) {
+  //!selectedPatch || itemsFiltered.length === 0
+  if (!hasItems) {
     return <p className="text-gray-400">Aucune création</p>;
   }
 
@@ -84,60 +82,14 @@ export function ItemList({
           Erreur de chargement, veuillez recharger la page
         </p>
       )}
-      {itemsFiltered && (
+      {items && (
         <ul className="bg-gray-600 rounded-none sm:rounded-xl -mx-3 sm:mx-auto divide-y-2 divide-gray-700">
-          {itemsFiltered.map((item) => (
+          {items.map((item) => (
             <ItemRow
               key={item.id}
-              id={item.id}
-              location={item.location}
-              description={item.description}
-              authorId={item.userId}
-              author={item.userName}
-              avatarUrl={item.userImage}
-              shard={item.shardId}
-              likes={item.likesCount}
-              hasLiked={item.hasLiked === 1}
-              foundIndicator={calculateIndicator(item.found, item.notFound)}
-              imagePath={item.image ? formatImageUrl(item.image) : undefined}
-              previewImagePath={
-                item.image
-                  ? formatPreviewItemImageUrl(item.patchVersionId, item.id)
-                  : undefined
-              }
-              date={new Date(item.createdAt)}
-              isPublic={item.public}
-              responsesCount={item.responsesCount}
-              onAnswer={onUpdateItems}
-              onLike={(like) => {
-                if (!selectedPatch) {
-                  return;
-                }
-
-                const currentInput: ItemRouterInput["getItems"] = {
-                  patchVersion: selectedPatch.id ?? "",
-                  sortBy: sortOpt,
-                };
-
-                const items = utils.item.getItems.getData(currentInput);
-
-                if (items) {
-                  utils.item.getItems.setData(
-                    currentInput,
-                    items.map((it) => {
-                      if (it.id === item.id) {
-                        return {
-                          ...it,
-                          hasLiked: like === 1 ? 1 : 0,
-                          likesCount: it.likesCount + like,
-                        };
-                      }
-
-                      return it;
-                    })
-                  );
-                }
-              }}
+              item={item}
+              onLike={(like) => onLike(item, like)}
+              onUpdateItems={onUpdateItems}
               onDelete={onUpdateItems}
             />
           ))}
@@ -190,56 +142,53 @@ function LikeIcon({
 }
 
 interface ItemRowProps {
-  id: string;
-  authorId?: string;
-  location: string;
-  description: string;
-  author: string | null;
-  avatarUrl: string | null;
-  date: Date;
-  shard: string;
-  likes: number;
-  hasLiked: boolean;
-  previewImagePath?: string;
-  imagePath?: string;
-  isPublic: boolean;
-  foundIndicator: number | null;
-  responsesCount: number;
+  item: LocationInfo;
   pinnedResponses?: boolean;
 
-  onDelete(): void;
   onLike(like: number): void;
-  onAnswer(): void;
+  onUpdateItems(): void;
+  onDelete(): void;
 }
 
 export function ItemRow({
-  id,
-  location,
-  description,
-  authorId,
-  author,
-  avatarUrl,
-  shard,
-  date,
-  likes,
-  hasLiked,
-  previewImagePath,
-  imagePath,
-  isPublic,
-  foundIndicator,
-  responsesCount,
+  item,
   pinnedResponses,
 
-  onDelete,
   onLike,
-  onAnswer,
+  onDelete,
+  onUpdateItems,
 }: ItemRowProps) {
+  const {
+    id,
+    location,
+    description,
+    userId: authorId,
+    userName: author,
+    userImage: avatarUrl,
+    shardId: shard,
+    likesCount: likes,
+    public: isPublic,
+    responsesCount,
+  } = item;
+
+  const hasLiked = item.hasLiked === 1;
+  const foundIndicator = calculateIndicator(item.found, item.notFound);
+  const imagePath = item.image ? formatImageUrl(item.image) : undefined;
+  const previewImagePath = item.image
+    ? formatPreviewItemImageUrl(item.patchVersionId, item.id) +
+      "?t=" +
+      item.updatedAt.getTime()
+    : undefined;
+
+  const date = item.createdAt;
+
   const { data, status } = useSession();
   const { mutateAsync: deleteItem } = trpc.item.deleteItem.useMutation();
   const { mutateAsync: likeItem } = trpc.item.like.useMutation();
   const { mutateAsync: unLikeItem } = trpc.item.unLike.useMutation();
   const trpcCtx = trpc.useContext();
 
+  const [showEditForm, setShowEditForm] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [showResponseForm, setShowResponseForm] = useState(false);
 
@@ -259,6 +208,22 @@ export function ItemRow({
 
   return (
     <li className="flex flex-col p-3 sm:p-4">
+      <Modal
+        open={showEditForm}
+        onClose={() => setShowEditForm(false)}
+        className="max-w-2xl"
+      >
+        <ItemForm
+          item={item}
+          shardIds={[]}
+          onCancel={() => setShowEditForm(false)}
+          onCreated={() => {
+            onUpdateItems();
+            setShowEditForm(false);
+          }}
+        />
+      </Modal>
+
       <div className="flex justify-between">
         <div className="flex flex-col sm:flex-row">
           <div className="flex items-center">
@@ -316,14 +281,24 @@ export function ItemRow({
           </button>
           {data &&
             (authorId === data.user?.id ||
-              data.user?.role === UserRole.ADMIN) && (
-              <button
-                className="active:text-gray-500"
-                title="Supprimer"
-                onClick={() => setShowDeletePopup(true)}
-              >
-                <TrashIcon />
-              </button>
+              data.user?.role === UserRole.ADMIN) &&
+            (data.user.role !== UserRole.ADMIN ? !item.public : true) && (
+              <>
+                <button
+                  title="Editer"
+                  className="active:text-gray-500"
+                  onClick={() => setShowEditForm(true)}
+                >
+                  <PencilSquareIcon className="w-5 h-5" />
+                </button>
+                <button
+                  className="active:text-gray-500"
+                  title="Supprimer"
+                  onClick={() => setShowDeletePopup(true)}
+                >
+                  <TrashIcon />
+                </button>
+              </>
             )}
         </div>
       </div>
@@ -419,7 +394,7 @@ export function ItemRow({
             itemId={id}
             onSuccess={() => {
               setHistory(true);
-              onAnswer();
+              onUpdateItems();
               trpcCtx.response.getForItem.refetch();
             }}
             onClose={() => setShowResponseForm(false)}
@@ -441,7 +416,7 @@ export function ItemRow({
 
       {(history || pinnedResponses) && (
         <div className="mt-3 border-t-4 border-gray-500/30">
-          <ResponsesList itemId={id} onAnswer={onAnswer} />
+          <ResponsesList itemId={id} onAnswer={onUpdateItems} />
         </div>
       )}
     </li>
