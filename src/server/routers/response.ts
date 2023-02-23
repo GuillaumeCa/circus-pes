@@ -14,6 +14,7 @@ import {
 } from "../storage";
 import {
   adminProcedure,
+  paginate,
   publicProcedure,
   router,
   writeProcedure,
@@ -31,6 +32,7 @@ export const responseRouter = router({
       z.object({ itemId: z.string(), cursor: z.number().min(0).default(0) })
     )
     .query(async ({ ctx, input: { itemId, cursor: page } }) => {
+      const { pageQuery, createPage } = paginate(page, RESPONSES_PAGE_SIZE);
       const isUserAdmin = ctx.session?.user.role === UserRole.ADMIN;
       const responses = await ctx.prisma.response.findMany({
         where: {
@@ -55,8 +57,7 @@ export const responseRouter = router({
                 },
           ],
         },
-        skip: page * RESPONSES_PAGE_SIZE,
-        take: RESPONSES_PAGE_SIZE + 1,
+        ...pageQuery,
         orderBy: {
           createdAt: "desc",
         },
@@ -70,16 +71,7 @@ export const responseRouter = router({
         },
       });
 
-      let nextCursor: number | undefined;
-      if (responses.length > RESPONSES_PAGE_SIZE) {
-        nextCursor = page + 1;
-        responses.pop();
-      }
-
-      return {
-        responses,
-        nextCursor,
-      };
+      return createPage(responses);
     }),
 
   getAdminResponses: adminProcedure
@@ -90,6 +82,10 @@ export const responseRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
+      const { pageQuery, createPage } = paginate(
+        input.cursor,
+        ADMIN_RESPONSE_PAGE_SIZE
+      );
       const responses = await ctx.prisma.response.findMany({
         where: {
           public: input.public,
@@ -119,23 +115,13 @@ export const responseRouter = router({
             },
           },
         },
-        skip: input.cursor * ADMIN_RESPONSE_PAGE_SIZE,
-        take: ADMIN_RESPONSE_PAGE_SIZE + 1,
+        ...pageQuery,
         orderBy: {
           createdAt: "desc",
         },
       });
 
-      let nextCursor: number | undefined;
-      if (responses.length > ADMIN_RESPONSE_PAGE_SIZE) {
-        nextCursor = input.cursor + 1;
-        responses.pop();
-      }
-
-      return {
-        responses,
-        nextCursor,
-      };
+      return createPage(responses);
     }),
 
   create: writeProcedure
@@ -204,57 +190,67 @@ export const responseRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const response = await ctx.prisma.response.findFirst({
-        where: { id: input.id, userId: ctx.session.user.id },
-      });
+      return ctx.prisma
+        .$transaction(async (tx) => {
+          const response = await tx.response.findFirst({
+            where: { id: input.id, userId: ctx.session.user.id },
+          });
 
-      if (!response) {
-        console.error("could not find the response to update");
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
+          if (!response) {
+            console.error("could not find the response to update");
+            throw new TRPCError({ code: "NOT_FOUND" });
+          }
 
-      // check if the item already has an imaage set
-      if (response.image) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "image already exist",
+          // check if the item already has an image set
+          if (response.image) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "image already exist",
+            });
+          }
+
+          await tx.response.update({
+            data: {
+              image: input.image,
+              public: ctx.session.user.role === UserRole.ADMIN, // make item public by default only for admins
+            },
+            where: {
+              id: input.id,
+            },
+          });
+
+          // retrieve the uploaded image
+          const readableStream = await minioClient.getObject(
+            IMAGE_BUCKET_NAME,
+            input.image
+          );
+
+          const imgBuffer = await stream2buffer(readableStream);
+
+          // check if uploaded image has the correct file type, otherwise delete it and the item entity
+          const isValid = await isImageValid(imgBuffer);
+          if (!isValid) {
+            await minioClient.removeObject(IMAGE_BUCKET_NAME, input.image);
+            await tx.response.delete({ where: { id: input.id } });
+
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "invalid file type",
+            });
+          }
+
+          await createAndStorePreviewImage(
+            imgBuffer,
+            formatPreviewResponseImageKey(response.id)
+          );
+        })
+        .catch((err) => {
+          if (err instanceof TRPCError) {
+            throw err;
+          }
+          console.error("Failed to set the image for the response", err);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         });
-      }
-
-      // retrieve the uploaded image
-      const readableStream = await minioClient.getObject(
-        IMAGE_BUCKET_NAME,
-        input.image
-      );
-
-      const imgBuffer = await stream2buffer(readableStream);
-
-      // check if uploaded image has the correct file type, otherwise delete it and the item entity
-      const isValid = await isImageValid(imgBuffer);
-      if (!isValid) {
-        await minioClient.removeObject(IMAGE_BUCKET_NAME, input.image);
-        await ctx.prisma.response.delete({ where: { id: input.id } });
-
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "invalid file type",
-        });
-      }
-
-      await createAndStorePreviewImage(
-        imgBuffer,
-        formatPreviewResponseImageKey(response.id)
-      );
-
-      await ctx.prisma.response.update({
-        data: {
-          image: input.image,
-          public: ctx.session.user.role === UserRole.ADMIN, // make item public by default only for admins
-        },
-        where: {
-          id: input.id,
-        },
-      });
     }),
 
   delete: writeProcedure

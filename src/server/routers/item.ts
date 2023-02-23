@@ -284,61 +284,71 @@ export const itemRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const item = await ctx.prisma.item.findFirst({
-        where: { id: input.itemId, userId: ctx.session.user.id },
-      });
+      return ctx.prisma
+        .$transaction(async (tx) => {
+          const item = await tx.item.findFirst({
+            where: { id: input.itemId, userId: ctx.session.user.id },
+          });
 
-      if (!item) {
-        console.error("could not find the item to update");
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
+          if (!item) {
+            console.error("could not find the item to update");
+            throw new TRPCError({ code: "NOT_FOUND" });
+          }
 
-      // check if the item already has an imaage set
-      if (
-        item.public &&
-        ctx.session.user.role !== UserRole.ADMIN &&
-        item.image
-      ) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "image already exist",
+          // check if the item already has an imaage set
+          if (
+            item.public &&
+            ctx.session.user.role !== UserRole.ADMIN &&
+            item.image
+          ) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "image already exist",
+            });
+          }
+
+          await tx.item.update({
+            data: {
+              image: input.image,
+              public: ctx.session.user.role === UserRole.ADMIN, // make item public by default only for admins
+            },
+            where: {
+              id: input.itemId,
+            },
+          });
+
+          // retrieve the uploaded image
+          const readableStream = await minioClient.getObject(
+            IMAGE_BUCKET_NAME,
+            input.image
+          );
+
+          const imgBuffer = await stream2buffer(readableStream);
+
+          // check if uploaded image has the correct file type, otherwise delete it and the item entity
+          const isValid = await isImageValid(imgBuffer);
+          if (!isValid) {
+            await tx.item.delete({ where: { id: input.itemId } });
+            await minioClient.removeObject(IMAGE_BUCKET_NAME, input.image);
+
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "invalid file type",
+            });
+          }
+
+          await createAndStorePreviewImage(
+            imgBuffer,
+            formatPreviewItemImageKey(item.patchVersionId, item.id)
+          );
+        })
+        .catch((err) => {
+          if (err instanceof TRPCError) {
+            throw err;
+          }
+          console.error("Failed to set the image for the item", err);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         });
-      }
-
-      // retrieve the uploaded image
-      const readableStream = await minioClient.getObject(
-        IMAGE_BUCKET_NAME,
-        input.image
-      );
-
-      const imgBuffer = await stream2buffer(readableStream);
-
-      // check if uploaded image has the correct file type, otherwise delete it and the item entity
-      const isValid = await isImageValid(imgBuffer);
-      if (!isValid) {
-        await minioClient.removeObject(IMAGE_BUCKET_NAME, input.image);
-        await ctx.prisma.item.delete({ where: { id: input.itemId } });
-
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "invalid file type",
-        });
-      }
-
-      await createAndStorePreviewImage(
-        imgBuffer,
-        formatPreviewItemImageKey(item.patchVersionId, item.id)
-      );
-
-      await ctx.prisma.item.update({
-        data: {
-          image: input.image,
-          public: ctx.session.user.role === UserRole.ADMIN, // make item public by default only for admins
-        },
-        where: {
-          id: input.itemId,
-        },
-      });
     }),
 
   deleteItem: writeProcedure
@@ -366,6 +376,15 @@ export const itemRouter = router({
 
         const responses = await tx.response.findMany({ where: { itemId: id } });
 
+        const deletedItem = await tx.item.delete({
+          where: {
+            id,
+          },
+          select: {
+            id: true,
+          },
+        });
+
         await Promise.all(
           responses.map(async (r) => {
             if (r.image) {
@@ -377,15 +396,6 @@ export const itemRouter = router({
             }
           })
         );
-
-        const deletedItem = await tx.item.delete({
-          where: {
-            id,
-          },
-          select: {
-            id: true,
-          },
-        });
 
         if (item.image) {
           await minioClient.removeObject(IMAGE_BUCKET_NAME, item.image);
