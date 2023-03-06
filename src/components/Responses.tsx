@@ -1,7 +1,7 @@
 import {
   ClockIcon,
   HandThumbDownIcon,
-  HandThumbUpIcon
+  HandThumbUpIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
@@ -15,7 +15,7 @@ import Link from "next/link";
 import { ResponseRouterOutput } from "../server/routers/response";
 import {
   formatImageUrl,
-  formatPreviewResponseImageUrl
+  formatPreviewResponseImageUrl,
 } from "../utils/storage";
 import { UserRole } from "../utils/user";
 import { cls } from "./cls";
@@ -46,7 +46,11 @@ export function ResponsesList({
   }
 
   if (error) {
-    return <p className="py-3 text-gray-400">Les réponses n&apos;ont pas pu être récupérées</p>
+    return (
+      <p className="py-3 text-gray-400">
+        Les réponses n&apos;ont pas pu être récupérées
+      </p>
+    );
   }
 
   if (!histories || histories.pages.some((p) => p.responses.length === 0)) {

@@ -7,13 +7,13 @@ const t = initTRPC.context<Context>().create({
   transformer: SuperJSON,
 });
 
-export function paginate<T>(cursor: number, pageSize: number) {
+export function paginate(cursor: number, pageSize: number) {
   return {
     pageQuery: {
       skip: cursor * pageSize,
       take: pageSize + 1,
     },
-    createPage(responses: T[]) {
+    createPage<T>(responses: T[]) {
       let nextCursor: number | undefined;
       if (responses.length > pageSize) {
         nextCursor = cursor + 1;
