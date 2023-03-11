@@ -31,7 +31,7 @@ export const itemFormSchema = z
     shardId: z
       .string()
       .regex(
-        /(US|EU|AP)(E|S|W)[0-9][A-Z]-[0-9]{3}/,
+        /(US|EU|AP)(E|S|W|SE)[0-9][A-Z]-[0-9]{3}/,
         "L'identifiant doit être au format EUE1A-000"
       ),
     description: z

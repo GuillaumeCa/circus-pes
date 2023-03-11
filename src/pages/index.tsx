@@ -4,7 +4,7 @@ import {
   ClockIcon,
   CogIcon,
   FunnelIcon,
-  HeartIcon,
+  HeartIcon
 } from "@heroicons/react/24/outline";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
@@ -35,8 +35,12 @@ const regions = [
     prefix: "US",
   },
   {
-    name: "Asie/Australie",
-    prefix: "AP",
+    name: "Asie",
+    prefix: "APE1",
+  },
+  {
+    name: "Australie",
+    prefix: "APSE2",
   },
 ];
 
