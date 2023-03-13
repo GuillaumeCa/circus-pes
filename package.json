@@ -29,7 +29,7 @@
     "file-type": "^18.2.1",
     "minio": "^7.0.32",
     "next": "^13.2.0",
-    "next-auth": "^4.19.2",
+    "next-auth": "^4.20.1",
     "next-axiom": "^0.16.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
