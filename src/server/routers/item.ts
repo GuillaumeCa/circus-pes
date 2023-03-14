@@ -123,7 +123,9 @@ export const itemRouter = router({
     }),
 
   pendingCount: adminProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.item.count({ where: { public: false } });
+    return ctx.prisma.item.count({
+      where: { public: false, patchVersion: { visible: true } },
+    });
   }),
 
   byId: publicProcedure
