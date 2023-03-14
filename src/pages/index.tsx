@@ -3,6 +3,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   CogIcon,
+  EllipsisHorizontalIcon,
   FunnelIcon,
   HeartIcon,
 } from "@heroicons/react/24/outline";
@@ -71,13 +72,16 @@ function AdminPageLink() {
   );
 }
 
+const MAX_DISPLAYED_SHARDS = 10;
+
 export default function Home() {
   // filters
   const [showFilters, setShowFilters] = useState(true);
   const [gameVersionId, setGameVersion] = useState(0);
-  const [region, setRegion] = useState("");
+  const [region, setRegion] = useState("EU");
   const [selectedShard, setSelectedShard] = useState("");
   const [location, setLocation] = useState("");
+  const [showMoreShards, setShowMoreShards] = useState(false);
 
   // sorting
   const [sortShard, setSortShard] = useState<SortShard>("az");
@@ -301,11 +305,12 @@ export default function Home() {
           </div>
 
           <p className="uppercase font-bold text-xs text-gray-400">Shards</p>
-          <div className="mt-1 flex flex-wrap">
+          <div className="mt-1 flex flex-wrap items-center">
             <button
               onClick={() => {
                 setSelectedShard("");
                 setLocation("");
+                setShowMoreShards(false);
               }}
               className={cls(
                 "rounded-lg px-2 py-1 font-bold mr-2 mb-3",
@@ -316,37 +321,48 @@ export default function Home() {
             </button>
             <button
               onClick={() => setSortShard(sortShard === "az" ? "num" : "az")}
-              className="rounded-lg px-2 font-bold mr-3 mb-3 bg-gray-800 active:bg-gray-800"
+              className="flex px-2 py-1 items-center rounded-lg font-bold mr-3 mb-3 bg-gray-800 active:bg-gray-800"
             >
               <ArrowsUpDownIcon className="w-4 h-4 inline" />
               <span className="ml-1">{sortShard === "az" ? "aZ" : "Nb"}</span>
             </button>
-            {shardIds.map((shardId) => {
-              const isActive = selectedShard === shardId;
-              return (
-                <button
-                  key={shardId}
-                  onClick={() => {
-                    setSelectedShard(isActive ? "" : shardId);
-                    setLocation("");
-                  }}
-                  className={cls(
-                    "relative rounded-lg px-2 py-1 font-bold mr-3 mb-3 hover:shadow-md",
-                    isActive ? "bg-rose-700" : "bg-gray-500"
-                  )}
-                >
-                  <span
+            {shardIds
+              .slice(0, !showMoreShards ? MAX_DISPLAYED_SHARDS : undefined)
+              .map((shardId) => {
+                const isActive = selectedShard === shardId;
+                return (
+                  <button
+                    key={shardId}
+                    onClick={() => {
+                      setSelectedShard(isActive ? "" : shardId);
+                      setLocation("");
+                    }}
                     className={cls(
-                      "absolute z-10 -top-2 -right-3 px-1 min-w-[1.25rem] h-5 mr-1 text-sm shadow-md rounded-full inline-flex justify-center items-center bg-gray-200",
-                      isActive ? "text-rose-700" : "text-gray-500"
+                      "relative rounded-lg px-2 py-1 font-bold mr-3 mb-3 hover:shadow-md",
+                      isActive ? "bg-rose-700" : "bg-gray-500"
                     )}
                   >
-                    {groupedShards[shardId]}
-                  </span>
-                  <span>{shardId}</span>
-                </button>
-              );
-            })}
+                    <span
+                      className={cls(
+                        "absolute z-10 -top-2 -right-3 px-1 min-w-[1.25rem] h-5 mr-1 text-sm shadow-md rounded-full inline-flex justify-center items-center bg-gray-200",
+                        isActive ? "text-rose-700" : "text-gray-500"
+                      )}
+                    >
+                      {groupedShards[shardId]}
+                    </span>
+                    <span>{shardId}</span>
+                  </button>
+                );
+              })}
+            {!showMoreShards && shardIds.length > MAX_DISPLAYED_SHARDS && (
+              <button
+                className="mr-3 mb-3 font-semibold text-sm bg-gray-500/30 hover:bg-gray-500/50 px-2 py-1 rounded-lg"
+                onClick={() => setShowMoreShards(true)}
+              >
+                <EllipsisHorizontalIcon className="w-4 h-4 inline" />
+                <span className="ml-1">Afficher plus</span>
+              </button>
+            )}
           </div>
 
           <p className="uppercase font-bold text-xs text-gray-400">Lieu</p>
