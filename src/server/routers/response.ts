@@ -124,6 +124,10 @@ export const responseRouter = router({
       return createPage(responses);
     }),
 
+  pendingCount: adminProcedure.query(async ({ ctx }) => {
+    return ctx.prisma.response.count({ where: { public: false } });
+  }),
+
   create: writeProcedure
     .input(
       z.object({

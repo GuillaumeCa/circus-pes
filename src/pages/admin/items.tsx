@@ -198,6 +198,8 @@ export default function ItemsManagement() {
     isPublic = true;
   }
 
+  const ctx = trpc.useContext();
+
   const {
     data: items,
     error,
@@ -292,7 +294,10 @@ export default function ItemsManagement() {
               <ItemMgtRow
                 key={item.id}
                 item={item}
-                onUpdate={() => refetch()}
+                onUpdate={() => {
+                  refetch();
+                  ctx.item.pendingCount.invalidate();
+                }}
               />
             ))}
           </ul>

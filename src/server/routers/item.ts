@@ -122,6 +122,10 @@ export const itemRouter = router({
       }
     }),
 
+  pendingCount: adminProcedure.query(async ({ ctx }) => {
+    return ctx.prisma.item.count({ where: { public: false } });
+  }),
+
   byId: publicProcedure
     .input(z.string().optional())
     .query(async ({ ctx, input: id }) => {

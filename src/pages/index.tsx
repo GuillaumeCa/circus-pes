@@ -4,7 +4,7 @@ import {
   ClockIcon,
   CogIcon,
   FunnelIcon,
-  HeartIcon
+  HeartIcon,
 } from "@heroicons/react/24/outline";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
@@ -43,6 +43,33 @@ const regions = [
     prefix: "APSE2",
   },
 ];
+
+function AdminPageLink() {
+  const itemsPending = trpc.item.pendingCount.useQuery();
+  const responsesPending = trpc.response.pendingCount.useQuery();
+  const isLoading = itemsPending.isLoading && responsesPending.isLoading;
+
+  const pendingTotal =
+    (itemsPending?.data ?? 0) + (responsesPending?.data ?? 0);
+
+  return (
+    <div className="relative">
+      {!isLoading && pendingTotal > 0 && (
+        <span
+          className={cls(
+            "absolute z-10 -top-2 -right-3 px-1 min-w-[1.25rem] h-5 mr-1 text-sm shadow-md rounded-full inline-flex justify-center font-bold items-center bg-white text-gray-800"
+          )}
+        >
+          {pendingTotal}
+        </span>
+      )}
+      <LinkButton href="/admin/items" btnType="secondary">
+        <CogIcon className="h-6 w-6" />
+        <span className="ml-1">Admin</span>
+      </LinkButton>
+    </div>
+  );
+}
 
 export default function Home() {
   // filters
@@ -141,14 +168,7 @@ export default function Home() {
               Nouvelle création
             </AddButton>
           )}
-          {data.user.role === UserRole.ADMIN && (
-            <>
-              <LinkButton href="/admin/items" btnType="secondary">
-                <CogIcon className="h-6 w-6" />
-                <span className="ml-1">Admin</span>
-              </LinkButton>
-            </>
-          )}
+          {data.user.role === UserRole.ADMIN && <AdminPageLink />}
         </div>
       )}
 

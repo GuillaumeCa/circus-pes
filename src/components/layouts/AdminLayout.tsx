@@ -7,6 +7,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { trpc } from "../../utils/trpc";
 import { UserRole } from "../../utils/user";
 import { LinkNavigation } from "../LinkNavigation";
 import { BaseLayout } from "./BaseLayout";
@@ -19,6 +20,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const { data, status } = useSession();
   const { replace } = useRouter();
 
+  const itemsPending = trpc.item.pendingCount.useQuery();
+  const responsesPending = trpc.response.pendingCount.useQuery();
+
   useEffect(() => {
     if (
       status === "unauthenticated" ||
@@ -30,16 +34,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <BaseLayout>
-      <div className="my-5 flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
+      <div className="my-5 flex flex-col sm:flex-row gap-3">
         <LinkNavigation
           path="/admin/items"
           icon={<InboxArrowDownIcon className="h-6 w-6 inline" />}
           name="Publications"
+          badge={!itemsPending.isLoading ? itemsPending.data : undefined}
         />
         <LinkNavigation
           path="/admin/responses"
           icon={<ChatBubbleLeftEllipsisIcon className="h-6 w-6 inline" />}
           name="Réponses"
+          badge={
+            !responsesPending.isLoading ? responsesPending.data : undefined
+          }
         />
         <LinkNavigation
           path="/admin/patch-versions"

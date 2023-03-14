@@ -45,6 +45,7 @@ export default function ResponseManagement() {
   const { mutateAsync: updateVisibility } =
     trpc.response.updateVisibility.useMutation();
   const { mutateAsync: deleteResponse } = trpc.response.delete.useMutation();
+  const ctx = trpc.useContext();
 
   return (
     <AdminLayout>
@@ -156,6 +157,7 @@ export default function ResponseManagement() {
                       onClick={async () => {
                         await updateVisibility({ id: r.id, public: true });
                         refetch();
+                        ctx.response.pendingCount.invalidate();
                       }}
                     >
                       Accepter
@@ -166,6 +168,7 @@ export default function ResponseManagement() {
                       onClick={async () => {
                         await updateVisibility({ id: r.id, public: false });
                         refetch();
+                        ctx.response.pendingCount.invalidate();
                       }}
                     >
                       Bloquer
@@ -177,6 +180,7 @@ export default function ResponseManagement() {
                     onClick={async () => {
                       await deleteResponse(r.id);
                       refetch();
+                      ctx.response.pendingCount.invalidate();
                     }}
                     btnType="secondary"
                   >
