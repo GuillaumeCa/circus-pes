@@ -38,6 +38,6 @@ export const STORAGE_BASE_URL = `https://${
 
 export function useOpts() {
   return useLocalStorage("opts", {
-    likeFinley: true,
+    likeFinley: false,
   });
 }
