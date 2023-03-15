@@ -1,0 +1,10 @@
+{
+  "filter.showbutton": "Filtres",
+  "filter.sortby.label": "Trier par",
+  "filter.sortby.options.likes": "Likes",
+  "filter.sortby.options.new": "Récents",
+  "filter.sortby.options.reliable": "Fiable",
+  "filter.version.label": "Version",
+  "new-creation": "Nouvelle création",
+  "none": "Aucune"
+}
