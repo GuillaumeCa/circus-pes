@@ -234,7 +234,6 @@ export const itemRouter = router({
             patchVersionId: patchId,
             location,
             shardId,
-            userId: ctx.session.user.id,
             public: user.role === UserRole.ADMIN ? item.public : false,
           },
           where: {
