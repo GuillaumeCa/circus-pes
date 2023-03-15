@@ -121,6 +121,7 @@ export default function Users() {
       {isLoading && <p>Chargement...</p>}
       {error && <p>Erreur de chargement</p>}
 
+      <p className="mt-2 text-gray-400 text-sm">{users?.length} Utilisateurs</p>
       <ul className="mt-3 space-y-2">
         {users
           ?.filter((u) => u.name?.toLowerCase().includes(search.toLowerCase()))
