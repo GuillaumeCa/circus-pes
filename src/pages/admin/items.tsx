@@ -9,6 +9,7 @@ import { formatImageUrl, formatPreviewItemImageUrl } from "../../utils/storage";
 import { getParagraphs } from "../../utils/text";
 import { trpc } from "../../utils/trpc";
 
+import { PatchVersionFilter } from "../../components/Filters";
 import { ItemForm } from "../../components/ItemForm";
 import { Modal } from "../../components/Modal";
 import type { LocationInfo } from "../../server/db/item";
@@ -220,28 +221,14 @@ export default function ItemsManagement() {
     <AdminLayout>
       <div className="flex space-y-2 lg:space-x-2 flex-col lg:flex-row  items-start lg:items-end justify-between">
         <div>
-          <label
-            htmlFor="gameVersion"
-            className="text-xs uppercase font-bold text-gray-400"
-          >
-            Version
-          </label>
-          <select
-            id="gameVersion"
-            value={patchVersionId}
-            onChange={(e) => {
-              setPatchVersionId(parseInt(e.target.value, 10));
+          <PatchVersionFilter
+            patchVersions={patchVersions}
+            versionIndex={patchVersionId}
+            onSelect={(index) => {
+              setPatchVersionId(index);
             }}
-          >
-            {patchVersions && patchVersions?.length === 0 && (
-              <option disabled>Aucune</option>
-            )}
-            {patchVersions?.map((v, i) => (
-              <option key={v.id} value={i}>
-                {v.name} {!v.visible && " (Archivé)"}
-              </option>
-            ))}
-          </select>
+            showHidden
+          />
         </div>
         <div>
           <TabBar

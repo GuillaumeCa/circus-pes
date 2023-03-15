@@ -1,9 +1,6 @@
 import {
-  ArrowsUpDownIcon,
   CheckCircleIcon,
   ClockIcon,
-  CogIcon,
-  EllipsisHorizontalIcon,
   FunnelIcon,
   HeartIcon,
 } from "@heroicons/react/24/outline";
@@ -13,11 +10,18 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import SuperJSON from "superjson";
 
-import { AddButton, LinkButton } from "../components/Button";
+import { AddButton } from "../components/Button";
 import { cls } from "../components/cls";
+import {
+  LocationFilter,
+  PatchVersionFilter,
+  RegionFilter,
+  ShardFilter,
+} from "../components/Filters";
 import { ItemForm } from "../components/ItemForm";
-import { ItemList, SortOption, SortShard } from "../components/Items";
+import { ItemList, SortOption } from "../components/Items";
 import { BaseLayout } from "../components/layouts/BaseLayout";
+import { AdminPageLink } from "../components/LinkNavigation";
 import { Modal } from "../components/Modal";
 import { TabBar } from "../components/TabBar";
 import { createStaticContext } from "../server/context";
@@ -45,35 +49,6 @@ const regions = [
   },
 ];
 
-function AdminPageLink() {
-  const itemsPending = trpc.item.pendingCount.useQuery();
-  const responsesPending = trpc.response.pendingCount.useQuery();
-  const isLoading = itemsPending.isLoading && responsesPending.isLoading;
-
-  const pendingTotal =
-    (itemsPending?.data ?? 0) + (responsesPending?.data ?? 0);
-
-  return (
-    <div className="relative">
-      {!isLoading && pendingTotal > 0 && (
-        <span
-          className={cls(
-            "absolute z-10 -top-2 -right-3 px-1 min-w-[1.25rem] h-5 mr-1 text-sm shadow-md rounded-full inline-flex justify-center font-bold items-center bg-white text-gray-800"
-          )}
-        >
-          {pendingTotal}
-        </span>
-      )}
-      <LinkButton href="/admin/items" btnType="secondary">
-        <CogIcon className="h-6 w-6" />
-        <span className="ml-1">Admin</span>
-      </LinkButton>
-    </div>
-  );
-}
-
-const MAX_DISPLAYED_SHARDS = 10;
-
 export default function Home() {
   // filters
   const [showFilters, setShowFilters] = useState(true);
@@ -81,10 +56,8 @@ export default function Home() {
   const [region, setRegion] = useState("EU");
   const [selectedShard, setSelectedShard] = useState("");
   const [location, setLocation] = useState("");
-  const [showMoreShards, setShowMoreShards] = useState(false);
 
   // sorting
-  const [sortShard, setSortShard] = useState<SortShard>("az");
   const [sortOpt, setSortOpt] = useState<SortOption>("recent");
 
   // form
@@ -118,6 +91,7 @@ export default function Home() {
     }
   }, []);
 
+  // shards grouped by id and with count
   const groupedShards = useMemo(() => {
     const shards: { [key: string]: number } = {};
     items
@@ -135,12 +109,9 @@ export default function Home() {
     return shards;
   }, [items, selectedPatch, region, location]);
 
-  const shardIds = Object.keys(groupedShards).sort((a, b) =>
-    sortShard === "az"
-      ? a.localeCompare(b)
-      : groupedShards[b] - groupedShards[a]
-  );
+  const shardIds = Object.keys(groupedShards);
 
+  // filtered location list
   const locationsList = Array.from(
     new Set(
       items
@@ -196,30 +167,15 @@ export default function Home() {
       <div className="mt-3 flex flex-col sm:flex-row justify-between items-start sm:items-end">
         <div className="flex space-x-3 items-end">
           <div>
-            <label
-              htmlFor="gameVersion"
-              className="text-xs uppercase font-bold text-gray-400"
-            >
-              Version
-            </label>
-            <select
-              id="gameVersion"
-              value={gameVersionId}
-              onChange={(e) => {
-                setGameVersion(parseInt(e.target.value, 10));
+            <PatchVersionFilter
+              patchVersions={patchVersions}
+              versionIndex={gameVersionId}
+              onSelect={(index) => {
+                setGameVersion(index);
                 setSelectedShard("");
                 setLocation("");
               }}
-            >
-              {patchVersions && patchVersions?.length === 0 && (
-                <option disabled>Aucune</option>
-              )}
-              {patchVersions?.map((v, i) => (
-                <option key={v.id} value={i}>
-                  {v.name}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -266,132 +222,31 @@ export default function Home() {
 
       {showFilters && (
         <>
-          <p className="mt-4 uppercase font-bold text-xs text-gray-400">
-            Régions
-          </p>
-          <div className="mt-1 flex flex-wrap">
-            <button
-              onClick={() => {
-                setRegion("");
-                setSelectedShard("");
-                setLocation("");
-              }}
-              className={cls(
-                "rounded-lg px-2 py-1 font-bold mr-2 mb-3",
-                region === "" ? "bg-rose-700" : "bg-gray-500"
-              )}
-            >
-              Toutes
-            </button>
-            {regions.map((reg) => {
-              const isActive = region === reg.prefix;
-              return (
-                <button
-                  key={reg.prefix}
-                  onClick={() => {
-                    setRegion(isActive ? "" : reg.prefix);
-                    setSelectedShard("");
-                    setLocation("");
-                  }}
-                  className={cls(
-                    "relative rounded-lg px-2 py-1 font-bold mr-3 mb-3 hover:shadow-md",
-                    isActive ? "bg-rose-700" : "bg-gray-500"
-                  )}
-                >
-                  {reg.name}
-                </button>
-              );
-            })}
-          </div>
+          <RegionFilter
+            selectedRegion={region}
+            regions={regions}
+            onSelect={(prefix) => {
+              setRegion(prefix);
+              setSelectedShard("");
+              setLocation("");
+            }}
+          />
 
-          <p className="uppercase font-bold text-xs text-gray-400">Shards</p>
-          <div className="mt-1 flex flex-wrap items-center">
-            <button
-              onClick={() => {
-                setSelectedShard("");
-                setLocation("");
-                setShowMoreShards(false);
-              }}
-              className={cls(
-                "rounded-lg px-2 py-1 font-bold mr-2 mb-3",
-                selectedShard === "" ? "bg-rose-700" : "bg-gray-500"
-              )}
-            >
-              Toutes
-            </button>
-            <button
-              onClick={() => setSortShard(sortShard === "az" ? "num" : "az")}
-              className="flex px-2 py-1 items-center rounded-lg font-bold mr-3 mb-3 bg-gray-800 active:bg-gray-800"
-            >
-              <ArrowsUpDownIcon className="w-4 h-4 inline" />
-              <span className="ml-1">{sortShard === "az" ? "aZ" : "Nb"}</span>
-            </button>
-            {shardIds
-              .slice(0, !showMoreShards ? MAX_DISPLAYED_SHARDS : undefined)
-              .map((shardId) => {
-                const isActive = selectedShard === shardId;
-                return (
-                  <button
-                    key={shardId}
-                    onClick={() => {
-                      setSelectedShard(isActive ? "" : shardId);
-                      setLocation("");
-                    }}
-                    className={cls(
-                      "relative rounded-lg px-2 py-1 font-bold mr-3 mb-3 hover:shadow-md",
-                      isActive ? "bg-rose-700" : "bg-gray-500"
-                    )}
-                  >
-                    <span
-                      className={cls(
-                        "absolute z-10 -top-2 -right-3 px-1 min-w-[1.25rem] h-5 mr-1 text-sm shadow-md rounded-full inline-flex justify-center items-center bg-gray-200",
-                        isActive ? "text-rose-700" : "text-gray-500"
-                      )}
-                    >
-                      {groupedShards[shardId]}
-                    </span>
-                    <span>{shardId}</span>
-                  </button>
-                );
-              })}
-            {!showMoreShards && shardIds.length > MAX_DISPLAYED_SHARDS && (
-              <button
-                className="mr-3 mb-3 font-semibold text-sm bg-gray-500/30 hover:bg-gray-500/50 px-2 py-1 rounded-lg"
-                onClick={() => setShowMoreShards(true)}
-              >
-                <EllipsisHorizontalIcon className="w-4 h-4 inline" />
-                <span className="ml-1">Afficher plus</span>
-              </button>
-            )}
-          </div>
+          <ShardFilter
+            selectedShardId={selectedShard}
+            groupedShards={groupedShards}
+            onSelect={(shard) => {
+              setSelectedShard(shard);
+              setLocation("");
+            }}
+            maxDisplayedShard={3}
+          />
 
-          <p className="uppercase font-bold text-xs text-gray-400">Lieu</p>
-          <div className="mt-1 flex flex-wrap">
-            <button
-              onClick={() => setLocation("")}
-              className={cls(
-                "rounded-full px-3 py-1 font-bold mr-3 mb-3",
-                location === "" ? "bg-rose-700" : "bg-gray-500"
-              )}
-            >
-              Tout
-            </button>
-            {locationsList.map((locationId) => {
-              const isActive = location === locationId;
-              return (
-                <button
-                  key={locationId}
-                  onClick={() => setLocation(isActive ? "" : locationId)}
-                  className={cls(
-                    "relative uppercase rounded-full px-3 py-1 font-bold mr-3 mb-3 hover:shadow-md",
-                    isActive ? "bg-rose-700" : "bg-gray-500"
-                  )}
-                >
-                  {locationId}
-                </button>
-              );
-            })}
-          </div>
+          <LocationFilter
+            selectedLocation={location}
+            locations={locationsList}
+            onSelect={(selected) => setLocation(selected)}
+          />
         </>
       )}
 
@@ -437,12 +292,11 @@ export default function Home() {
   );
 }
 
-// TODO: setup for trpc
 export const getStaticProps: GetStaticProps = async (context) => {
   const ssg = createProxySSGHelpers({
     router: appRouter,
     ctx: await createStaticContext(),
-    transformer: SuperJSON, // optional - adds superjson serialization
+    transformer: SuperJSON,
   });
 
   await ssg.patchVersion.getPatchVersions.prefetch();

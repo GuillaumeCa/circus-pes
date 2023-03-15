@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PatchVersionFilter } from "../../components/Filters";
 import { ItemList } from "../../components/Items";
 import AccountLayout from "../../components/layouts/AccountLayout";
 import { trpc } from "../../utils/trpc";
@@ -23,28 +24,13 @@ export default function Account() {
   return (
     <AccountLayout>
       <div className="mb-3">
-        <label
-          htmlFor="gameVersion"
-          className="text-xs uppercase font-bold text-gray-400"
-        >
-          Version
-        </label>
-        <select
-          id="gameVersion"
-          value={patchVersionId}
-          onChange={(e) => {
-            setPatchVersionId(parseInt(e.target.value, 10));
+        <PatchVersionFilter
+          patchVersions={patchVersions}
+          versionIndex={patchVersionId}
+          onSelect={(index) => {
+            setPatchVersionId(index);
           }}
-        >
-          {patchVersions && patchVersions?.length === 0 && (
-            <option disabled>Aucune</option>
-          )}
-          {patchVersions?.map((v, i) => (
-            <option key={v.id} value={i}>
-              {v.name}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       <ItemList
