@@ -1,11 +1,27 @@
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import AccountLayout from "../../components/layouts/AccountLayout";
 import { useOpts } from "../../utils/storage";
 import { formatRole, formatRoleDescription } from "../../utils/user";
 
+const finleyLabels = [
+  "J'aime les baleines flambés",
+  "J'aime les sushis de baleine",
+  "J'aime le steak de baleine",
+  "J'aime le bouillon de baleine",
+  "J'aime les brochettes de baleine",
+];
+
 export default function AccountSettings() {
   const { data, status } = useSession();
   const [opt, setOpt] = useOpts();
+  const [finleyLabel, setFinleyLabel] = useState(finleyLabels[0]);
+
+  useEffect(() => {
+    setFinleyLabel(
+      finleyLabels[Math.floor(Math.random() * finleyLabels.length)]
+    );
+  }, []);
 
   return (
     <AccountLayout>
@@ -19,14 +35,21 @@ export default function AccountSettings() {
             </p>
           </li>
           <li className="bg-gray-600 p-5 font-semibold rounded-lg">
-            <h3 className="text-sm text-gray-400 uppercase">
-              J&apos;aime finley
+            <h3
+              onClick={() => {
+                setFinleyLabel(
+                  finleyLabels[Math.floor(Math.random() * finleyLabels.length)]
+                );
+              }}
+              className="text-sm text-gray-400 uppercase"
+            >
+              {finleyLabel}
             </h3>
             <label className="text-lg cursor-pointer">
               <input
                 type="checkbox"
-                className="rounded text-rose-500"
-                checked={opt.likeFinley}
+                className="rounded text-rose-500 cursor-pointer"
+                checked={!opt.likeFinley}
                 onChange={() => setOpt({ ...opt, likeFinley: !opt.likeFinley })}
               />
               <span className="ml-2">Oui</span>
