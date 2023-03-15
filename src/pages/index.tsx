@@ -8,6 +8,7 @@ import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import SuperJSON from "superjson";
 
 import { AddButton } from "../components/Button";
@@ -63,6 +64,8 @@ export default function Home() {
 
   // form
   const [showAddForm, setShowAddForm] = useState(false);
+
+  const intl = useIntl();
 
   // data
   const utils = trpc.useContext();
@@ -141,7 +144,10 @@ export default function Home() {
               disabled={showAddForm}
               onClick={() => setShowAddForm(true)}
             >
-              Nouvelle création
+              <FormattedMessage
+                id="new-creation"
+                defaultMessage="Nouvelle création"
+              />
             </AddButton>
           )}
           {data.user.role === UserRole.ADMIN && <AdminPageLink />}
@@ -186,30 +192,47 @@ export default function Home() {
             )}
           >
             <FunnelIcon className="w-6 h-6 inline" />
-            <span className="ml-2">Filtres</span>
+            <span className="ml-2">
+              <FormattedMessage
+                id="filter.showbutton"
+                defaultMessage="Filtres"
+              />
+            </span>
           </button>
         </div>
 
         <div className="mt-2 lg:mt-0">
           <span className="block text-xs uppercase font-bold text-gray-400">
-            Trier par
+            <FormattedMessage
+              id="filter.sortby.label"
+              defaultMessage="Trier par"
+            />
           </span>
           <TabBar
             className="mt-1"
             items={[
               {
                 key: "found",
-                label: "Fiable",
+                label: intl.formatMessage({
+                  id: "filter.sortby.options.reliable",
+                  defaultMessage: "Fiable",
+                }),
                 icon: <CheckCircleIcon className="w-5 h-5 inline" />,
               },
               {
                 key: "recent",
-                label: "Récents",
+                label: intl.formatMessage({
+                  id: "filter.sortby.options.new",
+                  defaultMessage: "Récents",
+                }),
                 icon: <ClockIcon className="w-5 h-5 inline" />,
               },
               {
                 key: "like",
-                label: "Likes",
+                label: intl.formatMessage({
+                  id: "filter.sortby.options.likes",
+                  defaultMessage: "Likes",
+                }),
                 icon: (
                   <HeartIcon fill="currentColor" className="w-5 h-5 inline" />
                 ),

@@ -12,19 +12,46 @@ export { reportWebVitals } from "next-axiom";
 import { Inter } from "@next/font/google";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 
+import { useRouter } from "next/router";
+import { useMemo } from "react";
+import { IntlProvider } from "react-intl";
+
+import English from "../../locales/en.json";
+import French from "../../locales/fr.json";
+
 export const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
 
 function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+  const { locale } = useRouter();
+  const [shortLocale] = locale ? locale.split("-") : ["fr"];
+
+  const messages = useMemo(() => {
+    switch (shortLocale) {
+      case "fr":
+        return French;
+      case "en":
+        return English;
+      default:
+        return French;
+    }
+  }, [shortLocale]);
+
   return (
     <ErrorBoundary>
-      <SessionProvider session={session}>
-        <main className={`${inter.variable} font-sans`}>
-          <Component {...pageProps} />
-        </main>
-      </SessionProvider>
+      <IntlProvider
+        locale={shortLocale}
+        messages={messages}
+        onError={() => null}
+      >
+        <SessionProvider session={session}>
+          <main className={`${inter.variable} font-sans`}>
+            <Component {...pageProps} />
+          </main>
+        </SessionProvider>
+      </IntlProvider>
     </ErrorBoundary>
   );
 }
