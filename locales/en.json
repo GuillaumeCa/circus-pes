@@ -1,0 +1,10 @@
+{
+  "filter.version.label": "Patch",
+  "filter.sortby.label": "Sort by",
+  "filter.sortby.options.likes": "Likes",
+  "filter.sortby.options.new": "New",
+  "filter.sortby.options.reliable": "Accurate",
+  "filter.showbutton": "Filters",
+  "new-creation": "New entry",
+  "none": "None"
+}

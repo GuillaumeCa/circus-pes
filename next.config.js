@@ -6,6 +6,11 @@ const nextConfig = withAxiom({
   images: {
     domains: ["localhost", "storage.circuspes.fr"],
   },
+  i18n: {
+    locales: ["fr", "en"],
+    defaultLocale: "fr",
+    localeDetection: false,
+  },
 });
 
 module.exports = nextConfig;
