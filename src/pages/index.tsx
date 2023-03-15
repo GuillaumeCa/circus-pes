@@ -13,6 +13,7 @@ import SuperJSON from "superjson";
 import { AddButton } from "../components/Button";
 import { cls } from "../components/cls";
 import {
+  FilterMessageDisplay,
   LocationFilter,
   PatchVersionFilter,
   RegionFilter,
@@ -220,73 +221,83 @@ export default function Home() {
         </div>
       </div>
 
-      {showFilters && (
-        <>
-          <RegionFilter
-            selectedRegion={region}
-            regions={regions}
-            onSelect={(prefix) => {
-              setRegion(prefix);
-              setSelectedShard("");
-              setLocation("");
+      <div className="flex flex-col xl:flex-row">
+        {showFilters && (
+          <div className="mt-4 max-w-full xl:max-w-xs flex flex-col gap-1 xl:gap-3">
+            <RegionFilter
+              selectedRegion={region}
+              regions={regions}
+              onSelect={(prefix) => {
+                setRegion(prefix);
+                setSelectedShard("");
+                setLocation("");
+              }}
+            />
+
+            <ShardFilter
+              selectedShardId={selectedShard}
+              groupedShards={groupedShards}
+              onSelect={(shard) => {
+                setSelectedShard(shard);
+                setLocation("");
+              }}
+              maxDisplayedShard={10}
+            />
+
+            <LocationFilter
+              selectedLocation={location}
+              locations={locationsList}
+              onSelect={(selected) => setLocation(selected)}
+            />
+          </div>
+        )}
+
+        <div className="mt-4 flex-1">
+          {!showFilters && (
+            <FilterMessageDisplay
+              region={region}
+              shard={selectedShard}
+              location={location}
+            />
+          )}
+
+          <ItemList
+            isLoading={isLoadingItems && isLoadingVersions}
+            items={itemsFiltered}
+            hasItems={!!selectedPatch && itemsFiltered.length !== 0}
+            hasError={!!error}
+            onLike={(item, like) => {
+              if (!selectedPatch) {
+                return;
+              }
+
+              const currentInput: ItemRouterInput["getItems"] = {
+                patchVersion: selectedPatch.id ?? "",
+                sortBy: sortOpt,
+              };
+
+              const items = utils.item.getItems.getData(currentInput);
+
+              if (items) {
+                utils.item.getItems.setData(
+                  currentInput,
+                  items.map((it) => {
+                    if (it.id === item.id) {
+                      return {
+                        ...it,
+                        hasLiked: like === 1 ? 1 : 0,
+                        likesCount: it.likesCount + like,
+                      };
+                    }
+
+                    return it;
+                  })
+                );
+              }
             }}
+            onUpdateItems={() => refetch()}
           />
-
-          <ShardFilter
-            selectedShardId={selectedShard}
-            groupedShards={groupedShards}
-            onSelect={(shard) => {
-              setSelectedShard(shard);
-              setLocation("");
-            }}
-            maxDisplayedShard={3}
-          />
-
-          <LocationFilter
-            selectedLocation={location}
-            locations={locationsList}
-            onSelect={(selected) => setLocation(selected)}
-          />
-        </>
-      )}
-
-      <div className="mt-4">
-        <ItemList
-          isLoading={isLoadingItems && isLoadingVersions}
-          items={itemsFiltered}
-          hasItems={!!selectedPatch && itemsFiltered.length !== 0}
-          hasError={!!error}
-          onLike={(item, like) => {
-            if (!selectedPatch) {
-              return;
-            }
-
-            const currentInput: ItemRouterInput["getItems"] = {
-              patchVersion: selectedPatch.id ?? "",
-              sortBy: sortOpt,
-            };
-
-            const items = utils.item.getItems.getData(currentInput);
-
-            if (items) {
-              utils.item.getItems.setData(
-                currentInput,
-                items.map((it) => {
-                  if (it.id === item.id) {
-                    return {
-                      ...it,
-                      hasLiked: like === 1 ? 1 : 0,
-                      likesCount: it.likesCount + like,
-                    };
-                  }
-
-                  return it;
-                })
-              );
-            }
-          }}
-          onUpdateItems={() => refetch()}
-        />
+        </div>
       </div>
     </BaseLayout>
   );

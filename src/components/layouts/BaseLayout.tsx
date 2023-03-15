@@ -68,7 +68,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
           }}
         />
 
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <header>
             {isTestEnv && (
               <p className="bg-red-500 mb-2 text-center text-white text-xl rounded p-2 font-bold">

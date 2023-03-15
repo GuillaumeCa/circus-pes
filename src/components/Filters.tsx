@@ -55,8 +55,8 @@ export function RegionFilter({
   onSelect(prefix: string): void;
 }) {
   return (
-    <>
-      <p className="mt-4 uppercase font-bold text-xs text-gray-400">Régions</p>
+    <div>
+      <p className="uppercase font-bold text-xs text-gray-400">Régions</p>
       <div className="mt-1 flex flex-wrap">
         <button
           onClick={() => onSelect("")}
@@ -83,7 +83,7 @@ export function RegionFilter({
           );
         })}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -108,7 +108,7 @@ export function ShardFilter({
   );
 
   return (
-    <>
+    <div>
       <p className="uppercase font-bold text-xs text-gray-400">Shards</p>
       <div className="mt-1 flex flex-wrap items-center">
         <button
@@ -167,7 +167,7 @@ export function ShardFilter({
           </button>
         )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -181,7 +181,7 @@ export function LocationFilter({
   onSelect(location: string): void;
 }) {
   return (
-    <>
+    <div>
       <p className="uppercase font-bold text-xs text-gray-400">Lieu</p>
       <div className="mt-1 flex flex-wrap">
         <button
@@ -209,6 +209,48 @@ export function LocationFilter({
           );
         })}
       </div>
-    </>
+    </div>
   );
+}
+
+export function FilterMessageDisplay({
+  region,
+  shard,
+  location,
+}: {
+  region: string;
+  shard: string;
+  location: string;
+}) {
+  const filters = [
+    region && (
+      <>
+        la région <span className="font-bold">{region}</span>
+      </>
+    ),
+    shard && (
+      <>
+        la shard <span className="font-bold">{shard}</span>
+      </>
+    ),
+    location && (
+      <>
+        le lieu <span className="font-bold">{location}</span>
+      </>
+    ),
+  ].filter(Boolean);
+
+  if (filters.length > 0) {
+    const filterMessage = filters.reduce((a, b) => (
+      <>
+        {a}, {b}
+      </>
+    ));
+
+    return (
+      <p className="text-sm text-gray-400 mb-3">Filtré par {filterMessage}</p>
+    );
+  }
+
+  return null;
 }
