@@ -223,32 +223,34 @@ export default function Home() {
 
       <div className="flex flex-col xl:flex-row">
         {showFilters && (
-          <div className="mt-4 max-w-full xl:max-w-xs flex flex-col gap-1 xl:gap-3">
-            <RegionFilter
-              selectedRegion={region}
-              regions={regions}
-              onSelect={(prefix) => {
-                setRegion(prefix);
-                setSelectedShard("");
-                setLocation("");
-              }}
-            />
+          <div className="mt-4 max-w-full xl:max-w-xs">
+            <div className="sticky top-3 flex flex-col gap-1 xl:gap-3">
+              <RegionFilter
+                selectedRegion={region}
+                regions={regions}
+                onSelect={(prefix) => {
+                  setRegion(prefix);
+                  setSelectedShard("");
+                  setLocation("");
+                }}
+              />
 
-            <ShardFilter
-              selectedShardId={selectedShard}
-              groupedShards={groupedShards}
-              onSelect={(shard) => {
-                setSelectedShard(shard);
-                setLocation("");
-              }}
-              maxDisplayedShard={10}
-            />
+              <ShardFilter
+                selectedShardId={selectedShard}
+                groupedShards={groupedShards}
+                onSelect={(shard) => {
+                  setSelectedShard(shard);
+                  setLocation("");
+                }}
+                maxDisplayedShard={10}
+              />
 
-            <LocationFilter
-              selectedLocation={location}
-              locations={locationsList}
-              onSelect={(selected) => setLocation(selected)}
-            />
+              <LocationFilter
+                selectedLocation={location}
+                locations={locationsList}
+                onSelect={(selected) => setLocation(selected)}
+              />
+            </div>
           </div>
         )}
 
