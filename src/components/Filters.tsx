@@ -223,30 +223,32 @@ export function FilterMessageDisplay({
   location: string;
 }) {
   const filters = [
-    region && (
-      <>
-        la région <span className="font-bold">{region}</span>
-      </>
-    ),
-    shard && (
-      <>
-        la shard <span className="font-bold">{shard}</span>
-      </>
-    ),
-    location && (
-      <>
-        le lieu <span className="font-bold">{location}</span>
-      </>
-    ),
-  ].filter(Boolean);
+    region ? { prefix: "la région", value: region } : null,
+    shard ? { prefix: "la shard", value: shard } : null,
+    location ? { prefix: "le lieu", value: location } : null,
+  ].filter(Boolean) as { prefix: string; value: string }[];
 
   if (filters.length > 0) {
-    const filterMessage = filters.reduce((a, b) => (
-      <>
-        {a}, {b}
-      </>
-    ));
-
+    const filterMessage = filters
+      .map((f) => (
+        <>
+          {f.prefix} <span className="font-bold">{f.value}</span>
+        </>
+      ))
+      .reduce((a, b, idx) => {
+        if (idx === filters.length - 1) {
+          return (
+            <>
+              {a}, et {b}
+            </>
+          );
+        }
+        return (
+          <>
+            {a}, {b}
+          </>
+        );
+      });
     return (
       <p className="text-sm text-gray-400 mb-3">Filtré par {filterMessage}</p>
     );
