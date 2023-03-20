@@ -13,4 +13,10 @@ const nextConfig = withAxiom({
   },
 });
 
+// const withBundleAnalyzer = require("@next/bundle-analyzer")({
+//   enabled: true,
+// });
+
+// module.exports = withBundleAnalyzer({});
+
 module.exports = nextConfig;
