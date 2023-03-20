@@ -45,8 +45,14 @@
   "item.shard.helpmsg": "To retrieve the identifier of the shard you are on, press the key to the left of the 1 on your keyboard then type <m>r_DisplayInfo 3</m> in the console and search the identifier next to ShardId. The identifier will follow this format: <mb>eptu_use1c_sc_alpha_318x_8319689_game_740</mb> and you will have to type <m>USE1C-740</m> in the field below for this example.",
   "item.shard.placeholder": "Identifier of the shard",
   "login": "Login",
+  "logout": "Logout",
   "new-item": "New entry",
-  "site.description": "Welcome on the circus guide ! The ultimate test of the persistence in Star Citizen. You will be able to explore all the creations of the community here.",
+  "settings": "Settings",
+  "settings.email": "My email",
+  "settings.role": "My role",
+  "settings.yes": "Yes",
+  "site.description": "Welcome on the Circus Guide ! The ultimate test of Star Citizen's persistence. You will be able to explore all the creations of the community here.",
   "update-item": "Update entry",
-  "update-item.error": "Could not update the entry, please try again"
+  "update-item.error": "Could not update the entry, please try again",
+  "entries": "Entries"
 }

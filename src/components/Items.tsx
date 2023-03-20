@@ -26,6 +26,7 @@ import { ConfirmModal, Modal } from "./Modal";
 import { ResponsesList } from "./Responses";
 import { TimeFormatted } from "./TimeFormatted";
 
+import { useRouter } from "next/router";
 import { FormattedMessage, useIntl } from "react-intl";
 import type { LocationInfo } from "../server/db/item";
 import type { ItemRouterInput } from "../server/routers/item";
@@ -172,6 +173,7 @@ export function ItemRow({
   } = item;
 
   const intl = useIntl();
+  const router = useRouter();
 
   const hasLiked = item.hasLiked === 1;
   const foundIndicator = calculateIndicator(item.found, item.notFound);
@@ -271,7 +273,9 @@ export function ItemRow({
             onClick={() => {
               const url =
                 typeof window !== undefined
-                  ? `${window.location.origin}/item/${id}`
+                  ? `${window.location.origin}${
+                      router.locale ? `/${router.locale}` : ""
+                    }/item/${id}`
                   : "";
               navigator.clipboard.writeText(url).then(
                 () => {
