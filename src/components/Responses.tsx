@@ -43,20 +43,32 @@ export function ResponsesList({
   );
 
   if (isLoading) {
-    return <p className="py-3 text-gray-400">Chargement...</p>;
+    return (
+      <p className="py-3 text-gray-400">
+        <FormattedMessage id="action.loading" defaultMessage="Chargement..." />
+      </p>
+    );
   }
 
   if (error) {
     return (
       <p className="py-3 text-gray-400">
-        Les réponses n&apos;ont pas pu être récupérées
+        <FormattedMessage
+          id="answers.error"
+          defaultMessage="Les réponses n'ont pas pu être récupérées"
+        />
       </p>
     );
   }
 
   if (!histories || histories.pages.some((p) => p.responses.length === 0)) {
     return (
-      <p className="py-3 text-gray-400">Aucune réponse pour l&apos;instant !</p>
+      <p className="py-3 text-gray-400">
+        <FormattedMessage
+          id="answers.no-answers"
+          defaultMessage="Aucune réponse pour l'instant !"
+        />
+      </p>
     );
   }
 

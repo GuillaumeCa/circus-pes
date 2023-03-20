@@ -29,27 +29,9 @@ import { TabBar } from "../components/TabBar";
 import { createStaticContext } from "../server/context";
 import { ItemRouterInput } from "../server/routers/item";
 import { appRouter } from "../server/routers/_app";
+import { REGIONS } from "../utils/constants";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
-
-const regions = [
-  {
-    name: "Europe",
-    prefix: "EU",
-  },
-  {
-    name: "USA",
-    prefix: "US",
-  },
-  {
-    name: "Asie",
-    prefix: "APE1",
-  },
-  {
-    name: "Australie",
-    prefix: "APSE2",
-  },
-];
 
 export default function Home() {
   // filters
@@ -250,7 +232,7 @@ export default function Home() {
             <div className="sticky top-3 max-h-screen overflow-auto flex flex-col gap-1 xl:gap-3 pb-3">
               <RegionFilter
                 selectedRegion={region}
-                regions={regions}
+                regions={REGIONS}
                 onSelect={(prefix) => {
                   setRegion(prefix);
                   setSelectedShard("");

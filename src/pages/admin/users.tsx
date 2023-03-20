@@ -1,5 +1,6 @@
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { FormattedMessage } from "react-intl";
 import { LoadIcon } from "../../components/Icons";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { ConfirmModal } from "../../components/Modal";
@@ -118,7 +119,14 @@ export default function Users() {
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {isLoading && <p>Chargement...</p>}
+      {isLoading && (
+        <p>
+          <FormattedMessage
+            id="action.loading"
+            defaultMessage="Chargement..."
+          />
+        </p>
+      )}
       {error && <p>Erreur de chargement</p>}
 
       <p className="mt-2 text-gray-400 text-sm">{users?.length} Utilisateurs</p>

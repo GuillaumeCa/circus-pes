@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { LOCATIONS } from "../utils/locations";
+import { LOCATIONS } from "../utils/constants";
 import {
   getFileExtension,
   MAX_IMAGE_UPLOAD_SIZE,
@@ -250,7 +250,7 @@ export function ItemForm({
           htmlFor="shardId"
           className="text-xs uppercase font-bold text-gray-400"
         >
-          <FormattedMessage id="filter.shard.label" defaultMessage="Version" />
+          Shard
         </label>
 
         <div className="border border-gray-600 bg-gray-800 p-2 rounded-lg">
