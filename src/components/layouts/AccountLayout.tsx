@@ -2,6 +2,7 @@ import { CogIcon, InboxArrowDownIcon } from "@heroicons/react/24/outline";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Button } from "../Button";
 import { LinkNavigation } from "../LinkNavigation";
 import { BaseLayout } from "./BaseLayout";
@@ -13,6 +14,7 @@ export default function AccountLayout({
 }) {
   const { data, status } = useSession();
   const router = useRouter();
+  const intl = useIntl();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -39,7 +41,7 @@ export default function AccountLayout({
               }}
               btnType="secondary"
             >
-              Se déconnecter
+              <FormattedMessage id="logout" defaultMessage="Se déconnecter" />
             </Button>
           </div>
         </div>
@@ -47,12 +49,18 @@ export default function AccountLayout({
           <LinkNavigation
             path="/account"
             icon={<InboxArrowDownIcon className="h-6 w-6 inline" />}
-            name="Publications"
+            name={intl.formatMessage({
+              id: "entries",
+              defaultMessage: "Publications",
+            })}
           />
           <LinkNavigation
             path="/account/settings"
             icon={<CogIcon className="h-6 w-6 inline" />}
-            name="Paramètres"
+            name={intl.formatMessage({
+              id: "settings",
+              defaultMessage: "Paramètres",
+            })}
           />
         </div>
 
