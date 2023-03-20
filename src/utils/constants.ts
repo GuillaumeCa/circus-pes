@@ -58,3 +58,34 @@ export const LOCATIONS = [
   },
   { name: "Stanton", children: ["Aaron Halo", "Stanton"] },
 ];
+
+export const REGIONS = [
+  {
+    name: {
+      fr: "Europe",
+      en: "Europe",
+    },
+    prefix: "EU",
+  },
+  {
+    name: {
+      fr: "USA",
+      en: "USA",
+    },
+    prefix: "US",
+  },
+  {
+    name: {
+      fr: "Asie",
+      en: "Asia",
+    },
+    prefix: "APE1",
+  },
+  {
+    name: {
+      fr: "Australie",
+      en: "Australia",
+    },
+    prefix: "APSE2",
+  },
+];

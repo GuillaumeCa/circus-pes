@@ -2,6 +2,7 @@ import {
   ArrowsUpDownIcon,
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { FormattedList, FormattedMessage, useIntl } from "react-intl";
 import { cls } from "./cls";
@@ -64,9 +65,10 @@ export function RegionFilter({
   onSelect,
 }: {
   selectedRegion: string;
-  regions: { prefix: string; name: string }[];
+  regions: { prefix: string; name: { fr: string; en: string } }[];
   onSelect(prefix: string): void;
 }) {
+  const { locale } = useRouter();
   return (
     <div>
       <p className="uppercase font-bold text-xs text-gray-400">
@@ -93,7 +95,7 @@ export function RegionFilter({
                 isActive ? "bg-rose-700" : "bg-gray-500"
               )}
             >
-              {reg.name}
+              {locale && reg.name[locale as "fr" | "en"]}
             </button>
           );
         })}
@@ -124,9 +126,7 @@ export function ShardFilter({
 
   return (
     <div>
-      <p className="uppercase font-bold text-xs text-gray-400">
-        <FormattedMessage id="filter.shard.label" defaultMessage="Shards" />
-      </p>
+      <p className="uppercase font-bold text-xs text-gray-400">Shards</p>
       <div className="mt-1 flex flex-wrap items-center">
         <button
           onClick={() => {

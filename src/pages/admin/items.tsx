@@ -9,6 +9,7 @@ import { formatImageUrl, formatPreviewItemImageUrl } from "../../utils/storage";
 import { getParagraphs } from "../../utils/text";
 import { trpc } from "../../utils/trpc";
 
+import { FormattedMessage } from "react-intl";
 import { PatchVersionFilter } from "../../components/Filters";
 import { ItemForm } from "../../components/ItemForm";
 import { Modal } from "../../components/Modal";
@@ -253,7 +254,14 @@ export default function ItemsManagement() {
       </div>
 
       <div className="mt-4">
-        {isLoading && <p className="text-gray-400">Chargement...</p>}
+        {isLoading && (
+          <p className="text-gray-400">
+            <FormattedMessage
+              id="action.loading"
+              defaultMessage="Chargement..."
+            />
+          </p>
+        )}
         {items && error && (
           <p className="text-gray-400">
             Erreur de chargement, veuillez recharger la page

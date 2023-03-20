@@ -69,18 +69,29 @@ export function ItemList({
   onUpdateItems(): void;
 }) {
   if (isLoading) {
-    return <p className="text-gray-400">Chargement...</p>;
+    return (
+      <p className="text-gray-400">
+        <FormattedMessage id="action.loading" defaultMessage="Chargement..." />{" "}
+      </p>
+    );
   }
 
   if (!hasItems) {
-    return <p className="text-gray-400">Aucune création</p>;
+    return (
+      <p className="text-gray-400">
+        <FormattedMessage id="items.no-item" defaultMessage="Aucune création" />
+      </p>
+    );
   }
 
   return (
     <>
       {hasError && (
         <p className="text-gray-400 mb-2">
-          Erreur de chargement, veuillez recharger la page
+          <FormattedMessage
+            id="loading-error"
+            defaultMessage="Erreur de chargement, veuillez recharger la page"
+          />
         </p>
       )}
       {items && (
