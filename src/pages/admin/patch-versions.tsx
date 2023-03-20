@@ -1,6 +1,7 @@
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { FormattedMessage } from "react-intl";
 import { Button } from "../../components/Button";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { ConfirmModal } from "../../components/Modal";
@@ -119,7 +120,14 @@ export default function PatchVersions() {
         </div>
       </form>
 
-      {isLoading && <p>Chargement...</p>}
+      {isLoading && (
+        <p>
+          <FormattedMessage
+            id="action.loading"
+            defaultMessage="Chargement..."
+          />
+        </p>
+      )}
       {patchVersions && (
         <ul className="mt-3 space-y-2">
           {patchVersions.map((v) => (

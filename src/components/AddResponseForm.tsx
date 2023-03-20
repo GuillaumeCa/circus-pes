@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { FormattedMessage } from "react-intl";
 import { z } from "zod";
 import {
   getFileExtension,
@@ -204,10 +205,17 @@ export function AddResponseForm({
             </p>
           )}
           <Button type="button" btnType="secondary" onClick={onClose}>
-            Annuler
+            <FormattedMessage id="action.cancel" defaultMessage="Annuler" />
           </Button>
           <Button disabled={loading} type="submit">
-            {loading ? "Chargement..." : "Valider"}
+            {loading ? (
+              <FormattedMessage
+                id="action.loading"
+                defaultMessage="Chargement..."
+              />
+            ) : (
+              <FormattedMessage id="action.validate" defaultMessage="Valider" />
+            )}
           </Button>
         </div>
       </form>
