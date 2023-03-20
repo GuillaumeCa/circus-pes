@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run i18n && prisma generate && prisma migrate deploy && next build",
+    "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "next lint",
     "extract:i18n": "formatjs extract 'src/{pages,components,sections}/**/*.{js,ts,tsx}' --format simple --out-file locales/fr.json",
@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@formatjs/cli": "^6.0.4",
+    "@next/bundle-analyzer": "^13.2.4",
     "@tailwindcss/forms": "^0.5.3",
     "@types/minio": "^7.0.15",
     "@types/sharp": "^0.31.1",

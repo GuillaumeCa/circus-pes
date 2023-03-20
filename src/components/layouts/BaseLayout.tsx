@@ -2,8 +2,10 @@ import { signIn, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { Toaster } from "react-hot-toast";
+import { FormattedMessage } from "react-intl";
 import { UserButton } from "../Button";
 import { GithubIcon } from "../Icons";
+import { LocaleSwitcher } from "../LocaleSwitcher";
 import { BASE_URL, SEO } from "../Seo";
 
 interface BaseLayoutProps {
@@ -77,24 +79,32 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
             )}
 
             <div className="flex justify-between items-center">
-              <Link href="/">
-                <div className="flex items-center space-x-2">
-                  <img
-                    src="/cirque-lisoir-logo.png"
-                    className="inline mb-2"
-                    alt="Logo du Cirque Lisoir"
-                    width={50}
-                    height={50}
-                  />
-                  <h1 className="text-3xl font-bold align-middle">
-                    Circus PES
-                  </h1>
+              <div className="flex items-center">
+                <Link href="/">
+                  <div className="flex items-center space-x-2">
+                    <img
+                      src="/cirque-lisoir-logo.png"
+                      className="inline mb-2"
+                      alt="Logo du Cirque Lisoir"
+                      width={50}
+                      height={50}
+                    />
+                    <h1 className="text-3xl font-bold align-middle">
+                      Circus PES
+                    </h1>
+                  </div>
+                </Link>
+                <div className="p-3 ml-5 flex gap-2 font-semibold">
+                  <LocaleSwitcher />
                 </div>
-              </Link>
+              </div>
+
               {status === "unauthenticated" && (
                 <div>
                   <UserButton onClick={() => signIn("discord")}>
-                    <span className="ml-1">Connexion</span>
+                    <span className="ml-1">
+                      <FormattedMessage id="login" defaultMessage="Connexion" />
+                    </span>
                   </UserButton>
                 </div>
               )}
@@ -127,9 +137,12 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
             </div>
 
             <p className="text-gray-400 max-w-xl text-sm mt-2">
-              Bienvenue sur le guide du cirque ! Le test ultime de la
+              <FormattedMessage
+                id="site.description"
+                defaultMessage="Bienvenue sur le guide du cirque ! Le test ultime de la
               persistence dans Star Citizen. Ici vous pourrez explorer toutes
-              les créations de la communautée.
+              les créations de la communautée."
+              />
             </p>
           </header>
 
@@ -138,6 +151,10 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
       </section>
 
       <footer className="text-center m-6 text-gray-400">
+        <div className="mb-3 p-3 flex gap-2 font-semibold justify-center">
+          <LocaleSwitcher />
+        </div>
+
         <Link
           href="https://github.com/GuillaumeCa/circus-pes"
           target="_blank"
@@ -147,9 +164,12 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
           <span className="ml-2">Github</span>
         </Link>
 
-        <div className="max-w-2xl mx-auto">
-          <p className="mt-4 text-gray-500 text-sm">
-            Circus PES est un outil créé par la communauté de Star Citizen.{" "}
+        <div className="max-w-2xl mt-4 mx-auto">
+          <p className="text-gray-500 text-sm">
+            <FormattedMessage
+              id="about"
+              defaultMessage="Circus PES est un outil créé par la communauté de Star Citizen."
+            />
           </p>
           <p className="mt-2 text-gray-500 text-sm">
             This site is not endorsed by or affiliated with the Cloud Imperium

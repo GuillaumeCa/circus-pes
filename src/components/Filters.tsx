@@ -3,6 +3,7 @@ import {
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { FormattedList, FormattedMessage, useIntl } from "react-intl";
 import { cls } from "./cls";
 import { SortShard } from "./Items";
 
@@ -17,13 +18,14 @@ export function PatchVersionFilter({
   showHidden?: boolean;
   onSelect(index: number): void;
 }) {
+  const intl = useIntl();
   return (
     <>
       <label
         htmlFor="gameVersion"
         className="text-xs uppercase font-bold text-gray-400"
       >
-        Version
+        <FormattedMessage id="filter.version.label" defaultMessage="Version" />
       </label>
       <select
         id="gameVersion"
@@ -33,11 +35,22 @@ export function PatchVersionFilter({
         }}
       >
         {patchVersions && patchVersions?.length === 0 && (
-          <option disabled>Aucune</option>
+          <option disabled>
+            <FormattedMessage
+              id="filter.version.none"
+              defaultMessage="Aucune"
+            />
+          </option>
         )}
         {patchVersions?.map((v, i) => (
           <option key={v.id} value={i}>
-            {v.name} {showHidden && !v.visible && " (Archivé)"}
+            {v.name}{" "}
+            {showHidden &&
+              !v.visible &&
+              ` (${intl.formatMessage({
+                id: "filter.version.archived",
+                defaultMessage: "Archivé",
+              })})`}
           </option>
         ))}
       </select>
@@ -56,7 +69,9 @@ export function RegionFilter({
 }) {
   return (
     <div>
-      <p className="uppercase font-bold text-xs text-gray-400">Régions</p>
+      <p className="uppercase font-bold text-xs text-gray-400">
+        <FormattedMessage id="filter.region.label" defaultMessage="Régions" />
+      </p>
       <div className="mt-1 flex flex-wrap">
         <button
           onClick={() => onSelect("")}
@@ -65,7 +80,7 @@ export function RegionFilter({
             selectedRegion === "" ? "bg-rose-700" : "bg-gray-500"
           )}
         >
-          Toutes
+          <SelectAllLabel gender="female" />
         </button>
         {regions.map((reg) => {
           const isActive = selectedRegion === reg.prefix;
@@ -109,7 +124,9 @@ export function ShardFilter({
 
   return (
     <div>
-      <p className="uppercase font-bold text-xs text-gray-400">Shards</p>
+      <p className="uppercase font-bold text-xs text-gray-400">
+        <FormattedMessage id="filter.shard.label" defaultMessage="Shards" />
+      </p>
       <div className="mt-1 flex flex-wrap items-center">
         <button
           onClick={() => {
@@ -121,7 +138,7 @@ export function ShardFilter({
             selectedShardId === "" ? "bg-rose-700" : "bg-gray-500"
           )}
         >
-          Toutes
+          <SelectAllLabel gender="female" />
         </button>
         <button
           onClick={() => setSortShard(sortShard === "az" ? "num" : "az")}
@@ -163,7 +180,12 @@ export function ShardFilter({
             onClick={() => setShowMoreShards(true)}
           >
             <EllipsisHorizontalIcon className="w-4 h-4 inline" />
-            <span className="ml-1">Afficher plus</span>
+            <span className="ml-1">
+              <FormattedMessage
+                id="filter.shard.show-more"
+                defaultMessage="Afficher plus"
+              />
+            </span>
           </button>
         )}
       </div>
@@ -182,7 +204,9 @@ export function LocationFilter({
 }) {
   return (
     <div>
-      <p className="uppercase font-bold text-xs text-gray-400">Lieu</p>
+      <p className="uppercase font-bold text-xs text-gray-400">
+        <FormattedMessage id="filter.location.label" defaultMessage="Lieu" />
+      </p>
       <div className="mt-1 flex flex-wrap">
         <button
           onClick={() => onSelect("")}
@@ -191,7 +215,7 @@ export function LocationFilter({
             selectedLocation === "" ? "bg-rose-700" : "bg-gray-500"
           )}
         >
-          Tout
+          <SelectAllLabel gender="male" />
         </button>
         {locations.map((locationId) => {
           const isActive = selectedLocation === locationId;
@@ -222,37 +246,62 @@ export function FilterMessageDisplay({
   shard: string;
   location: string;
 }) {
+  const intl = useIntl();
+
   const filters = [
-    region ? { prefix: "la région", value: region } : null,
-    shard ? { prefix: "la shard", value: shard } : null,
-    location ? { prefix: "le lieu", value: location } : null,
+    region
+      ? {
+          prefix: intl.formatMessage({
+            id: "filter.info.region",
+            defaultMessage: "la region",
+          }),
+          value: region,
+        }
+      : null,
+    shard
+      ? {
+          prefix: intl.formatMessage({
+            id: "filter.info.shard",
+            defaultMessage: "la shard",
+          }),
+          value: shard,
+        }
+      : null,
+    location
+      ? {
+          prefix: intl.formatMessage({
+            id: "filter.info.location",
+            defaultMessage: "le lieu",
+          }),
+          value: location,
+        }
+      : null,
   ].filter(Boolean) as { prefix: string; value: string }[];
 
   if (filters.length > 0) {
-    const filterMessage = filters
-      .map((f) => (
-        <>
-          {f.prefix} <span className="font-bold">{f.value}</span>
-        </>
-      ))
-      .reduce((a, b, idx) => {
-        if (idx === filters.length - 1) {
-          return (
-            <>
-              {a}, et {b}
-            </>
-          );
-        }
-        return (
-          <>
-            {a}, {b}
-          </>
-        );
-      });
     return (
-      <p className="text-sm text-gray-400 mb-3">Filtré par {filterMessage}</p>
+      <p className="text-sm text-gray-400 mb-3">
+        <FormattedMessage id="filter.info.text" defaultMessage="Filtré par" />{" "}
+        <FormattedList
+          value={filters.map((f) => (
+            <>
+              {f.prefix} <span className="font-bold">{f.value}</span>
+            </>
+          ))}
+        />
+      </p>
     );
   }
 
   return null;
+}
+
+function SelectAllLabel({ gender }: { gender: "male" | "female" }) {
+  return (
+    <FormattedMessage
+      id="filter.select.all"
+      defaultMessage="{gender, select, male {Tout} female {Toutes} other {Tout}}"
+      values={{ gender }}
+    />
+  );
 }

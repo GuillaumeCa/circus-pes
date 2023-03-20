@@ -1,5 +1,6 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, MutableRefObject, useRef } from "react";
+import { FormattedMessage } from "react-intl";
 import { inter } from "../pages/_app";
 import { Button } from "./Button";
 import { cls } from "./cls";
@@ -96,7 +97,9 @@ export function ConfirmModal(props: ConfirmModalProps) {
             {props.acceptLabel ?? "Ok"}
           </Button>
           <Button ref={ref} btnType="secondary" onClick={props.onClose}>
-            {props.cancelLabel ?? "Annuler"}
+            {props.cancelLabel ?? (
+              <FormattedMessage id="action.cancel" defaultMessage="Annuler" />
+            )}
           </Button>
         </div>
       </div>

@@ -145,7 +145,7 @@ export default function Home() {
               onClick={() => setShowAddForm(true)}
             >
               <FormattedMessage
-                id="new-creation"
+                id="new-item"
                 defaultMessage="Nouvelle création"
               />
             </AddButton>
