@@ -1,13 +1,21 @@
+import { FormattedMessage, useIntl } from "react-intl";
 import { cls } from "./cls";
 
 export function FoundIndicator({ value }: { value: number }) {
+  const intl = useIntl();
   return (
     <div
-      title="Indique la présence de cette création sur ce shard"
+      title={intl.formatMessage({
+        id: "item.foundindicator.title",
+        defaultMessage: "Indique la présence de cette création sur ce shard",
+      })}
       className="ml-0 sm:ml-3 flex bg-gray-700 rounded-md p-1 items-center"
     >
       <span className="text-sm uppercase font-bold text-gray-200 ml-1 mr-2">
-        Fiabilité
+        <FormattedMessage
+          id="item.foundindicator.label"
+          defaultMessage="Fiabilité"
+        />
       </span>
       <div className="flex space-x-1" key={value}>
         {Array(3)

@@ -12,6 +12,7 @@ import { trpc } from "../utils/trpc";
 import { Button } from "./Button";
 import { XMarkIcon } from "./Icons";
 
+import { FormattedMessage, useIntl } from "react-intl";
 import { LocationInfo } from "../server/db/item";
 
 type LocationFormData = z.infer<typeof itemFormSchema>;
@@ -77,6 +78,7 @@ export function ItemForm({
 }: AddLocationFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const intl = useIntl();
   const { data: patchVersions } = trpc.patchVersion.getPatchVersions.useQuery();
 
   const { mutateAsync: updateItem } = trpc.item.edit.useMutation();
@@ -197,7 +199,17 @@ export function ItemForm({
     >
       <div className="flex items-start justify-between">
         <h2 className="text-2xl font-bold mb-3">
-          {isUpdateItem ? "Modifier la création" : "Nouvelle création"}
+          {isUpdateItem ? (
+            <FormattedMessage
+              id="update-item"
+              defaultMessage="Modifier la création"
+            />
+          ) : (
+            <FormattedMessage
+              id="new-item"
+              defaultMessage="Nouvelle création"
+            />
+          )}
         </h2>
         <button
           type="button"
@@ -212,7 +224,10 @@ export function ItemForm({
           htmlFor="gameVersionForm"
           className="text-xs uppercase font-bold text-gray-400"
         >
-          Version
+          <FormattedMessage
+            id="filter.version.label"
+            defaultMessage="Version"
+          />
         </label>
         <select
           id="gameVersionForm"
@@ -235,33 +250,37 @@ export function ItemForm({
           htmlFor="shardId"
           className="text-xs uppercase font-bold text-gray-400"
         >
-          Shard
+          <FormattedMessage id="filter.shard.label" defaultMessage="Version" />
         </label>
 
         <div className="border border-gray-600 bg-gray-800 p-2 rounded-lg">
           <p className="text-sm text-gray-400 leading-6">
-            Pour récupérer l&apos;identifiant de la shard sur laquelle vous
-            êtes, appuyez sur la touche à gauche du 1 puis tapez{" "}
-            <span className="bg-gray-600 font-mono text-gray-400 px-1 py-0.5 rounded">
-              r_DisplayInfo 3
-            </span>{" "}
-            et cherchez l&apos;identifiant en face de ShardId.
-            L&apos;identifiant sera sous la forme{" "}
-            <span className="bg-gray-600 font-mono break-all text-gray-400 px-1 py-0.5 rounded">
-              eptu_use1c_sc_alpha_318x_8319689_game_740
-            </span>{" "}
-            et il faudra par ex renseigner pour cet identifiant{" "}
-            <span className="bg-gray-600 font-mono text-gray-400 px-2 py-0.5 rounded">
-              USE1C-740
-            </span>{" "}
-            dans le champs suivant.
+            <FormattedMessage
+              id="item.shard.helpmsg"
+              defaultMessage="Pour récupérer l'identifiant de la shard sur laquelle vous êtes, appuyez sur la touche à gauche du 1 puis tapez <m>r_DisplayInfo 3</m> et cherchez l'identifiant en face de ShardId. L'identifiant sera sous la forme <mb>eptu_use1c_sc_alpha_318x_8319689_game_740</mb> et il faudra par ex renseigner pour cet identifiant <m>USE1C-740</m> dans le champs suivant."
+              values={{
+                m: (chunks) => (
+                  <span className="bg-gray-600 font-mono text-gray-400 px-1 py-0.5 rounded">
+                    {chunks}
+                  </span>
+                ),
+                mb: (chunks) => (
+                  <span className="bg-gray-600 font-mono break-all text-gray-400 px-1 py-0.5 rounded">
+                    {chunks}
+                  </span>
+                ),
+              }}
+            />
           </p>
         </div>
 
         <input
           id="shardId"
           className="mt-2 appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
-          placeholder="Identifiant de la shard"
+          placeholder={intl.formatMessage({
+            id: "item.shard.placeholder",
+            defaultMessage: "Identifiant de la shard",
+          })}
           {...register("shardId")}
           onChange={(e) => {
             setValue("shardId", e.target.value.toUpperCase());
@@ -291,12 +310,19 @@ export function ItemForm({
           htmlFor="description"
           className="text-xs uppercase font-bold text-gray-400"
         >
-          Description
+          <FormattedMessage
+            id="item.description"
+            defaultMessage="Description"
+          />
         </label>
         <textarea
           id="description"
           className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
-          placeholder="Décrivez votre création en quelques mots, avec par exemple les étapes pour la retrouver."
+          placeholder={intl.formatMessage({
+            id: "item.description.placeholder",
+            defaultMessage:
+              "Décrivez votre création en quelques mots, avec par exemple les étapes pour la retrouver.",
+          })}
           maxLength={255}
           rows={5}
           {...register("description")}
@@ -310,10 +336,15 @@ export function ItemForm({
           htmlFor="location"
           className="text-xs uppercase font-bold text-gray-400"
         >
-          Lieu
+          <FormattedMessage id="filter.location.label" defaultMessage="Lieu" />
         </label>
         <select id="location" className="w-full" {...register("location")}>
-          <option value="">Choisissez un lieu</option>
+          <option value="">
+            <FormattedMessage
+              id="item.location.choose"
+              defaultMessage="Choisissez un lieu"
+            />
+          </option>
           {LOCATIONS.map((l) => (
             <optgroup key={l.name} label={l.name}>
               {l.children.map((child) => (
@@ -331,7 +362,7 @@ export function ItemForm({
           className="text-xs uppercase font-bold text-gray-400"
           htmlFor="image"
         >
-          Image
+          <FormattedMessage id="item.image" defaultMessage="Image" />
         </label>
         <div className="flex">
           <input
@@ -357,16 +388,31 @@ export function ItemForm({
       <div className="flex items-center justify-end space-x-2 mt-3">
         {error && (
           <p className="text-red-500">
-            {isUpdateItem
-              ? "Impossible de modifier la création, veuillez réessayer"
-              : "Impossible d'ajouter la création, veuillez réessayer"}
+            {isUpdateItem ? (
+              <FormattedMessage
+                id="update-item.error"
+                defaultMessage="Impossible de modifier la création, veuillez réessayer"
+              />
+            ) : (
+              <FormattedMessage
+                id="create—item.error"
+                defaultMessage="Impossible d'ajouter la création, veuillez réessayer"
+              />
+            )}
           </p>
         )}
         <Button type="button" btnType="secondary" onClick={handleCancel}>
-          Annuler
+          <FormattedMessage id="action.cancel" defaultMessage="Annuler" />
         </Button>
         <Button disabled={loading} type="submit">
-          {loading ? "Chargement..." : "Valider"}
+          {loading ? (
+            <FormattedMessage
+              id="action.loading"
+              defaultMessage="Chargement..."
+            />
+          ) : (
+            <FormattedMessage id="action.validate" defaultMessage="Valider" />
+          )}
         </Button>
       </div>
     </form>

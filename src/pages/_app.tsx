@@ -4,8 +4,8 @@ import type { AppProps } from "next/app";
 import "../styles/globals.css";
 import { trpc } from "../utils/trpc";
 
+import "dayjs/locale/en"; // import locale
 import "dayjs/locale/fr"; // import locale
-dayjs.locale("fr"); // use locale
 
 export { reportWebVitals } from "next-axiom";
 
@@ -31,8 +31,10 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const messages = useMemo(() => {
     switch (shortLocale) {
       case "fr":
+        dayjs.locale("fr"); // use locale
         return French;
       case "en":
+        dayjs.locale("en"); // use locale
         return English;
       default:
         return French;

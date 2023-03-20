@@ -12,6 +12,7 @@ import { TimeFormatted } from "./TimeFormatted";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { FormattedMessage, useIntl } from "react-intl";
 import { ResponseRouterOutput } from "../server/routers/response";
 import {
   formatImageUrl,
@@ -80,7 +81,7 @@ export function ResponsesList({
           onClick={() => fetchNextPage()}
           className="w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-800 font-semibold uppercase text-gray-300"
         >
-          Voir plus
+          <FormattedMessage id="answers.seemore" defaultMessage="Voir plus" />
         </button>
       )}
     </>
@@ -95,6 +96,7 @@ export function ResponseRow({
   onAnswer(): void;
 }) {
   const { data: session } = useSession();
+  const intl = useIntl();
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const deleteResponse = trpc.response.delete.useMutation();
 
@@ -111,12 +113,19 @@ export function ResponseRow({
         {response.isFound ? (
           <>
             <HandThumbUpIcon className="h-7 w-7" />
-            <span className="font-semibold ml-2">Trouvé</span>
+            <span className="font-semibold ml-2">
+              <FormattedMessage id="answer.found" defaultMessage="Trouvé" />
+            </span>
           </>
         ) : (
           <>
             <HandThumbDownIcon className="h-7 w-7" />
-            <span className="font-semibold ml-2">Pas trouvé</span>
+            <span className="font-semibold ml-2">
+              <FormattedMessage
+                id="answer.notfound"
+                defaultMessage="Pas trouvé"
+              />
+            </span>
           </>
         )}
       </div>
@@ -139,7 +148,10 @@ export function ResponseRow({
             <div className="inline-flex items-center bg-gray-500 p-1 px-2 rounded-md">
               <ClockIcon className="w-4 h-4" />
               <span className="ml-1 text-sm uppercase font-bold">
-                En validation
+                <FormattedMessage
+                  id="answer.validating"
+                  defaultMessage="En validation"
+                />
               </span>
             </div>
           </div>
@@ -148,9 +160,18 @@ export function ResponseRow({
 
       <ConfirmModal
         open={showDeletePopup}
-        title="Voulez vous supprimer cette réponse ?"
-        description="Cette opération ne peut être annulé"
-        acceptLabel="Supprimer"
+        title={intl.formatMessage({
+          id: "answer.prompt-delete.title",
+          defaultMessage: "Voulez vous supprimer cette réponse ?",
+        })}
+        description={intl.formatMessage({
+          id: "answer.prompt-delete.desc",
+          defaultMessage: "Cette opération ne peut être annulé",
+        })}
+        acceptLabel={intl.formatMessage({
+          id: "action.delete",
+          defaultMessage: "Supprimer",
+        })}
         onAccept={async () => {
           await deleteResponse.mutateAsync(response.id);
           onAnswer();

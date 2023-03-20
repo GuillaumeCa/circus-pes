@@ -26,6 +26,7 @@ import { ConfirmModal, Modal } from "./Modal";
 import { ResponsesList } from "./Responses";
 import { TimeFormatted } from "./TimeFormatted";
 
+import { FormattedMessage, useIntl } from "react-intl";
 import type { LocationInfo } from "../server/db/item";
 import type { ItemRouterInput } from "../server/routers/item";
 import { FoundIndicator } from "./FoundIndicator";
@@ -70,7 +71,6 @@ export function ItemList({
     return <p className="text-gray-400">Chargement...</p>;
   }
 
-  //!selectedPatch || itemsFiltered.length === 0
   if (!hasItems) {
     return <p className="text-gray-400">Aucune création</p>;
   }
@@ -171,6 +171,8 @@ export function ItemRow({
     responsesCount,
   } = item;
 
+  const intl = useIntl();
+
   const hasLiked = item.hasLiked === 1;
   const foundIndicator = calculateIndicator(item.found, item.notFound);
   const imagePath = item.image ? formatImageUrl(item.image) : undefined;
@@ -245,7 +247,10 @@ export function ItemRow({
               <div className="ml-0 sm:ml-2 mr-3 sm:mr-0 p-1 px-2 inline-flex items-center bg-gray-500 rounded-md">
                 <ClockIcon className="w-4 h-4" />
                 <span className="ml-1 text-sm uppercase font-bold">
-                  En validation
+                  <FormattedMessage
+                    id="item.validating"
+                    defaultMessage="En validation"
+                  />
                 </span>
               </div>
             )}
@@ -258,7 +263,10 @@ export function ItemRow({
 
         <div className="flex justify-end space-x-4">
           <button
-            title="Copier le lien"
+            title={intl.formatMessage({
+              id: "item.copylink.title",
+              defaultMessage: "Copier le lien",
+            })}
             className="active:text-gray-500"
             onClick={() => {
               const url =
@@ -268,11 +276,21 @@ export function ItemRow({
               navigator.clipboard.writeText(url).then(
                 () => {
                   toast.success(
-                    "Le lien vers la création à été copié dans votre presse papier !"
+                    intl.formatMessage({
+                      id: "item.copylink.success",
+                      defaultMessage:
+                        "Le lien vers la création à été copié dans votre presse papier !",
+                    })
                   );
                 },
                 () => {
-                  toast.error("Le lien vers la création n'a pas pu être copié");
+                  toast.error(
+                    intl.formatMessage({
+                      id: "item.copylink.error",
+                      defaultMessage:
+                        "Le lien vers la création n'a pas pu être copié",
+                    })
+                  );
                 }
               );
             }}
@@ -285,7 +303,10 @@ export function ItemRow({
             (data.user.role !== UserRole.ADMIN ? !item.public : true) && (
               <>
                 <button
-                  title="Editer"
+                  title={intl.formatMessage({
+                    id: "item.edit",
+                    defaultMessage: "Editer",
+                  })}
                   className="active:text-gray-500"
                   onClick={() => setShowEditForm(true)}
                 >
@@ -293,7 +314,10 @@ export function ItemRow({
                 </button>
                 <button
                   className="active:text-gray-500"
-                  title="Supprimer"
+                  title={intl.formatMessage({
+                    id: "action.delete",
+                    defaultMessage: "Supprimer",
+                  })}
                   onClick={() => setShowDeletePopup(true)}
                 >
                   <TrashIcon />
@@ -305,9 +329,18 @@ export function ItemRow({
 
       <ConfirmModal
         open={showDeletePopup}
-        title="Voulez vous supprimer cette création ?"
-        description="Cette opération ne peut être annulé"
-        acceptLabel="Supprimer"
+        title={intl.formatMessage({
+          id: "item.prompt-delete.title",
+          defaultMessage: "Voulez vous supprimer cette création ?",
+        })}
+        description={intl.formatMessage({
+          id: "item.prompt-delete.desc",
+          defaultMessage: "Cette opération ne peut être annulé",
+        })}
+        acceptLabel={intl.formatMessage({
+          id: "action.delete",
+          defaultMessage: "Supprimer",
+        })}
         onAccept={() => {
           handleDelete();
           setShowDeletePopup(false);
@@ -363,7 +396,12 @@ export function ItemRow({
                 onClick={() => setShowResponseForm(true)}
               >
                 <ChatBubbleLeftEllipsisIcon className="h-6 w-6 inline-block text-yellow-500" />
-                <span className="ml-2 hidden sm:inline">Répondre</span>
+                <span className="ml-2 hidden sm:inline">
+                  <FormattedMessage
+                    id="item.answer"
+                    defaultMessage="Répondre"
+                  />
+                </span>
               </button>
             )}
           {responsesCount > 0 && !pinnedResponses && (
@@ -379,7 +417,12 @@ export function ItemRow({
               ) : (
                 <ArrowDownIcon className="h-5 w-5 inline-block text-yellow-500" />
               )}
-              <span className="ml-2 hidden sm:inline">Historique</span>
+              <span className="ml-2 hidden sm:inline">
+                <FormattedMessage
+                  id="item.history"
+                  defaultMessage="Historique"
+                />
+              </span>
               <ChatBubbleBottomCenterTextIcon className="ml-1 h-5 w-5 block sm:hidden" />
             </button>
           )}
