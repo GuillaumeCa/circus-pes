@@ -28,7 +28,7 @@ export function FoundIndicator({ value }: { value: number }) {
                 className={cls(
                   "h-5 w-3 rounded-sm",
                   !isActive && "bg-gray-600",
-                  isActive && "animate-pulse",
+                  // isActive && "animate-pulse",
                   isActive && value === 0 && "bg-red-500",
                   isActive && value === 1 && "bg-orange-500",
                   isActive && value === 2 && "bg-green-500"
