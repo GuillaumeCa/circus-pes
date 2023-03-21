@@ -3,6 +3,7 @@ import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticPaths, GetStaticPropsContext } from "next";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
+import { FormattedMessage, useIntl } from "react-intl";
 import SuperJSON from "superjson";
 import { LinkButton } from "../../components/Button";
 import { ItemRow } from "../../components/Items";
@@ -23,6 +24,7 @@ function getId(query: ParsedUrlQuery): string | undefined {
 
 export default function Item() {
   const router = useRouter();
+  const intl = useIntl();
   const id = getId(router.query);
   const {
     data: item,
@@ -34,16 +36,37 @@ export default function Item() {
 
   return (
     <BaseLayout overrideSEO={true}>
-      {isLoading && <p className="text-gray-300 mt-5">Chargement en cours..</p>}
+      {isLoading && (
+        <p className="text-gray-300 mt-5">
+          <FormattedMessage
+            id="action.loading"
+            defaultMessage="Chargement..."
+          />
+        </p>
+      )}
       {!isLoading && !item && (
         <p className="text-gray-300 mt-5">
-          La création n&apos;a pas pu être trouvé
+          <FormattedMessage
+            id="item.notfound"
+            defaultMessage="La création n'a pas pu être trouvé"
+          />
         </p>
       )}
       {item && (
         <>
           <SEO
-            title={`Une création près de ${item.location} sur la shard ${item.shardId} (${item.patchVersion})`}
+            title={intl.formatMessage(
+              {
+                id: "item.seo.title",
+                defaultMessage:
+                  "Une création près de {location} sur la shard {shardId} ({patchVersion})",
+              },
+              {
+                location: item.location,
+                shardId: item.shardId,
+                patchVersion: item.patchVersion,
+              }
+            )}
             desc={item.description}
             url={BASE_URL + "/item/" + item.id}
             imageUrl={formatPreviewItemImageUrl(item.patchVersionId, item.id)}
@@ -76,7 +99,12 @@ export default function Item() {
       <div className="flex mt-3">
         <LinkButton href="/" btnType="primary">
           <HomeIcon className="w-5 h-5 inline" />
-          <span className="ml-2 text-md">Voir plus de créations</span>
+          <span className="ml-2 text-md">
+            <FormattedMessage
+              id="item.seemore"
+              defaultMessage="Voir plus de créations"
+            />
+          </span>
         </LinkButton>
       </div>
     </BaseLayout>
