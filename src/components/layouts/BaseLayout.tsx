@@ -2,7 +2,7 @@ import { signIn, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { Toaster } from "react-hot-toast";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { UserButton } from "../Button";
 import { GithubIcon } from "../Icons";
 import { LocaleSwitcher } from "../LocaleSwitcher";
@@ -17,15 +17,19 @@ const isTestEnv = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF === "dev";
 
 export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
   const { data, status } = useSession();
+  const intl = useIntl();
+
+  const siteDescription = intl.formatMessage({
+    id: "site.description",
+    defaultMessage:
+      "Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée.",
+  });
 
   return (
     <>
       <Head>
         <title>{isTestEnv ? "[TEST] Circus PES" : "Circus PES"}</title>
-        <meta
-          name="description"
-          content="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
-        />
+        <meta name="description" content={siteDescription} />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1"
@@ -53,7 +57,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
       {!overrideSEO && (
         <SEO
           title="Circus PES"
-          desc="Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée."
+          desc={siteDescription}
           imageUrl={BASE_URL + "/cirque-lisoir-logo.png"}
         />
       )}
@@ -137,12 +141,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
             </div>
 
             <p className="text-gray-400 max-w-xl text-sm mt-2">
-              <FormattedMessage
-                id="site.description"
-                defaultMessage="Bienvenue sur le guide du cirque ! Le test ultime de la
-              persistence dans Star Citizen. Ici vous pourrez explorer toutes
-              les créations de la communautée."
-              />
+              {siteDescription}
             </p>
           </header>
 
