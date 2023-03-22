@@ -33,11 +33,13 @@ import { REGIONS } from "../utils/constants";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
 
+const DEFAULT_REGION = "EU";
+
 export default function Home() {
   // filters
   const [showFilters, setShowFilters] = useState(true);
   const [gameVersionId, setGameVersion] = useState(0);
-  const [region, setRegion] = useState("EU");
+  const [region, setRegion] = useState(DEFAULT_REGION);
   const [selectedShard, setSelectedShard] = useState("");
   const [location, setLocation] = useState("");
 
@@ -274,7 +276,9 @@ export default function Home() {
           <ItemList
             isLoading={isLoadingItems || isLoadingVersions}
             items={itemsFiltered}
-            hasItems={!!selectedPatch && itemsFiltered.length !== 0}
+            hasItems={
+              !!selectedPatch && itemsFiltered.length !== 0 && !isLoadingItems
+            }
             hasError={!!error}
             onLike={(item, like) => {
               if (!selectedPatch) {
@@ -330,14 +334,17 @@ export const getStaticProps: GetStaticProps = async (context) => {
     await ssg.item.getItems.prefetch({
       sortBy: "recent",
       patchVersion: patch[0].id,
+      filter: {
+        region: DEFAULT_REGION,
+      },
     });
     await ssg.item.shards.prefetch({
       patchVersion: patch[0].id,
-      region: "EU",
+      region: DEFAULT_REGION,
     });
     await ssg.item.locations.prefetch({
       patchVersion: patch[0].id,
-      region: "EU",
+      region: DEFAULT_REGION,
     });
   }
 
