@@ -148,6 +148,8 @@ export default function Home() {
             onCancel={() => setShowAddForm(false)}
             onCreated={() => {
               refetch();
+              shardsForItems.refetch();
+              locationsForItems.refetch();
               setShowAddForm(false);
             }}
           />
@@ -303,7 +305,11 @@ export default function Home() {
                 );
               }
             }}
-            onUpdateItems={() => refetch()}
+            onUpdateItems={() => {
+              refetch();
+              shardsForItems.refetch();
+              locationsForItems.refetch();
+            }}
           />
         </div>
       </div>
@@ -324,6 +330,14 @@ export const getStaticProps: GetStaticProps = async (context) => {
     await ssg.item.getItems.prefetch({
       sortBy: "recent",
       patchVersion: patch[0].id,
+    });
+    await ssg.item.shards.prefetch({
+      patchVersion: patch[0].id,
+      region: "EU",
+    });
+    await ssg.item.locations.prefetch({
+      patchVersion: patch[0].id,
+      region: "EU",
     });
   }
 
