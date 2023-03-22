@@ -15,8 +15,6 @@ import { XMarkIcon } from "./Icons";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LocationInfo } from "../server/db/item";
 
-type LocationFormData = z.infer<typeof itemFormSchema>;
-
 interface AddLocationFormProps {
   item?: Partial<LocationInfo>;
   shardIds: string[];
@@ -25,49 +23,97 @@ interface AddLocationFormProps {
   onCreated(): void;
 }
 
-export const itemFormSchema = z
-  .object({
-    isEdit: z.boolean().default(false),
-    gameVersion: z.string(),
-    shardId: z
-      .string()
-      .regex(
-        /(US|EU|AP)(E|S|W|SE)[0-9][A-Z]-[0-9]{3}/,
-        "L'identifiant doit être au format EUE1A-000"
-      ),
-    description: z
-      .string()
-      .min(1, "Le champ ne doit pas être vide")
-      .max(255, "La description ne doit pas dépasser 255 caractères"),
-    location: z.string().min(1, "Le champ ne doit pas être vide").default(""),
-    image:
-      typeof window === "undefined"
-        ? z.null()
-        : z
-            .instanceof(FileList, { message: "Une image est requise" })
-            .refine((f: FileList) => {
-              return (
-                f.length === 0 ||
-                (f.length > 0 &&
-                  ["image/jpg", "image/jpeg", "image/png"].includes(f[0].type))
-              );
-            }, "Le fichier n'est pas une image au format valide: jpeg, jpg ou png")
-            .refine((f: FileList) => {
-              return (
-                f.length === 0 ||
-                (f.length > 0 &&
-                  f[0].size >= MIN_IMAGE_UPLOAD_SIZE &&
-                  f[0].size <= MAX_IMAGE_UPLOAD_SIZE)
-              );
-            }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
-  })
-  .refine((input) => {
-    if (!input.isEdit && input.image?.length === 0) {
-      return false;
-    }
+function useItemFormSchema() {
+  const intl = useIntl();
 
-    return true;
-  });
+  return z
+    .object({
+      isEdit: z.boolean().default(false),
+      gameVersion: z.string(),
+      shardId: z.string().regex(
+        /(US|EU|AP)(E|S|W|SE)[0-9][A-Z]-[0-9]{3}/,
+        intl.formatMessage({
+          id: "forms.item.shardid.error.format",
+          defaultMessage: "L'identifiant doit être au format EUE1A-000",
+        })
+      ),
+      description: z
+        .string()
+        .min(
+          1,
+          intl.formatMessage({
+            id: "forms.item.description.error.min",
+            defaultMessage: "Le champ ne doit pas être vide",
+          })
+        )
+        .max(
+          255,
+          intl.formatMessage({
+            id: "forms.item.description.error.max",
+            defaultMessage:
+              "La description ne doit pas dépasser 255 caractères",
+          })
+        ),
+      location: z
+        .string()
+        .min(
+          1,
+          intl.formatMessage({
+            id: "forms.item.location.error.min",
+            defaultMessage: "Le champ ne doit pas être vide",
+          })
+        )
+        .default(""),
+      image:
+        typeof window === "undefined"
+          ? z.null()
+          : z
+              .instanceof(FileList, {
+                message: intl.formatMessage({
+                  id: "forms.item.image.error.required",
+                  defaultMessage: "Une image est requise",
+                }),
+              })
+              .refine(
+                (f: FileList) => {
+                  return (
+                    f.length === 0 ||
+                    (f.length > 0 &&
+                      ["image/jpg", "image/jpeg", "image/png"].includes(
+                        f[0].type
+                      ))
+                  );
+                },
+                intl.formatMessage({
+                  id: "forms.item.image.error.format",
+                  defaultMessage:
+                    "Le fichier n'est pas une image au format valide: jpeg, jpg ou png",
+                })
+              )
+              .refine(
+                (f: FileList) => {
+                  return (
+                    f.length === 0 ||
+                    (f.length > 0 &&
+                      f[0].size >= MIN_IMAGE_UPLOAD_SIZE &&
+                      f[0].size <= MAX_IMAGE_UPLOAD_SIZE)
+                  );
+                },
+                intl.formatMessage({
+                  id: "forms.item.image.error.size",
+                  defaultMessage:
+                    "L'image est trop grosse, elle doit faire moins de 5 Mo",
+                })
+              ),
+    })
+    .refine((input) => {
+      if (!input.isEdit && input.image?.length === 0) {
+        return false;
+      }
+
+      return true;
+    });
+}
 
 export function ItemForm({
   item,
@@ -90,6 +136,9 @@ export function ItemForm({
   const { mutateAsync: setItemImage } = trpc.item.setItemImage.useMutation();
 
   const isUpdateItem = !!item?.id;
+
+  const itemFormSchema = useItemFormSchema();
+  type LocationFormData = z.infer<typeof itemFormSchema>;
 
   const {
     register,
