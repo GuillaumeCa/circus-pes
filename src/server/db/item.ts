@@ -1,4 +1,6 @@
 import { Prisma } from "@prisma/client";
+import { z } from "zod";
+import { itemFilterSchema } from "../routers/item";
 import type { MyPrismaClient } from "./client";
 
 function getItemBaseQuery(userId?: string) {
@@ -71,22 +73,41 @@ function getOrder(sort: SortType) {
   }
 }
 
+type ItemFilter = z.infer<typeof itemFilterSchema>;
+
 export function getItemsQuery(
   prismaClient: MyPrismaClient,
   patchVersionId: string,
   sortBy: SortType,
+  filter: ItemFilter,
   userId?: string,
   filterPublic?: boolean,
   showPrivateForCurrentUser = false
 ) {
   return prismaClient.$queryRaw<LocationInfo[]>`
   ${getItemBaseQuery(userId)}
-  where i."patchVersionId" = ${patchVersionId} ${
+  where i."patchVersionId" = ${patchVersionId}
+  ${
     filterPublic === undefined
       ? Prisma.empty
       : showPrivateForCurrentUser
-      ? Prisma.sql`and (i.public = ${filterPublic} or (i."userId" = ${userId} and i.public = false))`
-      : Prisma.sql`and (i.public = ${filterPublic})`
+      ? Prisma.sql` and (i.public = ${filterPublic} or (i."userId" = ${userId} and i.public = false))`
+      : Prisma.sql` and (i.public = ${filterPublic})`
+  }
+  ${
+    filter.region
+      ? Prisma.sql` and (i."shardId" like ${filter.region + "%"})`
+      : Prisma.empty
+  }
+  ${
+    filter.shard
+      ? Prisma.sql` and (i."shardId" = ${filter.shard})`
+      : Prisma.empty
+  }
+  ${
+    filter.location
+      ? Prisma.sql` and (i.location = ${filter.location})`
+      : Prisma.empty
   }
   group by (i.id, u.id, pv.id)
   order by ${getOrder(sortBy)}
@@ -115,5 +136,59 @@ export function getItemsByUser(
   where u.id = ${userId} and i."patchVersionId" = ${patchVersionId}
   group by (i.id, u.id, pv.id)
   order by i."createdAt" desc
+`;
+}
+
+export function getShardsForRegion(
+  prismaClient: MyPrismaClient,
+  patchVersionId: string,
+  region: ItemFilter["region"],
+  userId?: string,
+  filterPublic?: boolean,
+  showPrivateForCurrentUser = false
+) {
+  return prismaClient.$queryRaw<{ shardId: string; itemCount: number }[]>`
+  select 
+    count(*)::int as "itemCount", 
+    i."shardId"
+  from item i
+  left join patch_version pv on pv.id = i."patchVersionId"
+  where i."patchVersionId" = ${patchVersionId}
+  ${
+    filterPublic === undefined
+      ? Prisma.empty
+      : showPrivateForCurrentUser
+      ? Prisma.sql` and (i.public = ${filterPublic} or (i."userId" = ${userId} and i.public = false))`
+      : Prisma.sql` and (i.public = ${filterPublic})`
+  }
+  ${region ? Prisma.sql` and i."shardId" like ${region + "%"}` : Prisma.empty}
+  group by (i."shardId", pv.id)
+`;
+}
+
+export function getItemLocations(
+  prismaClient: MyPrismaClient,
+  patchVersionId: string,
+  region: ItemFilter["region"],
+  shard: ItemFilter["shard"],
+  userId?: string,
+  filterPublic?: boolean,
+  showPrivateForCurrentUser = false
+) {
+  return prismaClient.$queryRaw<{ location: string }[]>`
+  select distinct i.location
+  from item i
+  left join patch_version pv on pv.id = i."patchVersionId"
+  where i."patchVersionId" = ${patchVersionId}
+  ${
+    filterPublic === undefined
+      ? Prisma.empty
+      : showPrivateForCurrentUser
+      ? Prisma.sql` and (i.public = ${filterPublic} or (i."userId" = ${userId} and i.public = false))`
+      : Prisma.sql` and (i.public = ${filterPublic})`
+  }
+  ${region ? Prisma.sql` and i."shardId" like ${region + "%"}` : Prisma.empty}
+  ${shard ? Prisma.sql` and (i."shardId" = ${shard})` : Prisma.empty}
+  group by (i.id, pv.id)
 `;
 }
