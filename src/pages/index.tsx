@@ -267,7 +267,7 @@ export default function Home() {
         <div className="mt-4 flex-1">
           {!showFilters && (
             <FilterMessageDisplay
-              region={region}
+              region={REGIONS.find((r) => r.prefix === region)?.name ?? {}}
               shard={selectedShard}
               location={location}
             />
