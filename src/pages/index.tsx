@@ -7,7 +7,7 @@ import {
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import SuperJSON from "superjson";
 
@@ -55,6 +55,28 @@ export default function Home() {
   const { data: patchVersions, isLoading: isLoadingVersions } =
     trpc.patchVersion.getPatchVersions.useQuery();
   const selectedPatch = patchVersions?.[gameVersionId];
+
+  const shardsForItems = trpc.item.shards.useQuery(
+    {
+      patchVersion: selectedPatch?.id ?? "",
+      region: region !== "" ? (region as any) : undefined,
+    },
+    {
+      enabled: !!selectedPatch,
+    }
+  );
+
+  const locationsForItems = trpc.item.locations.useQuery(
+    {
+      patchVersion: selectedPatch?.id ?? "",
+      region: region !== "" ? (region as any) : undefined,
+      shard: selectedShard !== "" ? selectedShard : undefined,
+    },
+    {
+      enabled: !!selectedPatch,
+    }
+  );
+
   const {
     data: items,
     error,
@@ -64,6 +86,11 @@ export default function Home() {
     {
       patchVersion: selectedPatch?.id ?? "",
       sortBy: sortOpt,
+      filter: {
+        region: region !== "" ? (region as any) : undefined,
+        shard: selectedShard !== "" ? selectedShard : undefined,
+        location: location !== "" ? location : undefined,
+      },
     },
     {
       enabled: !!selectedPatch,
@@ -78,44 +105,18 @@ export default function Home() {
   }, []);
 
   // shards grouped by id and with count
-  const groupedShards = useMemo(() => {
-    const shards: { [key: string]: number } = {};
-    items
-      ?.filter((i) => i.patchVersion === selectedPatch?.name)
-      .filter((i) => !region || i.shardId.startsWith(region))
-      .filter((i) => !location || i.location === location)
-      .map((i) => i.shardId)
-      .forEach((sid) => {
-        if (!shards[sid]) {
-          shards[sid] = 0;
-        }
-
-        shards[sid]++;
-      });
-    return shards;
-  }, [items, selectedPatch, region, location]);
+  const groupedShards =
+    shardsForItems.data?.reduce((all, current) => {
+      all[current.shardId] = current.itemCount;
+      return all;
+    }, {} as any) ?? {};
 
   const shardIds = Object.keys(groupedShards);
 
   // filtered location list
-  const locationsList = Array.from(
-    new Set(
-      items
-        ?.filter((i) => i.patchVersion === selectedPatch?.name)
-        .filter((i) => !region || i.shardId.startsWith(region))
-        .filter((i) => !selectedShard || i.shardId === selectedShard)
-        .map((i) => i.location)
-    )
-  );
+  const locationsList = locationsForItems.data?.map((d) => d.location) ?? [];
 
-  const itemsFiltered =
-    items?.filter(
-      (i) =>
-        (region === "" || i.shardId.startsWith(region)) &&
-        (selectedShard === "" || i.shardId === selectedShard) &&
-        i.patchVersion === selectedPatch?.name &&
-        (!location || i.location === location)
-    ) ?? [];
+  const itemsFiltered = items ?? [];
 
   return (
     <BaseLayout>
@@ -269,7 +270,7 @@ export default function Home() {
           )}
 
           <ItemList
-            isLoading={isLoadingItems && isLoadingVersions}
+            isLoading={isLoadingItems || isLoadingVersions}
             items={itemsFiltered}
             hasItems={!!selectedPatch && itemsFiltered.length !== 0}
             hasError={!!error}

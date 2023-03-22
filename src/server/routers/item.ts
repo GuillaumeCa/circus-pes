@@ -11,8 +11,10 @@ import { stream2buffer } from "../../utils/stream";
 import { UserRole } from "../../utils/user";
 import {
   getItemById,
+  getItemLocations,
   getItemsByUser,
   getItemsQuery,
+  getShardsForRegion as getItemShards,
   sortOptions,
 } from "../db/item";
 import {
@@ -46,12 +48,22 @@ const itemFormSchema = z.object({
   location: z.string().min(1, "field must not be empty"),
 });
 
+const regionSchema = z.enum(["EU", "US", "APE1", "APSE2"]).optional();
+export const itemFilterSchema = z
+  .object({
+    region: regionSchema,
+    shard: z.string().optional(),
+    location: z.string().optional(),
+  })
+  .default({});
+
 export const itemRouter = router({
   getItems: publicProcedure
     .input(
       z.object({
         patchVersion: z.string(),
         sortBy: z.enum(sortOptions),
+        filter: itemFilterSchema,
       })
     )
     .query(async ({ ctx, input }) => {
@@ -72,6 +84,7 @@ export const itemRouter = router({
           ctx.prisma,
           input.patchVersion,
           input.sortBy,
+          input.filter,
           userId,
           true,
           true
@@ -79,6 +92,46 @@ export const itemRouter = router({
       } catch (e) {
         console.error("could not query items", e);
       }
+    }),
+
+  shards: publicProcedure
+    .input(
+      z.object({
+        patchVersion: z.string(),
+        region: regionSchema,
+      })
+    )
+    .query(({ ctx, input }) => {
+      const userId = ctx.session?.user?.id;
+
+      return getItemShards(
+        ctx.prisma,
+        input.patchVersion,
+        input.region,
+        userId,
+        true
+      );
+    }),
+
+  locations: publicProcedure
+    .input(
+      z.object({
+        patchVersion: z.string(),
+        region: regionSchema,
+        shard: z.string().optional(),
+      })
+    )
+    .query(({ ctx, input }) => {
+      const userId = ctx.session?.user?.id;
+
+      return getItemLocations(
+        ctx.prisma,
+        input.patchVersion,
+        input.region,
+        input.shard,
+        userId,
+        true
+      );
     }),
 
   byUser: protectedProcedure
@@ -93,6 +146,7 @@ export const itemRouter = router({
         patchVersion: z.string(),
         sortBy: z.enum(["recent", "like"]),
         public: z.boolean().optional(),
+        filter: itemFilterSchema,
       })
     )
     .query(async ({ ctx, input }) => {
@@ -114,6 +168,7 @@ export const itemRouter = router({
           ctx.prisma,
           input.patchVersion,
           input.sortBy,
+          input.filter,
           userId,
           input.public
         );
