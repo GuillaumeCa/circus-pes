@@ -242,7 +242,7 @@ export function FilterMessageDisplay({
   shard,
   location,
 }: {
-  region: string;
+  region: { [lang: string]: string };
   shard: string;
   location: string;
 }) {
@@ -255,7 +255,7 @@ export function FilterMessageDisplay({
             id: "filter.info.region",
             defaultMessage: "la region",
           }),
-          value: region,
+          value: region[intl.locale],
         }
       : null,
     shard
