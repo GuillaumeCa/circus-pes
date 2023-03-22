@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { z } from "zod";
 import {
   getFileExtension,
@@ -14,31 +14,49 @@ import { cls } from "./cls";
 import { FormRow } from "./FormRow";
 import { XMarkIcon } from "./Icons";
 
-const responseFormSchema = z.object({
-  isFound: z.boolean(),
-  comment: z.string().min(1).max(255),
-  image:
-    typeof window === "undefined"
-      ? z.null()
-      : z
-          .instanceof(FileList)
-          .refine((f) => {
-            return (
-              f.length === 0 ||
-              (f.length > 0 &&
-                ["image/jpg", "image/jpeg", "image/png"].includes(f[0].type))
-            );
-          }, "Le fichier n'est pas une image au format valide: jpeg, jpg ou png")
-          .refine((f) => {
-            return (
-              f.length === 0 ||
-              (f.length > 0 &&
-                f[0].size >= MIN_IMAGE_UPLOAD_SIZE &&
-                f[0].size <= MAX_IMAGE_UPLOAD_SIZE)
-            );
-          }, "L'image est trop grosse, elle doit faire moins de 5 Mo"),
-});
-type ResponseFormData = z.infer<typeof responseFormSchema>;
+function useResponseFormSchema() {
+  const intl = useIntl();
+  return z.object({
+    isFound: z.boolean(),
+    comment: z.string().min(1).max(255),
+    image:
+      typeof window === "undefined"
+        ? z.null()
+        : z
+            .instanceof(FileList)
+            .refine(
+              (f) => {
+                return (
+                  f.length === 0 ||
+                  (f.length > 0 &&
+                    ["image/jpg", "image/jpeg", "image/png"].includes(
+                      f[0].type
+                    ))
+                );
+              },
+              intl.formatMessage({
+                id: "forms.response.image.error.format",
+                defaultMessage:
+                  "Le fichier n'est pas une image au format valide: jpeg, jpg ou png",
+              })
+            )
+            .refine(
+              (f) => {
+                return (
+                  f.length === 0 ||
+                  (f.length > 0 &&
+                    f[0].size >= MIN_IMAGE_UPLOAD_SIZE &&
+                    f[0].size <= MAX_IMAGE_UPLOAD_SIZE)
+                );
+              },
+              intl.formatMessage({
+                id: "forms.response.image.error.size",
+                defaultMessage:
+                  "L'image est trop grosse, elle doit faire moins de 5 Mo",
+              })
+            ),
+  });
+}
 
 export function AddResponseForm({
   itemId,
@@ -58,6 +76,9 @@ export function AddResponseForm({
   const { mutateAsync: getImageUploadUrl } =
     trpc.response.imageUploadUrl.useMutation();
   const { mutateAsync: setImage } = trpc.response.setImage.useMutation();
+
+  const responseFormSchema = useResponseFormSchema();
+  type ResponseFormData = z.infer<typeof responseFormSchema>;
 
   const {
     register,

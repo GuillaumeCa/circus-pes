@@ -37,13 +37,13 @@ const itemFormSchema = z.object({
     .string()
     .regex(
       /(US|EU|AP)(E|S|W|SE)[0-9][A-Z]-[0-9]{3}/,
-      "L'identifiant doit être au format EUE1A-000"
+      "identifier format must be: EUE1A-000"
     ),
   description: z
     .string()
-    .min(1, "Le champ ne doit pas être vide")
-    .max(255, "La description ne doit pas dépasser 255 caractères"),
-  location: z.string().min(1, "Le champ ne doit pas être vide"),
+    .min(1, "field must not be empty")
+    .max(255, "description must have a max length of 255"),
+  location: z.string().min(1, "field must not be empty"),
 });
 
 export const itemRouter = router({
