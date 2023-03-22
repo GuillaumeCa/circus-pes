@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import relativeTime from "dayjs/plugin/relativeTime";
 import updateLocale from "dayjs/plugin/updateLocale";
+import { useRouter } from "next/router";
 
 dayjs.extend(relativeTime);
 dayjs.extend(updateLocale);
@@ -40,6 +41,7 @@ export function TimeFormatted({
     label: "",
   });
   const [showDateTime, setShowDateTime] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const t = dayjs(children);
@@ -48,7 +50,7 @@ export function TimeFormatted({
       datetime: t.format(),
       label: t.format(format),
     });
-  }, [children, format]);
+  }, [children, format, router.locale]);
 
   return (
     <time
