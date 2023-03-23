@@ -2,7 +2,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   FunnelIcon,
-  HeartIcon,
+  HeartIcon
 } from "@heroicons/react/24/outline";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
@@ -17,7 +17,7 @@ import {
   LocationFilter,
   PatchVersionFilter,
   RegionFilter,
-  ShardFilter,
+  ShardFilter
 } from "../components/Filters";
 import { ItemForm } from "../components/ItemForm";
 import { ItemList, SortOption } from "../components/Items";
@@ -224,7 +224,7 @@ export default function Home() {
       <div className="flex flex-col xl:flex-row">
         {showFilters && (
           <div className="mt-4 max-w-full xl:max-w-xs">
-            <div className="sticky top-3 flex flex-col gap-1 xl:gap-3">
+            <div className="flex flex-col gap-1 xl:gap-3">
               <RegionFilter
                 selectedRegion={region}
                 regions={regions}
