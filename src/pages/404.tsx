@@ -1,5 +1,5 @@
-import { LinkButton } from "../components/Button";
 import { BaseLayout } from "../components/layouts/BaseLayout";
+import { LinkButton } from "../components/ui/Button";
 
 export default function NotFound() {
   return (

@@ -1,9 +1,9 @@
 import { CogIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { trpc } from "../utils/trpc";
+import { cls } from "../../utils/cls";
+import { trpc } from "../../utils/trpc";
 import { LinkButton } from "./Button";
-import { cls } from "./cls";
 
 export function AdminPageLink() {
   const itemsPending = trpc.item.pendingCount.useQuery();

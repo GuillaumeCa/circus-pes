@@ -1,6 +1,6 @@
 import React from "react";
+import { BaseLayout } from "../layouts/BaseLayout";
 import { Button } from "./Button";
-import { BaseLayout } from "./layouts/BaseLayout";
 
 export class ErrorBoundary extends React.Component<
   { children: React.ReactNode },

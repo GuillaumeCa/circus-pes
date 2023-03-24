@@ -3,8 +3,8 @@ import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Button } from "../Button";
-import { LinkNavigation } from "../LinkNavigation";
+import { Button } from "../ui/Button";
+import { LinkNavigation } from "../ui/LinkNavigation";
 import { BaseLayout } from "./BaseLayout";
 
 export default function AccountLayout({

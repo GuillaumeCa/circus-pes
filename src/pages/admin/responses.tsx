@@ -5,11 +5,11 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "../../components/Button";
-import { cls } from "../../components/cls";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
-import { TabBar } from "../../components/TabBar";
-import { TimeFormatted } from "../../components/TimeFormatted";
+import { Button } from "../../components/ui/Button";
+import { TabBar } from "../../components/ui/TabBar";
+import { TimeFormatted } from "../../components/ui/TimeFormatted";
+import { cls } from "../../utils/cls";
 import {
   formatImageUrl,
   formatPreviewResponseImageUrl,

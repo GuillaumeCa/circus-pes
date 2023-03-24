@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { cls } from "./cls";
+import { cls } from "../utils/cls";
 
 export function LocaleSwitcher() {
   const { pathname, locale, asPath } = useRouter();

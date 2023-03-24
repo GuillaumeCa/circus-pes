@@ -2,9 +2,9 @@ import { TrashIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { FormattedMessage } from "react-intl";
-import { Button } from "../../components/Button";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
-import { ConfirmModal } from "../../components/Modal";
+import { Button } from "../../components/ui/Button";
+import { ConfirmModal } from "../../components/ui/Modal";
 import { trpc } from "../../utils/trpc";
 
 function PatchVersionRow({

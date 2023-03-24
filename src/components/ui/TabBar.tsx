@@ -1,5 +1,5 @@
 import React from "react";
-import { cls } from "./cls";
+import { cls } from "../../utils/cls";
 
 type TabBarItem<T> = {
   icon?: React.ReactNode;

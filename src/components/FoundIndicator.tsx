@@ -1,5 +1,5 @@
 import { FormattedMessage, useIntl } from "react-intl";
-import { cls } from "./cls";
+import { cls } from "../utils/cls";
 
 export function FoundIndicator({ value }: { value: number }) {
   const intl = useIntl();

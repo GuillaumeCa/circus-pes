@@ -1,9 +1,9 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, MutableRefObject, useRef } from "react";
 import { FormattedMessage } from "react-intl";
-import { inter } from "../pages/_app";
+import { inter } from "../../pages/_app";
+import { cls } from "../../utils/cls";
 import { Button } from "./Button";
-import { cls } from "./cls";
 
 interface ModalProps {
   className?: string;
