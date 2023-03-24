@@ -9,8 +9,8 @@ import {
   MIN_IMAGE_UPLOAD_SIZE,
 } from "../utils/storage";
 import { trpc } from "../utils/trpc";
-import { Button } from "./Button";
-import { XMarkIcon } from "./Icons";
+import { Button } from "./ui/Button";
+import { XMarkIcon } from "./ui/Icons";
 
 import { FormattedMessage, useIntl } from "react-intl";
 import { LocationInfo } from "../server/db/item";

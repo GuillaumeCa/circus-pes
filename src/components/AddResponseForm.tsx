@@ -3,16 +3,16 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FormattedMessage, useIntl } from "react-intl";
 import { z } from "zod";
+import { cls } from "../utils/cls";
 import {
   getFileExtension,
   MAX_IMAGE_UPLOAD_SIZE,
   MIN_IMAGE_UPLOAD_SIZE,
 } from "../utils/storage";
 import { trpc } from "../utils/trpc";
-import { Button } from "./Button";
-import { cls } from "./cls";
 import { FormRow } from "./FormRow";
-import { XMarkIcon } from "./Icons";
+import { Button } from "./ui/Button";
+import { XMarkIcon } from "./ui/Icons";
 
 function useResponseFormSchema() {
   const intl = useIntl();

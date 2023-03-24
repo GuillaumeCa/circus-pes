@@ -1,10 +1,10 @@
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { LoadIcon } from "../../components/Icons";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
-import { ConfirmModal } from "../../components/Modal";
-import { TabBar } from "../../components/TabBar";
+import { LoadIcon } from "../../components/ui/Icons";
+import { ConfirmModal } from "../../components/ui/Modal";
+import { TabBar } from "../../components/ui/TabBar";
 import { UserRouterOutput } from "../../server/routers/user";
 import { trpc } from "../../utils/trpc";
 import { formatRole, UserRole } from "../../utils/user";

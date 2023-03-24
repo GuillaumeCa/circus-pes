@@ -5,21 +5,21 @@ import {
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
-import { TrashIcon } from "./Icons";
-import { ConfirmModal } from "./Modal";
-import { TimeFormatted } from "./TimeFormatted";
+import { TrashIcon } from "./ui/Icons";
+import { ConfirmModal } from "./ui/Modal";
+import { TimeFormatted } from "./ui/TimeFormatted";
 
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ResponseRouterOutput } from "../server/routers/response";
+import { cls } from "../utils/cls";
 import {
   formatImageUrl,
   formatPreviewResponseImageUrl,
 } from "../utils/storage";
 import { UserRole } from "../utils/user";
-import { cls } from "./cls";
 
 export function ResponsesList({
   itemId,

@@ -3,10 +3,10 @@ import Head from "next/head";
 import Link from "next/link";
 import { Toaster } from "react-hot-toast";
 import { FormattedMessage, useIntl } from "react-intl";
-import { UserButton } from "../Button";
-import { GithubIcon } from "../Icons";
 import { LocaleSwitcher } from "../LocaleSwitcher";
-import { BASE_URL, SEO } from "../Seo";
+import { UserButton } from "../ui/Button";
+import { GithubIcon } from "../ui/Icons";
+import { BASE_URL, SEO } from "../ui/Seo";
 
 interface BaseLayoutProps {
   children: React.ReactNode;

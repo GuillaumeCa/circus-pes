@@ -5,7 +5,7 @@ import {
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { FormattedList, FormattedMessage, useIntl } from "react-intl";
-import { cls } from "./cls";
+import { cls } from "../utils/cls";
 import { SortShard } from "./Items";
 
 export function PatchVersionFilter({

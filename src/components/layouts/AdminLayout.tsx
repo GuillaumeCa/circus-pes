@@ -2,6 +2,7 @@ import {
   ChatBubbleLeftEllipsisIcon,
   InboxArrowDownIcon,
   RectangleStackIcon,
+  SwatchIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
@@ -9,7 +10,7 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { trpc } from "../../utils/trpc";
 import { UserRole } from "../../utils/user";
-import { LinkNavigation } from "../LinkNavigation";
+import { LinkNavigation } from "../ui/LinkNavigation";
 import { BaseLayout } from "./BaseLayout";
 
 interface AdminLayoutProps {
@@ -53,6 +54,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           path="/admin/patch-versions"
           icon={<RectangleStackIcon className="h-6 w-6 inline" />}
           name="Versions"
+        />
+        <LinkNavigation
+          path="/admin/categories"
+          icon={<SwatchIcon className="h-6 w-6 inline" />}
+          name="Categories"
         />
         <LinkNavigation
           path="/admin/users"

@@ -11,8 +11,6 @@ import { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import SuperJSON from "superjson";
 
-import { AddButton } from "../components/Button";
-import { cls } from "../components/cls";
 import {
   FilterMessageDisplay,
   LocationFilter,
@@ -23,12 +21,14 @@ import {
 import { ItemForm } from "../components/ItemForm";
 import { ItemListPaginated, SortOption } from "../components/Items";
 import { BaseLayout } from "../components/layouts/BaseLayout";
-import { AdminPageLink } from "../components/LinkNavigation";
-import { Modal } from "../components/Modal";
-import { TabBar } from "../components/TabBar";
+import { AddButton } from "../components/ui/Button";
+import { AdminPageLink } from "../components/ui/LinkNavigation";
+import { Modal } from "../components/ui/Modal";
+import { TabBar } from "../components/ui/TabBar";
 import { createStaticContext } from "../server/context";
 import { ItemRouterInput } from "../server/routers/item";
 import { appRouter } from "../server/routers/_app";
+import { cls } from "../utils/cls";
 import { REGIONS } from "../utils/constants";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";

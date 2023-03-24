@@ -21,19 +21,19 @@ import { getParagraphs } from "../utils/text";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
 import { AddResponseForm } from "./AddResponseForm";
-import { TrashIcon } from "./Icons";
-import { ConfirmModal, Modal } from "./Modal";
 import { ResponsesList } from "./Responses";
-import { TimeFormatted } from "./TimeFormatted";
+import { TrashIcon } from "./ui/Icons";
+import { ConfirmModal, Modal } from "./ui/Modal";
+import { TimeFormatted } from "./ui/TimeFormatted";
 
 import { InfiniteData } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { FormattedMessage, useIntl } from "react-intl";
 import type { LocationInfo } from "../server/db/item";
 import type { ItemRouterInput } from "../server/routers/item";
-import { Button } from "./Button";
 import { FoundIndicator } from "./FoundIndicator";
 import { ItemForm } from "./ItemForm";
+import { Button } from "./ui/Button";
 
 export type SortOption = ItemRouterInput["getItems"]["sortBy"];
 export type SortShard = "az" | "num";
