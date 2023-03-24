@@ -5,7 +5,7 @@ import { minioClient } from "../../lib/minio";
 import {
   formatPreviewItemImageKey,
   formatPreviewResponseImageKey,
-  IMAGE_BUCKET_NAME,
+  IMAGE_BUCKET_NAME
 } from "../../utils/storage";
 import { stream2buffer } from "../../utils/stream";
 import { UserRole } from "../../utils/user";
@@ -15,23 +15,28 @@ import {
   getItemsByUser,
   getItemsQuery,
   getShardsForRegion as getItemShards,
-  sortOptions,
+  sortOptions
 } from "../db/item";
 import {
   createAndStorePreviewImage,
   createImageUploadUrl,
-  isImageValid,
+  isImageValid
 } from "../storage";
 import {
   adminProcedure,
+  paginate,
   protectedProcedure,
   publicProcedure,
   router,
-  writeProcedure,
+  writeProcedure
 } from "../trpc";
-import { RouterInput } from "./_app";
+import { RouterInput, RouterOutput } from "./_app";
 
 export type ItemRouterInput = RouterInput["item"];
+export type ItemRouterOutput = RouterOutput["item"];
+
+const ITEMS_PAGE_SIZE = 20;
+const USER_ITEMS_PAGE_SIZE = 20;
 
 const itemFormSchema = z.object({
   patchId: z.string(),
@@ -64,6 +69,7 @@ export const itemRouter = router({
         patchVersion: z.string(),
         sortBy: z.enum(sortOptions),
         filter: itemFilterSchema,
+        cursor: z.number().min(0).default(0),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -79,19 +85,29 @@ export const itemRouter = router({
           });
         }
 
+        const { pageQuery, createPage } = paginate(
+          input.cursor,
+          ITEMS_PAGE_SIZE
+        );
+
         const userId = ctx.session?.user?.id;
-        return getItemsQuery(
+        const items = await getItemsQuery(
           ctx.prisma,
           input.patchVersion,
           input.sortBy,
           input.filter,
+          pageQuery,
           userId,
           true,
           true
         );
+
+        return createPage(items);
       } catch (e) {
         console.error("could not query items", e);
       }
+
+      return { responses: [], nextCursor: 0 };
     }),
 
   shards: publicProcedure
@@ -135,9 +151,22 @@ export const itemRouter = router({
     }),
 
   byUser: protectedProcedure
-    .input(z.object({ patchVersionId: z.string() }))
-    .query(async ({ ctx, input: { patchVersionId } }) => {
-      return getItemsByUser(ctx.prisma, ctx.session.user.id, patchVersionId);
+    .input(
+      z.object({
+        patchVersionId: z.string(),
+        cursor: z.number().min(0).default(0),
+      })
+    )
+    .query(async ({ ctx, input: { patchVersionId, cursor } }) => {
+      const { createPage, pageQuery } = paginate(cursor, USER_ITEMS_PAGE_SIZE);
+      const items = await getItemsByUser(
+        ctx.prisma,
+        ctx.session.user.id,
+        patchVersionId,
+        pageQuery
+      );
+
+      return createPage(items);
     }),
 
   getAllItems: adminProcedure
@@ -169,6 +198,7 @@ export const itemRouter = router({
           input.patchVersion,
           input.sortBy,
           input.filter,
+          undefined,
           userId,
           input.public
         );

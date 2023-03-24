@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PatchVersionFilter } from "../../components/Filters";
-import { ItemList } from "../../components/Items";
+import { ItemListPaginated } from "../../components/Items";
 import AccountLayout from "../../components/layouts/AccountLayout";
 import { trpc } from "../../utils/trpc";
 
@@ -11,13 +11,17 @@ export default function Account() {
 
   const {
     data: items,
-    isError,
     isLoading,
+    isFetching,
+    isError,
+    hasNextPage,
     refetch,
-  } = trpc.item.byUser.useQuery(
+    fetchNextPage,
+  } = trpc.item.byUser.useInfiniteQuery(
     { patchVersionId: selectedPatch?.id ?? "" },
     {
       enabled: !!selectedPatch,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
   );
 
@@ -33,13 +37,15 @@ export default function Account() {
         />
       </div>
 
-      <ItemList
+      <ItemListPaginated
+        itemPages={items}
         isLoading={isLoading}
-        items={items}
-        hasItems={items?.length !== 0}
+        isFetching={isFetching}
         hasError={isError}
-        onLike={() => refetch()}
+        hasNextPage={hasNextPage}
         onUpdateItems={() => refetch()}
+        onLike={() => refetch()}
+        onFetchNextPage={fetchNextPage}
       />
     </AccountLayout>
   );

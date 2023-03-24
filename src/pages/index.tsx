@@ -21,7 +21,7 @@ import {
   ShardFilter,
 } from "../components/Filters";
 import { ItemForm } from "../components/ItemForm";
-import { ItemList, SortOption } from "../components/Items";
+import { ItemListPaginated, SortOption } from "../components/Items";
 import { BaseLayout } from "../components/layouts/BaseLayout";
 import { AdminPageLink } from "../components/LinkNavigation";
 import { Modal } from "../components/Modal";
@@ -52,12 +52,14 @@ export default function Home() {
   const intl = useIntl();
 
   // data
-  const utils = trpc.useContext();
+  const util = trpc.useContext();
+
   const { data, status } = useSession();
   const { data: patchVersions, isLoading: isLoadingVersions } =
     trpc.patchVersion.getPatchVersions.useQuery();
   const selectedPatch = patchVersions?.[gameVersionId];
 
+  // fetch shards with count of items per shard
   const shardsForItems = trpc.item.shards.useQuery(
     {
       patchVersion: selectedPatch?.id ?? "",
@@ -68,31 +70,12 @@ export default function Home() {
     }
   );
 
+  // fetch locations of items
   const locationsForItems = trpc.item.locations.useQuery(
     {
       patchVersion: selectedPatch?.id ?? "",
       region: region !== "" ? (region as any) : undefined,
       shard: selectedShard !== "" ? selectedShard : undefined,
-    },
-    {
-      enabled: !!selectedPatch,
-    }
-  );
-
-  const {
-    data: items,
-    error,
-    isLoading: isLoadingItems,
-    refetch,
-  } = trpc.item.getItems.useQuery(
-    {
-      patchVersion: selectedPatch?.id ?? "",
-      sortBy: sortOpt,
-      filter: {
-        region: region !== "" ? (region as any) : undefined,
-        shard: selectedShard !== "" ? selectedShard : undefined,
-        location: location !== "" ? location : undefined,
-      },
     },
     {
       enabled: !!selectedPatch,
@@ -117,8 +100,6 @@ export default function Home() {
 
   // filtered location list
   const locationsList = locationsForItems.data?.map((d) => d.location) ?? [];
-
-  const itemsFiltered = items ?? [];
 
   return (
     <BaseLayout>
@@ -149,7 +130,7 @@ export default function Home() {
             shardIds={shardIds}
             onCancel={() => setShowAddForm(false)}
             onCreated={() => {
-              refetch();
+              util.item.getItems.refetch();
               shardsForItems.refetch();
               locationsForItems.refetch();
               setShowAddForm(false);
@@ -274,43 +255,12 @@ export default function Home() {
           )}
 
           <ItemList
-            isLoading={isLoadingItems || isLoadingVersions}
-            items={itemsFiltered}
-            hasItems={
-              !!selectedPatch && itemsFiltered.length !== 0 && !isLoadingItems
-            }
-            hasError={!!error}
-            onLike={(item, like) => {
-              if (!selectedPatch) {
-                return;
-              }
-
-              const currentInput: ItemRouterInput["getItems"] = {
-                patchVersion: selectedPatch.id ?? "",
-                sortBy: sortOpt,
-              };
-
-              const items = utils.item.getItems.getData(currentInput);
-
-              if (items) {
-                utils.item.getItems.setData(
-                  currentInput,
-                  items.map((it) => {
-                    if (it.id === item.id) {
-                      return {
-                        ...it,
-                        hasLiked: like === 1 ? 1 : 0,
-                        likesCount: it.likesCount + like,
-                      };
-                    }
-
-                    return it;
-                  })
-                );
-              }
-            }}
+            patchId={selectedPatch?.id}
+            sortOpt={sortOpt}
+            region={region}
+            shard={selectedShard}
+            location={location}
             onUpdateItems={() => {
-              refetch();
               shardsForItems.refetch();
               locationsForItems.refetch();
             }}
@@ -318,6 +268,98 @@ export default function Home() {
         </div>
       </div>
     </BaseLayout>
+  );
+}
+
+export function ItemList({
+  patchId,
+  sortOpt = "recent",
+  region = "EU",
+  shard,
+  location,
+  onUpdateItems,
+}: {
+  patchId?: string;
+  sortOpt?: SortOption;
+  region?: string;
+  shard?: string;
+  location?: string;
+  onUpdateItems(): void;
+}) {
+  const utils = trpc.useContext();
+
+  const filter = {
+    region: region !== "" ? (region as any) : undefined,
+    shard: shard !== "" ? shard : undefined,
+    location: location !== "" ? location : undefined,
+  };
+
+  const {
+    data: items,
+    isLoading,
+    isFetching,
+    hasNextPage,
+    isError,
+    refetch,
+    fetchNextPage,
+  } = trpc.item.getItems.useInfiniteQuery(
+    {
+      patchVersion: patchId ?? "",
+      sortBy: sortOpt,
+      filter,
+    },
+    {
+      enabled: !!patchId,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
+
+  return (
+    <ItemListPaginated
+      itemPages={items}
+      isLoading={isLoading}
+      isFetching={isFetching}
+      hasError={isError}
+      hasNextPage={hasNextPage}
+      onUpdateItems={() => {
+        refetch();
+        onUpdateItems();
+      }}
+      onLike={(item, like) => {
+        if (!patchId) {
+          return;
+        }
+
+        const currentInput: ItemRouterInput["getItems"] = {
+          patchVersion: patchId ?? "",
+          sortBy: sortOpt,
+          filter,
+        };
+
+        const itemPages = utils.item.getItems.getInfiniteData(currentInput);
+
+        // doing an optimistic update for the likes
+        if (itemPages) {
+          utils.item.getItems.setInfiniteData(currentInput, {
+            ...itemPages,
+            pages: itemPages.pages.map((p) => ({
+              ...p,
+              responses: p.responses.map((it) => {
+                if (it.id === item.id) {
+                  return {
+                    ...it,
+                    hasLiked: like === 1 ? 1 : 0,
+                    likesCount: it.likesCount + like,
+                  };
+                }
+                return it;
+              }),
+            })),
+          });
+        }
+      }}
+      onFetchNextPage={fetchNextPage}
+    />
   );
 }
 
@@ -331,7 +373,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
   await ssg.patchVersion.getPatchVersions.prefetch();
   const patch = await ssg.patchVersion.getPatchVersions.fetch();
   if (patch.length > 0) {
-    await ssg.item.getItems.prefetch({
+    await ssg.item.getItems.prefetchInfinite({
       sortBy: "recent",
       patchVersion: patch[0].id,
       filter: {

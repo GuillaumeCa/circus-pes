@@ -26,10 +26,12 @@ import { ConfirmModal, Modal } from "./Modal";
 import { ResponsesList } from "./Responses";
 import { TimeFormatted } from "./TimeFormatted";
 
+import { InfiniteData } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { FormattedMessage, useIntl } from "react-intl";
 import type { LocationInfo } from "../server/db/item";
 import type { ItemRouterInput } from "../server/routers/item";
+import { Button } from "./Button";
 import { FoundIndicator } from "./FoundIndicator";
 import { ItemForm } from "./ItemForm";
 
@@ -53,22 +55,26 @@ export function calculateIndicator(found: number, notFound: number) {
   }
 }
 
-export function ItemList({
+export function ItemListPaginated({
+  itemPages,
   isLoading,
+  isFetching,
   hasError,
-  hasItems,
-  items,
+  hasNextPage,
   onUpdateItems,
   onLike,
+  onFetchNextPage,
 }: {
+  itemPages?: InfiniteData<{ responses: LocationInfo[]; cursor?: number }>;
   isLoading: boolean;
+  isFetching: boolean;
   hasError: boolean;
-  hasItems: boolean;
-  items?: LocationInfo[];
+  hasNextPage?: boolean;
   onLike(item: LocationInfo, like: number): void;
   onUpdateItems(): void;
+  onFetchNextPage(): void;
 }) {
-  if (isLoading) {
+  if (isLoading && !isFetching) {
     return (
       <p className="text-gray-400">
         <FormattedMessage id="action.loading" defaultMessage="Chargement..." />{" "}
@@ -76,7 +82,7 @@ export function ItemList({
     );
   }
 
-  if (!hasItems) {
+  if (!isLoading && !itemPages?.pages.some((p) => p.responses.length > 0)) {
     return (
       <p className="text-gray-400">
         <FormattedMessage id="items.no-item" defaultMessage="Aucune création" />
@@ -94,19 +100,31 @@ export function ItemList({
           />
         </p>
       )}
-      {items && (
+      {itemPages && (
         <ul className="bg-gray-600 rounded-none sm:rounded-xl -mx-3 sm:mx-auto divide-y-2 divide-gray-700">
-          {items.map((item) => (
-            <ItemRow
-              key={item.id}
-              item={item}
-              onLike={(like) => onLike(item, like)}
-              onUpdateItems={onUpdateItems}
-              onDelete={onUpdateItems}
-            />
-          ))}
+          {itemPages.pages.map((p) =>
+            p.responses.map((item) => (
+              <ItemRow
+                key={item.id}
+                item={item}
+                onLike={(like) => onLike(item, like)}
+                onUpdateItems={onUpdateItems}
+                onDelete={onUpdateItems}
+              />
+            ))
+          )}
         </ul>
       )}
+      <div className="mt-3 flex justify-center">
+        {hasNextPage && (
+          <Button btnType="secondary" onClick={() => onFetchNextPage()}>
+            <FormattedMessage
+              id="items.show-more"
+              defaultMessage="Afficher plus..."
+            />
+          </Button>
+        )}
+      </div>
     </>
   );
 }
