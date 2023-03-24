@@ -58,6 +58,7 @@
   "item.shard.helpmsg": "To retrieve the identifier of the shard you are on, press the key to the left of the 1 on your keyboard then type <m>r_DisplayInfo 3</m> in the console and search the identifier next to ShardId. The identifier will follow this format: <mb>eptu_use1c_sc_alpha_318x_8319689_game_740</mb> and you will have to type <m>USE1C-740</m> in the field below for this example.",
   "item.shard.placeholder": "Identifier of the shard",
   "items.no-item": "No entries",
+  "items.show-more": "Show more...",
   "loading-error": "Failed to load, please refresh the page.",
   "login": "Login",
   "logout": "Logout",

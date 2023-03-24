@@ -60,6 +60,7 @@
   "item.shard.placeholder": "Identifiant de la shard",
   "item.validating": "En validation",
   "items.no-item": "Aucune création",
+  "items.show-more": "Afficher plus...",
   "loading-error": "Erreur de chargement, veuillez recharger la page",
   "login": "Connexion",
   "logout": "Se déconnecter",

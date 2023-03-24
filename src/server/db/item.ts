@@ -80,6 +80,7 @@ export function getItemsQuery(
   patchVersionId: string,
   sortBy: SortType,
   filter: ItemFilter,
+  pagination?: { take: number; skip: number },
   userId?: string,
   filterPublic?: boolean,
   showPrivateForCurrentUser = false
@@ -111,6 +112,11 @@ export function getItemsQuery(
   }
   group by (i.id, u.id, pv.id)
   order by ${getOrder(sortBy)}
+  ${
+    pagination
+      ? Prisma.sql`offset ${pagination.skip} limit ${pagination.take}`
+      : Prisma.empty
+  }
 `;
 }
 
@@ -129,13 +135,19 @@ export function getItemById(
 export function getItemsByUser(
   prismaClient: MyPrismaClient,
   userId: string,
-  patchVersionId: string
+  patchVersionId: string,
+  pagination?: { take: number; skip: number }
 ) {
   return prismaClient.$queryRaw<LocationInfo[]>`
   ${getItemBaseQuery(userId)}
   where u.id = ${userId} and i."patchVersionId" = ${patchVersionId}
   group by (i.id, u.id, pv.id)
   order by i."createdAt" desc
+  ${
+    pagination
+      ? Prisma.sql`offset ${pagination.skip} limit ${pagination.take}`
+      : Prisma.empty
+  }
 `;
 }
 
