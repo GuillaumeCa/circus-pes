@@ -12,6 +12,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import SuperJSON from "superjson";
 
 import {
+  CategoryFilter,
   FilterMessageDisplay,
   LocationFilter,
   PatchVersionFilter,
@@ -39,6 +40,7 @@ export default function Home() {
   // filters
   const [showFilters, setShowFilters] = useState(true);
   const [gameVersionId, setGameVersion] = useState(0);
+  const [categoryIndex, setCategoryIndex] = useState(0);
   const [region, setRegion] = useState(DEFAULT_REGION);
   const [selectedShard, setSelectedShard] = useState("");
   const [location, setLocation] = useState("");
@@ -53,16 +55,21 @@ export default function Home() {
 
   // data
   const util = trpc.useContext();
-
   const { data, status } = useSession();
+
   const { data: patchVersions, isLoading: isLoadingVersions } =
     trpc.patchVersion.getPatchVersions.useQuery();
   const selectedPatch = patchVersions?.[gameVersionId];
+
+  const { data: categories } = trpc.category.getAll.useQuery();
+  const selectedCategory =
+    categoryIndex === 0 ? undefined : categories?.[categoryIndex - 1];
 
   // fetch shards with count of items per shard
   const shardsForItems = trpc.item.shards.useQuery(
     {
       patchVersion: selectedPatch?.id ?? "",
+      category: selectedCategory?.id,
       region: region !== "" ? (region as any) : undefined,
     },
     {
@@ -74,6 +81,7 @@ export default function Home() {
   const locationsForItems = trpc.item.locations.useQuery(
     {
       patchVersion: selectedPatch?.id ?? "",
+      category: selectedCategory?.id,
       region: region !== "" ? (region as any) : undefined,
       shard: selectedShard !== "" ? selectedShard : undefined,
     },
@@ -147,6 +155,17 @@ export default function Home() {
               versionIndex={gameVersionId}
               onSelect={(index) => {
                 setGameVersion(index);
+                setSelectedShard("");
+                setLocation("");
+              }}
+            />
+          </div>
+          <div>
+            <CategoryFilter
+              categories={categories}
+              categoryIndex={categoryIndex}
+              onSelect={(index) => {
+                setCategoryIndex(index);
                 setSelectedShard("");
                 setLocation("");
               }}
@@ -256,6 +275,7 @@ export default function Home() {
 
           <ItemList
             patchId={selectedPatch?.id}
+            categoryId={selectedCategory?.id}
             sortOpt={sortOpt}
             region={region}
             shard={selectedShard}
@@ -273,6 +293,7 @@ export default function Home() {
 
 export function ItemList({
   patchId,
+  categoryId,
   sortOpt = "recent",
   region = "EU",
   shard,
@@ -280,6 +301,7 @@ export function ItemList({
   onUpdateItems,
 }: {
   patchId?: string;
+  categoryId?: string;
   sortOpt?: SortOption;
   region?: string;
   shard?: string;
@@ -305,6 +327,7 @@ export function ItemList({
   } = trpc.item.getItems.useInfiniteQuery(
     {
       patchVersion: patchId ?? "",
+      category: categoryId,
       sortBy: sortOpt,
       filter,
     },

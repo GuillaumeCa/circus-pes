@@ -14,6 +14,7 @@ import { XMarkIcon } from "./ui/Icons";
 
 import { FormattedMessage, useIntl } from "react-intl";
 import { LocationInfo } from "../server/db/item";
+import { FormRow } from "./ui/FormRow";
 
 interface AddLocationFormProps {
   item?: Partial<LocationInfo>;
@@ -30,6 +31,7 @@ function useItemFormSchema() {
     .object({
       isEdit: z.boolean().default(false),
       gameVersion: z.string(),
+      category: z.string(),
       shardId: z.string().regex(
         /(US|EU|AP)(E|S|W|SE)[0-9][A-Z]-[0-9]{3}/,
         intl.formatMessage({
@@ -126,6 +128,7 @@ export function ItemForm({
   const [error, setError] = useState(false);
   const intl = useIntl();
   const { data: patchVersions } = trpc.patchVersion.getPatchVersions.useQuery();
+  const { data: categories } = trpc.category.getAll.useQuery();
 
   const { mutateAsync: updateItem } = trpc.item.edit.useMutation();
   const { mutateAsync: createItem } = trpc.item.create.useMutation();
@@ -157,6 +160,7 @@ export function ItemForm({
           shardId: item.shardId,
           description: item.description,
           location: item.location,
+          category: item.categoryId,
           image: undefined,
         }
       : {
@@ -209,6 +213,7 @@ export function ItemForm({
           location: formData.location,
           patchId: formData.gameVersion,
           shardId: formData.shardId,
+          categoryId: formData.category,
         });
         const file = formData.image!.item(0)!;
         if (updatedItem && file) {
@@ -221,6 +226,7 @@ export function ItemForm({
           location: formData.location,
           patchId: formData.gameVersion,
           shardId: formData.shardId,
+          categoryId: formData.category,
         });
         if (createdItem) {
           const file = formData.image!.item(0)!;
@@ -294,6 +300,21 @@ export function ItemForm({
           {errors.gameVersion?.message}
         </p>
       </div>
+
+      <FormRow
+        id="categoryForm"
+        label="Categorie"
+        errorMessage={errors.category?.message}
+      >
+        <select id="categoryForm" className="w-full" {...register("category")}>
+          {categories?.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+      </FormRow>
+
       <div>
         <label
           htmlFor="shardId"

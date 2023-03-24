@@ -40,6 +40,7 @@ const USER_ITEMS_PAGE_SIZE = 20;
 
 const itemFormSchema = z.object({
   patchId: z.string(),
+  categoryId: z.string(),
   shardId: z
     .string()
     .regex(
@@ -67,6 +68,7 @@ export const itemRouter = router({
     .input(
       z.object({
         patchVersion: z.string(),
+        category: z.string().optional(),
         sortBy: z.enum(sortOptions),
         filter: itemFilterSchema,
         cursor: z.number().min(0).default(0),
@@ -96,6 +98,7 @@ export const itemRouter = router({
           input.patchVersion,
           input.sortBy,
           input.filter,
+          input.category,
           pageQuery,
           userId,
           true,
@@ -114,6 +117,7 @@ export const itemRouter = router({
     .input(
       z.object({
         patchVersion: z.string(),
+        category: z.string().optional(),
         region: regionSchema,
       })
     )
@@ -124,6 +128,7 @@ export const itemRouter = router({
         ctx.prisma,
         input.patchVersion,
         input.region,
+        input.category,
         userId,
         true
       );
@@ -133,6 +138,7 @@ export const itemRouter = router({
     .input(
       z.object({
         patchVersion: z.string(),
+        category: z.string().optional(),
         region: regionSchema,
         shard: z.string().optional(),
       })
@@ -145,6 +151,7 @@ export const itemRouter = router({
         input.patchVersion,
         input.region,
         input.shard,
+        input.category,
         userId,
         true
       );
@@ -173,6 +180,7 @@ export const itemRouter = router({
     .input(
       z.object({
         patchVersion: z.string(),
+        category: z.string().optional(),
         sortBy: z.enum(["recent", "like"]),
         public: z.boolean().optional(),
         filter: itemFilterSchema,
@@ -198,6 +206,7 @@ export const itemRouter = router({
           input.patchVersion,
           input.sortBy,
           input.filter,
+          input.category,
           undefined,
           userId,
           input.public
@@ -231,7 +240,10 @@ export const itemRouter = router({
   create: writeProcedure
     .input(itemFormSchema)
     .mutation(
-      async ({ input: { description, patchId, location, shardId }, ctx }) => {
+      async ({
+        input: { description, patchId, location, shardId, categoryId },
+        ctx,
+      }) => {
         const patch = await ctx.prisma.patchVersion.findFirst({
           where: { id: patchId },
         });
@@ -239,6 +251,15 @@ export const itemRouter = router({
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "invalid patch version",
+          });
+        }
+        const category = await ctx.prisma.category.findFirst({
+          where: { id: categoryId },
+        });
+        if (!category) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "invalid category",
           });
         }
 
@@ -254,6 +275,7 @@ export const itemRouter = router({
             patchVersionId: patchId,
             location,
             shardId,
+            categoryId,
             userId: ctx.session.user.id,
             public: false,
           },
@@ -275,7 +297,7 @@ export const itemRouter = router({
     .mutation(
       async ({
         ctx,
-        input: { patchId, id, description, location, shardId },
+        input: { patchId, id, description, location, shardId, categoryId },
       }) => {
         const user = ctx.session.user;
 
@@ -286,6 +308,16 @@ export const itemRouter = router({
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "invalid patch version",
+          });
+        }
+
+        const category = await ctx.prisma.category.findFirst({
+          where: { id: categoryId },
+        });
+        if (!category) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "invalid category",
           });
         }
 
@@ -319,6 +351,7 @@ export const itemRouter = router({
             patchVersionId: patchId,
             location,
             shardId,
+            categoryId,
             public: user.role === UserRole.ADMIN ? item.public : false,
           },
           where: {

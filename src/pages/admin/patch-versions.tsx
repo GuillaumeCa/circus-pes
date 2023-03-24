@@ -7,6 +7,65 @@ import { Button } from "../../components/ui/Button";
 import { ConfirmModal } from "../../components/ui/Modal";
 import { trpc } from "../../utils/trpc";
 
+export default function PatchVersions() {
+  const {
+    data: patchVersions,
+    isLoading,
+    refetch,
+  } = trpc.patchVersion.getAllPatchVersions.useQuery();
+  const { mutateAsync: create } = trpc.patchVersion.create.useMutation();
+
+  const [patchName, setPatchName] = useState("");
+
+  return (
+    <AdminLayout>
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (patchName !== "") {
+            await create({ name: patchName });
+            setPatchName("");
+            refetch();
+          }
+        }}
+      >
+        <div className="mt-3 flex space-x-2">
+          <input
+            placeholder="Nouvelle version"
+            className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
+            value={patchName}
+            onChange={(e) => setPatchName(e.target.value)}
+          />
+          <Button type="submit">Ajouter</Button>
+        </div>
+      </form>
+
+      {isLoading && (
+        <p>
+          <FormattedMessage
+            id="action.loading"
+            defaultMessage="Chargement..."
+          />
+        </p>
+      )}
+      {patchVersions && (
+        <ul className="mt-3 space-y-2">
+          {patchVersions.map((v) => (
+            <PatchVersionRow
+              key={v.id}
+              id={v.id}
+              name={v.name}
+              itemCount={v._count.Item}
+              isVisible={v.visible}
+              onUpdate={refetch}
+            />
+          ))}
+        </ul>
+      )}
+    </AdminLayout>
+  );
+}
+
 function PatchVersionRow({
   id,
   name,
@@ -84,64 +143,5 @@ function PatchVersionRow({
         onClose={() => setShowDeleteConfirm(false)}
       />
     </li>
-  );
-}
-
-export default function PatchVersions() {
-  const {
-    data: patchVersions,
-    isLoading,
-    refetch,
-  } = trpc.patchVersion.getAllPatchVersions.useQuery();
-  const { mutateAsync: create } = trpc.patchVersion.create.useMutation();
-
-  const [patchName, setPatchName] = useState("");
-
-  return (
-    <AdminLayout>
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (patchName !== "") {
-            await create({ name: patchName });
-            setPatchName("");
-            refetch();
-          }
-        }}
-      >
-        <div className="mt-3 flex space-x-2">
-          <input
-            placeholder="Nouvelle version"
-            className="appearance-none outline-none border text-sm rounded-lg bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-rose-500 focus:border-rose-500 block w-full p-2.5"
-            value={patchName}
-            onChange={(e) => setPatchName(e.target.value)}
-          />
-          <Button type="submit">Ajouter</Button>
-        </div>
-      </form>
-
-      {isLoading && (
-        <p>
-          <FormattedMessage
-            id="action.loading"
-            defaultMessage="Chargement..."
-          />
-        </p>
-      )}
-      {patchVersions && (
-        <ul className="mt-3 space-y-2">
-          {patchVersions.map((v) => (
-            <PatchVersionRow
-              key={v.id}
-              id={v.id}
-              name={v.name}
-              itemCount={v._count.Item}
-              isVisible={v.visible}
-              onUpdate={refetch}
-            />
-          ))}
-        </ul>
-      )}
-    </AdminLayout>
   );
 }

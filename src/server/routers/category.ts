@@ -19,4 +19,8 @@ export const categoryRouter = router({
         },
       });
     }),
+
+  delete: adminProcedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    await ctx.prisma.category.delete({ where: { id: input } });
+  }),
 });
