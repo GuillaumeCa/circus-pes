@@ -75,7 +75,7 @@ model Item {
   image          String?
   userId         String
   patchVersionId String
-  category       Category?    @relation(fields: [categoryId], references: [id])
+  category       Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   categoryId     String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @default(now()) @updatedAt

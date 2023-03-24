@@ -59,6 +59,52 @@ export function PatchVersionFilter({
   );
 }
 
+export function CategoryFilter({
+  categoryIndex,
+  categories,
+  onSelect,
+}: {
+  categoryIndex: number;
+  categories?: { id: string; name: string }[];
+  onSelect(index: number): void;
+}) {
+  return (
+    <>
+      <label
+        htmlFor="category"
+        className="text-xs uppercase font-bold text-gray-400"
+      >
+        <FormattedMessage
+          id="filter.category.label"
+          defaultMessage="Catégorie"
+        />
+      </label>
+      <select
+        id="category"
+        value={categoryIndex}
+        onChange={(e) => {
+          onSelect(parseInt(e.target.value, 10));
+        }}
+      >
+        {categories && categories?.length === 0 && (
+          <option disabled>
+            <FormattedMessage
+              id="filter.version.none"
+              defaultMessage="Aucune"
+            />
+          </option>
+        )}
+        <option value={0}>Toutes</option>
+        {categories?.map((category, i) => (
+          <option key={category.id} value={i + 1}>
+            {category.name}
+          </option>
+        ))}
+      </select>
+    </>
+  );
+}
+
 export function RegionFilter({
   selectedRegion,
   regions,

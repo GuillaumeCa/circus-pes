@@ -9,6 +9,7 @@ function getItemBaseQuery(userId?: string) {
     i.id,
     pv.id as "patchVersionId",
     pv.name as "patchVersion",
+    i."categoryId",
     i.description,
     i.location,
     i."shardId",
@@ -41,6 +42,7 @@ export interface LocationInfo {
   id: string;
   patchVersionId: string;
   patchVersion: string;
+  categoryId: string;
   shardId: string;
   location: string;
   description: string;
@@ -80,6 +82,7 @@ export function getItemsQuery(
   patchVersionId: string,
   sortBy: SortType,
   filter: ItemFilter,
+  categoryId?: string,
   pagination?: { take: number; skip: number },
   userId?: string,
   filterPublic?: boolean,
@@ -88,6 +91,7 @@ export function getItemsQuery(
   return prismaClient.$queryRaw<LocationInfo[]>`
   ${getItemBaseQuery(userId)}
   where i."patchVersionId" = ${patchVersionId}
+  ${categoryId ? Prisma.sql` and i."categoryId" = ${categoryId}` : Prisma.empty}
   ${
     filterPublic === undefined
       ? Prisma.empty
@@ -155,6 +159,7 @@ export function getShardsForRegion(
   prismaClient: MyPrismaClient,
   patchVersionId: string,
   region: ItemFilter["region"],
+  categoryId?: string,
   userId?: string,
   filterPublic?: boolean,
   showPrivateForCurrentUser = false
@@ -166,6 +171,7 @@ export function getShardsForRegion(
   from item i
   left join patch_version pv on pv.id = i."patchVersionId"
   where i."patchVersionId" = ${patchVersionId}
+  ${categoryId ? Prisma.sql` and i."categoryId" = ${categoryId}` : Prisma.empty}
   ${
     filterPublic === undefined
       ? Prisma.empty
@@ -183,6 +189,7 @@ export function getItemLocations(
   patchVersionId: string,
   region: ItemFilter["region"],
   shard: ItemFilter["shard"],
+  categoryId?: string,
   userId?: string,
   filterPublic?: boolean,
   showPrivateForCurrentUser = false
@@ -192,6 +199,7 @@ export function getItemLocations(
   from item i
   left join patch_version pv on pv.id = i."patchVersionId"
   where i."patchVersionId" = ${patchVersionId}
+  ${categoryId ? Prisma.sql` and i."categoryId" = ${categoryId}` : Prisma.empty}
   ${
     filterPublic === undefined
       ? Prisma.empty

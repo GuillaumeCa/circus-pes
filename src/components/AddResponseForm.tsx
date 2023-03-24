@@ -10,7 +10,7 @@ import {
   MIN_IMAGE_UPLOAD_SIZE,
 } from "../utils/storage";
 import { trpc } from "../utils/trpc";
-import { FormRow } from "./FormRow";
+import { FormRow } from "./ui/FormRow";
 import { Button } from "./ui/Button";
 import { XMarkIcon } from "./ui/Icons";
 
