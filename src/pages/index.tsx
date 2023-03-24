@@ -12,7 +12,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import SuperJSON from "superjson";
 
 import {
-  CategoryFilter,
+  CategoryFilterV2,
   FilterMessageDisplay,
   LocationFilter,
   PatchVersionFilter,
@@ -147,7 +147,16 @@ export default function Home() {
         )}
       </Modal>
 
-      <div className="mt-3 flex flex-col sm:flex-row justify-between items-start sm:items-end">
+      <CategoryFilterV2
+        categories={categories}
+        categoryIndex={categoryIndex}
+        onSelect={(index) => {
+          setCategoryIndex(index);
+          setSelectedShard("");
+          setLocation("");
+        }}
+      />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end">
         <div className="flex space-x-3 items-end">
           <div>
             <PatchVersionFilter
@@ -160,7 +169,7 @@ export default function Home() {
               }}
             />
           </div>
-          <div>
+          {/* <div>
             <CategoryFilter
               categories={categories}
               categoryIndex={categoryIndex}
@@ -170,7 +179,7 @@ export default function Home() {
                 setLocation("");
               }}
             />
-          </div>
+          </div> */}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cls(

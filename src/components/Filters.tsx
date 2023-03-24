@@ -105,6 +105,53 @@ export function CategoryFilter({
   );
 }
 
+export function CategoryFilterV2({
+  categoryIndex,
+  categories,
+  onSelect,
+}: {
+  categoryIndex: number;
+  categories?: { id: string; name: string }[];
+  onSelect(index: number): void;
+}) {
+  return (
+    <div>
+      <p className="uppercase font-bold text-xs text-gray-400">
+        <FormattedMessage
+          id="filter.category.label"
+          defaultMessage="Catégorie"
+        />
+      </p>
+      <div className="mt-1 flex flex-wrap">
+        <button
+          onClick={() => onSelect(0)}
+          className={cls(
+            "rounded-lg px-2 py-1 font-bold mr-2 mb-3",
+            categoryIndex === 0 ? "bg-rose-700" : "bg-gray-500"
+          )}
+        >
+          <SelectAllLabel gender="female" />
+        </button>
+        {categories?.map((category, index) => {
+          const isActive = categoryIndex === index + 1;
+          return (
+            <button
+              key={category.id}
+              onClick={() => onSelect(isActive ? 0 : index + 1)}
+              className={cls(
+                "relative rounded-lg px-2 py-1 font-bold mr-3 mb-3 hover:shadow-md",
+                isActive ? "bg-rose-700" : "bg-gray-500"
+              )}
+            >
+              {category.name}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function RegionFilter({
   selectedRegion,
   regions,
