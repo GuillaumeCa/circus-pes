@@ -2,10 +2,11 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { minioClient } from "../../lib/minio";
+import { categoriesSchema } from "../../utils/constants";
 import {
   formatPreviewItemImageKey,
   formatPreviewResponseImageKey,
-  IMAGE_BUCKET_NAME
+  IMAGE_BUCKET_NAME,
 } from "../../utils/storage";
 import { stream2buffer } from "../../utils/stream";
 import { UserRole } from "../../utils/user";
@@ -15,12 +16,12 @@ import {
   getItemsByUser,
   getItemsQuery,
   getShardsForRegion as getItemShards,
-  sortOptions
+  sortOptions,
 } from "../db/item";
 import {
   createAndStorePreviewImage,
   createImageUploadUrl,
-  isImageValid
+  isImageValid,
 } from "../storage";
 import {
   adminProcedure,
@@ -28,7 +29,7 @@ import {
   protectedProcedure,
   publicProcedure,
   router,
-  writeProcedure
+  writeProcedure,
 } from "../trpc";
 import { RouterInput, RouterOutput } from "./_app";
 
@@ -40,7 +41,7 @@ const USER_ITEMS_PAGE_SIZE = 20;
 
 const itemFormSchema = z.object({
   patchId: z.string(),
-  categoryId: z.string(),
+  category: categoriesSchema,
   shardId: z
     .string()
     .regex(
@@ -241,7 +242,7 @@ export const itemRouter = router({
     .input(itemFormSchema)
     .mutation(
       async ({
-        input: { description, patchId, location, shardId, categoryId },
+        input: { description, patchId, location, shardId, category },
         ctx,
       }) => {
         const patch = await ctx.prisma.patchVersion.findFirst({
@@ -251,15 +252,6 @@ export const itemRouter = router({
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "invalid patch version",
-          });
-        }
-        const category = await ctx.prisma.category.findFirst({
-          where: { id: categoryId },
-        });
-        if (!category) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "invalid category",
           });
         }
 
@@ -275,7 +267,7 @@ export const itemRouter = router({
             patchVersionId: patchId,
             location,
             shardId,
-            categoryId,
+            category,
             userId: ctx.session.user.id,
             public: false,
           },
@@ -297,7 +289,7 @@ export const itemRouter = router({
     .mutation(
       async ({
         ctx,
-        input: { patchId, id, description, location, shardId, categoryId },
+        input: { patchId, id, description, location, shardId, category },
       }) => {
         const user = ctx.session.user;
 
@@ -308,16 +300,6 @@ export const itemRouter = router({
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "invalid patch version",
-          });
-        }
-
-        const category = await ctx.prisma.category.findFirst({
-          where: { id: categoryId },
-        });
-        if (!category) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "invalid category",
           });
         }
 
@@ -351,7 +333,7 @@ export const itemRouter = router({
             patchVersionId: patchId,
             location,
             shardId,
-            categoryId,
+            category,
             public: user.role === UserRole.ADMIN ? item.public : false,
           },
           where: {

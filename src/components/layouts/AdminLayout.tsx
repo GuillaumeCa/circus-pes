@@ -2,7 +2,6 @@ import {
   ChatBubbleLeftEllipsisIcon,
   InboxArrowDownIcon,
   RectangleStackIcon,
-  SwatchIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
@@ -54,11 +53,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           path="/admin/patch-versions"
           icon={<RectangleStackIcon className="h-6 w-6 inline" />}
           name="Versions"
-        />
-        <LinkNavigation
-          path="/admin/categories"
-          icon={<SwatchIcon className="h-6 w-6 inline" />}
-          name="Categories"
         />
         <LinkNavigation
           path="/admin/users"

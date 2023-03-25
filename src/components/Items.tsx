@@ -31,6 +31,7 @@ import { useRouter } from "next/router";
 import { FormattedMessage, useIntl } from "react-intl";
 import type { LocationInfo } from "../server/db/item";
 import type { ItemRouterInput } from "../server/routers/item";
+import { CATEGORIES } from "../utils/constants";
 import { FoundIndicator } from "./FoundIndicator";
 import { ItemForm } from "./ItemForm";
 import { Button } from "./ui/Button";
@@ -213,6 +214,10 @@ export function ItemRow({
       item.updatedAt.getTime()
     : undefined;
 
+  const categoryName = CATEGORIES.find((c) => c.id === item.category)?.name[
+    intl.locale as "fr"
+  ];
+
   const date = item.createdAt;
 
   const { data, status } = useSession();
@@ -259,7 +264,7 @@ export function ItemRow({
 
       <div className="flex justify-between">
         <div className="flex flex-col sm:flex-row">
-          <div className="flex items-center">
+          <div className="flex items-center gap-2 flex-wrap">
             <p
               title="Lieu"
               className="bg-rose-700 px-3 py-1 rounded-full uppercase font-bold text-sm"
@@ -268,10 +273,18 @@ export function ItemRow({
             </p>
             <p
               title="ID de Shard"
-              className="ml-2 text-sm font-bold bg-gray-700 py-1 px-2 rounded-md"
+              className="text-sm font-bold bg-gray-700 py-1 px-2 rounded-md"
             >
               <span>{shard}</span>
             </p>
+            {item.category && (
+              <p
+                title="Categorie"
+                className="text-sm font-bold bg-gray-700 py-1 px-2 rounded-md"
+              >
+                <span>{categoryName}</span>
+              </p>
+            )}
           </div>
           <div className="flex mt-2 sm:mt-0 items-center">
             {!isPublic && (

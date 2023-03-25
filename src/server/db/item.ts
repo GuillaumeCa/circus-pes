@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { CategoryEnum } from "../../utils/constants";
 import { itemFilterSchema } from "../routers/item";
 import type { MyPrismaClient } from "./client";
 
@@ -9,7 +10,7 @@ function getItemBaseQuery(userId?: string) {
     i.id,
     pv.id as "patchVersionId",
     pv.name as "patchVersion",
-    i."categoryId",
+    i."category",
     i.description,
     i.location,
     i."shardId",
@@ -42,7 +43,7 @@ export interface LocationInfo {
   id: string;
   patchVersionId: string;
   patchVersion: string;
-  categoryId: string;
+  category: CategoryEnum;
   shardId: string;
   location: string;
   description: string;
@@ -91,7 +92,7 @@ export function getItemsQuery(
   return prismaClient.$queryRaw<LocationInfo[]>`
   ${getItemBaseQuery(userId)}
   where i."patchVersionId" = ${patchVersionId}
-  ${categoryId ? Prisma.sql` and i."categoryId" = ${categoryId}` : Prisma.empty}
+  ${categoryId ? Prisma.sql` and i."category" = ${categoryId}` : Prisma.empty}
   ${
     filterPublic === undefined
       ? Prisma.empty
@@ -171,7 +172,7 @@ export function getShardsForRegion(
   from item i
   left join patch_version pv on pv.id = i."patchVersionId"
   where i."patchVersionId" = ${patchVersionId}
-  ${categoryId ? Prisma.sql` and i."categoryId" = ${categoryId}` : Prisma.empty}
+  ${categoryId ? Prisma.sql` and i."category" = ${categoryId}` : Prisma.empty}
   ${
     filterPublic === undefined
       ? Prisma.empty
@@ -199,7 +200,7 @@ export function getItemLocations(
   from item i
   left join patch_version pv on pv.id = i."patchVersionId"
   where i."patchVersionId" = ${patchVersionId}
-  ${categoryId ? Prisma.sql` and i."categoryId" = ${categoryId}` : Prisma.empty}
+  ${categoryId ? Prisma.sql` and i."category" = ${categoryId}` : Prisma.empty}
   ${
     filterPublic === undefined
       ? Prisma.empty

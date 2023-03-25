@@ -30,7 +30,7 @@ import { createStaticContext } from "../server/context";
 import { ItemRouterInput } from "../server/routers/item";
 import { appRouter } from "../server/routers/_app";
 import { cls } from "../utils/cls";
-import { REGIONS } from "../utils/constants";
+import { CATEGORIES, REGIONS } from "../utils/constants";
 import { trpc } from "../utils/trpc";
 import { UserRole } from "../utils/user";
 
@@ -61,9 +61,8 @@ export default function Home() {
     trpc.patchVersion.getPatchVersions.useQuery();
   const selectedPatch = patchVersions?.[gameVersionId];
 
-  const { data: categories } = trpc.category.getAll.useQuery();
   const selectedCategory =
-    categoryIndex === 0 ? undefined : categories?.[categoryIndex - 1];
+    categoryIndex === 0 ? undefined : CATEGORIES[categoryIndex - 1];
 
   // fetch shards with count of items per shard
   const shardsForItems = trpc.item.shards.useQuery(
@@ -148,7 +147,6 @@ export default function Home() {
       </Modal>
 
       <CategoryFilterV2
-        categories={categories}
         categoryIndex={categoryIndex}
         onSelect={(index) => {
           setCategoryIndex(index);
@@ -169,17 +167,6 @@ export default function Home() {
               }}
             />
           </div>
-          {/* <div>
-            <CategoryFilter
-              categories={categories}
-              categoryIndex={categoryIndex}
-              onSelect={(index) => {
-                setCategoryIndex(index);
-                setSelectedShard("");
-                setLocation("");
-              }}
-            />
-          </div> */}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cls(

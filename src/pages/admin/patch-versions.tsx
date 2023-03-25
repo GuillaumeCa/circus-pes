@@ -1,4 +1,4 @@
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { FormattedMessage } from "react-intl";
@@ -79,9 +79,12 @@ function PatchVersionRow({
   itemCount: number;
   onUpdate(): void;
 }) {
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [updatedName, setUpdatedName] = useState(name);
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const { mutateAsync: updateVisibility } =
-    trpc.patchVersion.updateVisibility.useMutation();
+
+  const { mutateAsync: updateVersion } = trpc.patchVersion.update.useMutation();
   const { mutate: deleteVersion } = trpc.patchVersion.delete.useMutation({
     onError() {
       toast.error(
@@ -101,7 +104,16 @@ function PatchVersionRow({
   return (
     <li className="flex items-center justify-between p-3 bg-gray-600 rounded-lg">
       <div>
-        <p className="font-bold text-lg">{name}</p>
+        {isUpdate ? (
+          <input
+            className="bg-gray-500 w-full p-2 rounded-md outline-none text-white"
+            value={updatedName}
+            autoFocus
+            onChange={(e) => setUpdatedName(e.target.value)}
+          />
+        ) : (
+          <p className="font-bold text-lg">{name}</p>
+        )}
         <p className="text-gray-400">
           {itemCount} publication{itemCount !== 1 && "s"}
         </p>
@@ -120,7 +132,7 @@ function PatchVersionRow({
             checked={isVisible}
             onChange={async (e) => {
               const checked = e.target.checked;
-              await updateVisibility({
+              await updateVersion({
                 id,
                 visible: checked,
               });
@@ -129,9 +141,29 @@ function PatchVersionRow({
             className="form-checkbox cursor-pointer ml-2 rounded text-rose-600 focus:ring-rose-600 bg-gray-500"
           />
         </div>
-        <button className="ml-8" onClick={() => setShowDeleteConfirm(true)}>
-          <TrashIcon className="w-6 h-6" />
-        </button>
+        <div className="ml-8 flex gap-3">
+          {!isUpdate ? (
+            <button onClick={() => setIsUpdate(true)}>
+              <PencilIcon className="w-6 h-6" />
+            </button>
+          ) : (
+            <button
+              onClick={async () => {
+                await updateVersion({
+                  id,
+                  name: updatedName,
+                });
+                setIsUpdate(false);
+                onUpdate();
+              }}
+            >
+              <CheckIcon className="w-6 h-6" />
+            </button>
+          )}
+          <button onClick={() => setShowDeleteConfirm(true)}>
+            <TrashIcon className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
       <ConfirmModal

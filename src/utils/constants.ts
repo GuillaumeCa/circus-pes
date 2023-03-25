@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const LOCATIONS = [
   {
     name: "Crusader",
@@ -87,5 +89,47 @@ export const REGIONS = [
       en: "Australia",
     },
     prefix: "APSE2",
+  },
+];
+
+export const categoriesSchema = z.enum([
+  "TEST",
+  "EXPLORATION",
+  "LOOT",
+  "SPECTACLE",
+  "OTHER",
+]);
+export type CategoryEnum = z.infer<typeof categoriesSchema>;
+
+export const CATEGORIES = [
+  {
+    id: "TEST",
+    name: {
+      fr: "🔬 Test de persistence",
+    },
+  },
+  {
+    id: "EXPLORATION",
+    name: {
+      fr: "🎯 Point d'intérêt d'exploration",
+    },
+  },
+  {
+    id: "LOOT",
+    name: {
+      fr: "🎒 Loot",
+    },
+  },
+  {
+    id: "SPECTACLE",
+    name: {
+      fr: "🎭 Spectacle",
+    },
+  },
+  {
+    id: "OTHER",
+    name: {
+      fr: "Autre",
+    },
   },
 ];
