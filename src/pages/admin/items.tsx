@@ -12,6 +12,7 @@ import { trpc } from "../../utils/trpc";
 import { FormattedMessage } from "react-intl";
 import { PatchVersionFilter } from "../../components/Filters";
 import { ItemForm } from "../../components/ItemForm";
+import { CategoryLabel } from "../../components/Items";
 import { Modal } from "../../components/ui/Modal";
 import type { LocationInfo } from "../../server/db/item";
 
@@ -21,6 +22,7 @@ export function AdminItemRow({
   patchVersionId,
   location,
   shardId,
+  category,
   createdAt,
   updatedAt,
   description,
@@ -31,6 +33,7 @@ export function AdminItemRow({
   patchVersionId: string;
   location: string;
   shardId: string;
+  category: string;
   image: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -57,7 +60,7 @@ export function AdminItemRow({
         )}
       </div>
       <div className="ml-0 lg:ml-2 flex flex-col h-full">
-        <div className="flex space-x-3 flex-wrap text-sm">
+        <div className="flex gap-3 flex-wrap text-sm">
           <span
             title="Lieu"
             className="bg-rose-700 px-3 py-1 rounded-full uppercase font-bold"
@@ -66,9 +69,15 @@ export function AdminItemRow({
           </span>
           <span
             title="ID de Shard"
-            className="font-bold bg-gray-700 p-1 rounded-md"
+            className="font-bold bg-gray-700 px-2 py-1 rounded-md"
           >
             {shardId}
+          </span>
+          <span
+            title="ID de Shard"
+            className="font-bold bg-gray-700 px-2 py-1 rounded-md"
+          >
+            <CategoryLabel id={category} />
           </span>
           <p className="text-gray-400 flex items-center">
             {userImage && (
@@ -131,6 +140,7 @@ function ItemMgtRow({
         id={item.id}
         image={item.image}
         patchVersionId={item.patchVersionId}
+        category={item.category}
         location={item.location}
         shardId={item.shardId}
         createdAt={item.createdAt}
