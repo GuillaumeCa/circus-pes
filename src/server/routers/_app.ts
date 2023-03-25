@@ -1,6 +1,5 @@
 import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { router } from "../trpc";
-import { categoryRouter } from "./category";
 import { itemRouter } from "./item";
 import { patchVersionRouter } from "./patch-version";
 import { responseRouter } from "./response";
@@ -11,7 +10,6 @@ export const appRouter = router({
   patchVersion: patchVersionRouter,
   user: userRouter,
   response: responseRouter,
-  category: categoryRouter,
 });
 
 // export type definition of API

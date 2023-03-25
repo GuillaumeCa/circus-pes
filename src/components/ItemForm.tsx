@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { LOCATIONS } from "../utils/constants";
+import { CATEGORIES, categoriesSchema, LOCATIONS } from "../utils/constants";
 import {
   getFileExtension,
   MAX_IMAGE_UPLOAD_SIZE,
@@ -31,7 +31,7 @@ function useItemFormSchema() {
     .object({
       isEdit: z.boolean().default(false),
       gameVersion: z.string(),
-      category: z.string(),
+      category: categoriesSchema,
       shardId: z.string().regex(
         /(US|EU|AP)(E|S|W|SE)[0-9][A-Z]-[0-9]{3}/,
         intl.formatMessage({
@@ -128,7 +128,6 @@ export function ItemForm({
   const [error, setError] = useState(false);
   const intl = useIntl();
   const { data: patchVersions } = trpc.patchVersion.getPatchVersions.useQuery();
-  const { data: categories } = trpc.category.getAll.useQuery();
 
   const { mutateAsync: updateItem } = trpc.item.edit.useMutation();
   const { mutateAsync: createItem } = trpc.item.create.useMutation();
@@ -160,7 +159,7 @@ export function ItemForm({
           shardId: item.shardId,
           description: item.description,
           location: item.location,
-          category: item.categoryId,
+          category: item.category,
           image: undefined,
         }
       : {
@@ -213,7 +212,7 @@ export function ItemForm({
           location: formData.location,
           patchId: formData.gameVersion,
           shardId: formData.shardId,
-          categoryId: formData.category,
+          category: formData.category,
         });
         const file = formData.image!.item(0)!;
         if (updatedItem && file) {
@@ -226,7 +225,7 @@ export function ItemForm({
           location: formData.location,
           patchId: formData.gameVersion,
           shardId: formData.shardId,
-          categoryId: formData.category,
+          category: formData.category,
         });
         if (createdItem) {
           const file = formData.image!.item(0)!;
@@ -307,9 +306,9 @@ export function ItemForm({
         errorMessage={errors.category?.message}
       >
         <select id="categoryForm" className="w-full" {...register("category")}>
-          {categories?.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
+          {CATEGORIES.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name.fr}
             </option>
           ))}
         </select>

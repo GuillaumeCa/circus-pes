@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { FormattedList, FormattedMessage, useIntl } from "react-intl";
 import { cls } from "../utils/cls";
+import { CATEGORIES } from "../utils/constants";
 import { SortShard } from "./Items";
 
 export function PatchVersionFilter({
@@ -107,11 +108,9 @@ export function CategoryFilter({
 
 export function CategoryFilterV2({
   categoryIndex,
-  categories,
   onSelect,
 }: {
   categoryIndex: number;
-  categories?: { id: string; name: string }[];
   onSelect(index: number): void;
 }) {
   return (
@@ -126,24 +125,30 @@ export function CategoryFilterV2({
         <button
           onClick={() => onSelect(0)}
           className={cls(
-            "rounded-lg px-2 py-1 font-bold mr-2 mb-3",
-            categoryIndex === 0 ? "bg-rose-700" : "bg-gray-500"
+            "rounded-lg px-2 py-1 font-semibold mr-2 mb-3",
+            categoryIndex === 0
+              ? "text-rose-600 bg-rose-500/10"
+              : "text-gray-300 bg-gray-500/20 hover:bg-gray-500/50"
+            //"bg-rose-700" : "bg-gray-500"
           )}
         >
           <SelectAllLabel gender="female" />
         </button>
-        {categories?.map((category, index) => {
+        {CATEGORIES.map((category, index) => {
           const isActive = categoryIndex === index + 1;
           return (
             <button
               key={category.id}
               onClick={() => onSelect(isActive ? 0 : index + 1)}
               className={cls(
-                "relative rounded-lg px-2 py-1 font-bold mr-3 mb-3 hover:shadow-md",
-                isActive ? "bg-rose-700" : "bg-gray-500"
+                "relative rounded-lg px-2 py-1 font-semibold mr-3 mb-3 hover:shadow-md",
+                isActive
+                  ? "text-rose-600 bg-rose-500/10"
+                  : "text-gray-300 bg-gray-500/20 hover:bg-gray-500/50"
+                //"bg-rose-700" : "bg-gray-500"
               )}
             >
-              {category.name}
+              {category.name.fr}
             </button>
           );
         })}

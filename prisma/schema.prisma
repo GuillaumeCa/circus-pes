@@ -75,8 +75,7 @@ model Item {
   image          String?
   userId         String
   patchVersionId String
-  category       Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  categoryId     String?
+  category       String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @default(now()) @updatedAt
 
@@ -93,14 +92,6 @@ model PatchVersion {
   Item    Item[]
 
   @@map("patch_version")
-}
-
-model Category {
-  id   String @id @default(cuid())
-  name String
-  Item Item[]
-
-  @@map("category")
 }
 
 model Like {

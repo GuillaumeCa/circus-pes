@@ -78,17 +78,19 @@ export const patchVersionRouter = router({
       await ctx.prisma.patchVersion.delete({ where: { id } });
     }),
 
-  updateVisibility: adminProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.string(),
-        visible: z.boolean(),
+        visible: z.boolean().optional(),
+        name: z.string().optional(),
       })
     )
-    .mutation(async ({ ctx, input: { visible, id } }) => {
+    .mutation(async ({ ctx, input: { visible, id, name } }) => {
       await ctx.prisma.patchVersion.update({
         data: {
           visible,
+          name,
         },
         where: {
           id,
