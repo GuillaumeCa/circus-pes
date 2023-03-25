@@ -95,6 +95,7 @@ export const responseRouter = router({
             select: {
               image: true,
               description: true,
+              category: true,
               location: true,
               patchVersionId: true,
               shardId: true,

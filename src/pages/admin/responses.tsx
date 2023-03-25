@@ -192,6 +192,7 @@ export default function ResponseManagement() {
                 <AdminItemRow
                   id={r.itemId}
                   image={r.item.image}
+                  category={r.item.category!}
                   patchVersionId={r.item.patchVersionId}
                   location={r.item.location}
                   shardId={r.item.shardId}
