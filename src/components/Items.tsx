@@ -214,10 +214,6 @@ export function ItemRow({
       item.updatedAt.getTime()
     : undefined;
 
-  const categoryName = CATEGORIES.find((c) => c.id === item.category)?.name[
-    intl.locale as "fr"
-  ];
-
   const date = item.createdAt;
 
   const { data, status } = useSession();
@@ -282,7 +278,9 @@ export function ItemRow({
                 title="Categorie"
                 className="text-sm font-bold bg-gray-700 py-1 px-2 rounded-md"
               >
-                <span>{categoryName}</span>
+                <span>
+                  <CategoryLabel id={item.category} />
+                </span>
               </p>
             )}
           </div>
@@ -510,4 +508,13 @@ export function ItemRow({
       )}
     </li>
   );
+}
+
+export function CategoryLabel({ id }: { id: string }) {
+  const intl = useIntl();
+
+  const category = CATEGORIES.find((c) => c.id === id);
+  const name =
+    category?.name[intl.locale as keyof typeof CATEGORIES[number]["name"]];
+  return <>{name}</>;
 }

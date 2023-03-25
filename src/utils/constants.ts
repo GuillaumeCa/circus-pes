@@ -106,30 +106,35 @@ export const CATEGORIES = [
     id: "TEST",
     name: {
       fr: "🔬 Test de persistence",
+      en: "🔬 Persistence test",
     },
   },
   {
     id: "EXPLORATION",
     name: {
       fr: "🎯 Point d'intérêt d'exploration",
+      en: "🎯 Point of interest for exploration",
     },
   },
   {
     id: "LOOT",
     name: {
       fr: "🎒 Loot",
+      en: "🎒 Loot",
     },
   },
   {
     id: "SPECTACLE",
     name: {
       fr: "🎭 Spectacle",
+      en: "🎭 Spectacle",
     },
   },
   {
     id: "OTHER",
     name: {
       fr: "Autre",
+      en: "Other",
     },
   },
 ];

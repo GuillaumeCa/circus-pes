@@ -15,6 +15,7 @@ import { XMarkIcon } from "./ui/Icons";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LocationInfo } from "../server/db/item";
 import { FormRow } from "./ui/FormRow";
+import { CategoryLabel } from "./Items";
 
 interface AddLocationFormProps {
   item?: Partial<LocationInfo>;
@@ -308,7 +309,7 @@ export function ItemForm({
         <select id="categoryForm" className="w-full" {...register("category")}>
           {CATEGORIES.map((category) => (
             <option key={category.id} value={category.id}>
-              {category.name.fr}
+              <CategoryLabel id={category.id} />
             </option>
           ))}
         </select>

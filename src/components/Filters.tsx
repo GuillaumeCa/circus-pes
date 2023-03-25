@@ -7,7 +7,7 @@ import { useState } from "react";
 import { FormattedList, FormattedMessage, useIntl } from "react-intl";
 import { cls } from "../utils/cls";
 import { CATEGORIES } from "../utils/constants";
-import { SortShard } from "./Items";
+import { CategoryLabel, SortShard } from "./Items";
 
 export function PatchVersionFilter({
   versionIndex,
@@ -148,7 +148,7 @@ export function CategoryFilterV2({
                 //"bg-rose-700" : "bg-gray-500"
               )}
             >
-              {category.name.fr}
+              <CategoryLabel id={category.id} />
             </button>
           );
         })}
