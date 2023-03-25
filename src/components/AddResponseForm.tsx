@@ -10,8 +10,8 @@ import {
   MIN_IMAGE_UPLOAD_SIZE,
 } from "../utils/storage";
 import { trpc } from "../utils/trpc";
-import { FormRow } from "./ui/FormRow";
 import { Button } from "./ui/Button";
+import { FormRow } from "./ui/FormRow";
 import { XMarkIcon } from "./ui/Icons";
 
 function useResponseFormSchema() {
@@ -71,6 +71,7 @@ export function AddResponseForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
+  const intl = useIntl();
   const ctx = trpc.useContext();
   const { mutateAsync: createResponse } = trpc.response.create.useMutation();
   const { mutateAsync: getImageUploadUrl } =
@@ -148,16 +149,27 @@ export function AddResponseForm({
 
   return (
     <>
-      <h2 className="text-2xl font-bold">Réponse</h2>
+      <h2 className="text-2xl font-bold">
+        <FormattedMessage id="forms.response.title" defaultMessage="Réponse" />
+      </h2>
       <p className="text-sm text-gray-400">
-        Décrivez si vous avez trouvé cette création et illustrez-la
-        optionnellement avec une image.
+        <FormattedMessage
+          id="forms.response.message"
+          defaultMessage="Décrivez si vous avez trouvé cette création et illustrez-la
+        optionnellement avec une image."
+        />
       </p>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col space-y-3 mt-2"
       >
-        <FormRow id="isFoundLabel" label="Trouvé">
+        <FormRow
+          id="isFoundLabel"
+          label={intl.formatMessage({
+            id: "forms.response.isfound.label",
+            defaultMessage: "Trouvé",
+          })}
+        >
           <div className="flex font-semibold">
             <button
               type="button"
@@ -167,7 +179,10 @@ export function AddResponseForm({
                 isFound ? "bg-rose-700" : "bg-gray-500"
               )}
             >
-              Oui
+              <FormattedMessage
+                id="forms.response.isfound.yes"
+                defaultMessage="Oui"
+              />
             </button>
             <button
               type="button"
@@ -177,14 +192,20 @@ export function AddResponseForm({
                 !isFound ? "bg-rose-700" : "bg-gray-500"
               )}
             >
-              Non
+              <FormattedMessage
+                id="forms.response.isfound.no"
+                defaultMessage="Non"
+              />
             </button>
           </div>
         </FormRow>
 
         <FormRow
           id="comment"
-          label="Commentaire"
+          label={intl.formatMessage({
+            id: "forms.response.comment.label",
+            defaultMessage: "Commentaire",
+          })}
           errorMessage={errors.comment?.message}
         >
           <textarea
@@ -197,7 +218,10 @@ export function AddResponseForm({
         </FormRow>
         <FormRow
           id="image"
-          label="Image (optionnel)"
+          label={intl.formatMessage({
+            id: "forms.response.image.label",
+            defaultMessage: "Image (optionnel)",
+          })}
           errorMessage={errors.image?.message}
         >
           <div className="flex">
@@ -222,7 +246,10 @@ export function AddResponseForm({
         <div className="flex justify-end items-center space-x-2">
           {error && (
             <p className="text-red-500">
-              Impossible d&apos;ajouter la réponse, veuillez réessayer
+              <FormattedMessage
+                id="forms.response.error"
+                defaultMessage="Impossible d'ajouter la réponse, veuillez réessayer"
+              />
             </p>
           )}
           <Button type="button" btnType="secondary" onClick={onClose}>

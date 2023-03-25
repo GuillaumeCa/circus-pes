@@ -14,8 +14,8 @@ import { XMarkIcon } from "./ui/Icons";
 
 import { FormattedMessage, useIntl } from "react-intl";
 import { LocationInfo } from "../server/db/item";
-import { FormRow } from "./ui/FormRow";
 import { CategoryLabel } from "./Items";
+import { FormRow } from "./ui/FormRow";
 
 interface AddLocationFormProps {
   item?: Partial<LocationInfo>;
@@ -303,7 +303,10 @@ export function ItemForm({
 
       <FormRow
         id="categoryForm"
-        label="Categorie"
+        label={intl.formatMessage({
+          id: "filter.category.label",
+          defaultMessage: "Categorie",
+        })}
         errorMessage={errors.category?.message}
       >
         <select id="categoryForm" className="w-full" {...register("category")}>
