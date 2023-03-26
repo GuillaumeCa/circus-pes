@@ -138,6 +138,8 @@ export default function Home() {
             onCancel={() => setShowAddForm(false)}
             onCreated={() => {
               util.item.getItems.refetch();
+              setCategoryIndex(0);
+              setRegion("");
               shardsForItems.refetch();
               locationsForItems.refetch();
               setShowAddForm(false);

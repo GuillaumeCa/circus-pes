@@ -121,15 +121,14 @@ export function CategoryFilterV2({
           defaultMessage="Catégorie"
         />
       </p>
-      <div className="mt-1 flex flex-wrap">
+      <div className="mt-1 flex flex-wrap gap-3 mb-2">
         <button
           onClick={() => onSelect(0)}
           className={cls(
-            "rounded-lg px-2 py-1 font-semibold mr-2 mb-3",
+            "rounded-lg px-2 py-1 font-semibold",
             categoryIndex === 0
               ? "text-rose-600 bg-rose-500/10"
               : "text-gray-300 bg-gray-500/20 hover:bg-gray-500/50"
-            //"bg-rose-700" : "bg-gray-500"
           )}
         >
           <SelectAllLabel gender="female" />
@@ -141,11 +140,10 @@ export function CategoryFilterV2({
               key={category.id}
               onClick={() => onSelect(isActive ? 0 : index + 1)}
               className={cls(
-                "relative rounded-lg px-2 py-1 font-semibold mr-3 mb-3 hover:shadow-md",
+                "relative rounded-lg px-2 py-1 font-semibold hover:shadow-md",
                 isActive
                   ? "text-rose-600 bg-rose-500/10"
                   : "text-gray-300 bg-gray-500/20 hover:bg-gray-500/50"
-                //"bg-rose-700" : "bg-gray-500"
               )}
             >
               <CategoryLabel id={category.id} />
@@ -347,7 +345,7 @@ export function FilterMessageDisplay({
   const intl = useIntl();
 
   const filters = [
-    region
+    region[intl.locale]
       ? {
           prefix: intl.formatMessage({
             id: "filter.info.region",
@@ -383,7 +381,8 @@ export function FilterMessageDisplay({
         <FormattedList
           value={filters.map((f) => (
             <>
-              {f.prefix} <span className="font-bold">{f.value}</span>
+              {f.prefix}{" "}
+              <span className="font-bold text-gray-300">{f.value}</span>
             </>
           ))}
         />
