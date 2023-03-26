@@ -112,8 +112,8 @@ export const CATEGORIES = [
   {
     id: "EXPLORATION",
     name: {
-      fr: "🎯 Point d'intérêt d'exploration",
-      en: "🎯 Point of interest for exploration",
+      fr: "📍 Point d'intérêt d'exploration",
+      en: "📍 Point of interest for exploration",
     },
   },
   {
@@ -124,10 +124,10 @@ export const CATEGORIES = [
     },
   },
   {
-    id: "SPECTACLE",
+    id: "MISSION",
     name: {
-      fr: "🎭 Spectacle",
-      en: "🎭 Spectacle",
+      fr: "🎖 Mission",
+      en: "🎖 Mission",
     },
   },
   {
