@@ -96,7 +96,7 @@ export const categoriesSchema = z.enum([
   "TEST",
   "EXPLORATION",
   "LOOT",
-  "SPECTACLE",
+  "MISSION",
   "OTHER",
 ]);
 export type CategoryEnum = z.infer<typeof categoriesSchema>;
