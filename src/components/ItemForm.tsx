@@ -312,7 +312,7 @@ export function ItemForm({
       >
         {CATEGORIES.map((category) => {
           return (
-            <div className="pl-2 mb-2">
+            <div className="pl-2 mb-2" key={category.id}>
               <label className="flex items-center cursor-pointer">
                 <input
                   {...register("category")}
@@ -332,13 +332,6 @@ export function ItemForm({
             </div>
           );
         })}
-        {/* <select id="categoryForm" className="w-full" {...register("category")}>
-          {CATEGORIES.map((category) => (
-            <option key={category.id} value={category.id}>
-              <CategoryLabel id={category.id} />
-            </option>
-          ))}
-        </select> */}
       </FormRow>
 
       <div>
