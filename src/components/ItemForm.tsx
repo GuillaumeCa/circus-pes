@@ -14,7 +14,7 @@ import { XMarkIcon } from "./ui/Icons";
 
 import { FormattedMessage, useIntl } from "react-intl";
 import { LocationInfo } from "../server/db/item";
-import { CategoryLabel } from "./Items";
+import { CategoryDescription, CategoryLabel } from "./Items";
 import { FormRow } from "./ui/FormRow";
 
 interface AddLocationFormProps {
@@ -165,6 +165,7 @@ export function ItemForm({
         }
       : {
           image: undefined,
+          category: "TEST",
         },
   });
 
@@ -309,13 +310,35 @@ export function ItemForm({
         })}
         errorMessage={errors.category?.message}
       >
-        <select id="categoryForm" className="w-full" {...register("category")}>
+        {CATEGORIES.map((category) => {
+          return (
+            <div className="pl-2 mb-2">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  {...register("category")}
+                  value={category.id}
+                  type="radio"
+                  className="form-checkbox cursor-pointer rounded text-rose-600 focus:ring-rose-600 bg-gray-500"
+                />
+                <span className="ml-2 font-semibold">
+                  <CategoryLabel id={category.id} />
+                </span>
+              </label>
+              {category.description && (
+                <p className="text-sm text-gray-400 pl-6">
+                  <CategoryDescription id={category.id} />
+                </p>
+              )}
+            </div>
+          );
+        })}
+        {/* <select id="categoryForm" className="w-full" {...register("category")}>
           {CATEGORIES.map((category) => (
             <option key={category.id} value={category.id}>
               <CategoryLabel id={category.id} />
             </option>
           ))}
-        </select>
+        </select> */}
       </FormRow>
 
       <div>

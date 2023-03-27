@@ -140,7 +140,7 @@ export function BaseLayout({ children, overrideSEO = false }: BaseLayoutProps) {
               )}
             </div>
 
-            <p className="text-gray-400 max-w-xl text-sm mt-2">
+            <p className="text-gray-400 max-w-3xl text-sm mt-2">
               {siteDescription}
             </p>
           </header>

@@ -78,7 +78,7 @@
   "settings.email": "Mon email",
   "settings.role": "Mon rôle",
   "settings.yes": "Oui",
-  "site.description": "Bienvenue sur le guide du cirque ! Le test ultime de la persistence dans Star Citizen. Ici vous pourrez explorer toutes les créations de la communautée.",
+  "site.description": "Circus PES est un site internet pour tester et profiter pleinement du Persistent Entity Streaming dans le jeu Star Citizen ! Vous pouvez répertorier les Shards, vos créations, vos tests ou encore organiser des missions pour les autres joueurs. Tout est persistant dans Star Citizen donc maintenant, place à votre imagination.",
   "update-item": "Modifier la création",
   "update-item.error": "Impossible de modifier la création, veuillez réessayer"
 }
