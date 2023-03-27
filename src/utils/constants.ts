@@ -108,12 +108,20 @@ export const CATEGORIES = [
       fr: "🔬 Test de persistence",
       en: "🔬 Persistence test",
     },
+    description: {
+      fr: "Ici vous pouvez tester combien de temps un objet ou un PNJ reste sur une shard ou combien d'objets il faut pour décharger tel zone, etc...",
+      en: "Here you can check how long an object or a NPC stays in a shard, or how many objects are needed to cull an area.",
+    },
   },
   {
     id: "EXPLORATION",
     name: {
       fr: "📍 Point d'intérêt d'exploration",
       en: "📍 Point of interest for exploration",
+    },
+    description: {
+      fr: "Il n'y a pas que les développeurs qui peuvent créer des POI ! Utilisez la persistence pour créer des points d'interêts à explorer !",
+      en: "Points of Interest don’t have to come exclusively form the devs! Use persistence to create your own !",
     },
   },
   {
@@ -122,12 +130,20 @@ export const CATEGORIES = [
       fr: "🎒 Loot",
       en: "🎒 Loot",
     },
+    description: {
+      fr: "Un peu de solidarité dans le vers' Vous avez croisé une épave et vous souhaitez en informer les recycleurs ? Vous avez vu une caisse rempli de munitions ? n'hésitez pas à les répertorier.",
+      en: "Let’s help each other in the 'verse. If you discover a derelict ship or a crate full of amno, you can index them for other players to use !",
+    },
   },
   {
     id: "MISSION",
     name: {
       fr: "🎖 Mission",
       en: "🎖 Mission",
+    },
+    description: {
+      fr: "Le PES permet à tout citoyens du vers' de créer ses propres missions ou jeu de piste ! N'hésitez pas à découvrir les missions des joueurs.",
+      en: "The PES allows every citizen in the 'verse to create their own missions or treasure hunts. Come and try missions from other players !",
     },
   },
   {

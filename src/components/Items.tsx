@@ -228,6 +228,8 @@ export function ItemRow({
 
   const [history, setHistory] = useState(false);
 
+  const category = useCategory(item.category);
+
   function handleLike() {
     if (hasLiked) {
       unLikeItem(id).then(() => onLike(-1));
@@ -278,9 +280,7 @@ export function ItemRow({
                 title="Categorie"
                 className="text-sm font-bold bg-gray-700 py-1 px-2 rounded-md"
               >
-                <span>
-                  <CategoryLabel id={item.category} />
-                </span>
+                <span>{category.name}</span>
               </p>
             )}
           </div>
@@ -510,11 +510,26 @@ export function ItemRow({
   );
 }
 
-export function CategoryLabel({ id }: { id: string }) {
+export function useCategory(id?: string) {
   const intl = useIntl();
 
   const category = CATEGORIES.find((c) => c.id === id);
   const name =
     category?.name[intl.locale as keyof typeof CATEGORIES[number]["name"]];
+  const description: string | null = category?.description
+    ? category?.description[
+        intl.locale as keyof typeof CATEGORIES[number]["description"]
+      ]
+    : null;
+
+  return { name, description };
+}
+
+export function CategoryLabel({ id }: { id: string }) {
+  const { name } = useCategory(id);
   return <>{name}</>;
+}
+export function CategoryDescription({ id }: { id: string }) {
+  const { description } = useCategory(id);
+  return <>{description}</>;
 }

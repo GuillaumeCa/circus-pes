@@ -7,7 +7,7 @@ import { useState } from "react";
 import { FormattedList, FormattedMessage, useIntl } from "react-intl";
 import { cls } from "../utils/cls";
 import { CATEGORIES } from "../utils/constants";
-import { CategoryLabel, SortShard } from "./Items";
+import { SortShard, useCategory } from "./Items";
 
 export function PatchVersionFilter({
   versionIndex,
@@ -113,6 +113,11 @@ export function CategoryFilterV2({
   categoryIndex: number;
   onSelect(index: number): void;
 }) {
+  const selectedCategory =
+    categoryIndex > 0 ? CATEGORIES[categoryIndex - 1] : null;
+
+  const { description } = useCategory(selectedCategory?.id);
+
   return (
     <div>
       <p className="uppercase font-bold text-xs text-gray-400">
@@ -133,25 +138,49 @@ export function CategoryFilterV2({
         >
           <SelectAllLabel gender="female" />
         </button>
-        {CATEGORIES.map((category, index) => {
-          const isActive = categoryIndex === index + 1;
-          return (
-            <button
-              key={category.id}
-              onClick={() => onSelect(isActive ? 0 : index + 1)}
-              className={cls(
-                "relative rounded-lg px-2 py-1 font-semibold hover:shadow-md",
-                isActive
-                  ? "text-rose-600 bg-rose-500/10"
-                  : "text-gray-300 bg-gray-500/20 hover:bg-gray-500/50"
-              )}
-            >
-              <CategoryLabel id={category.id} />
-            </button>
-          );
-        })}
+        {CATEGORIES.map((category, index) => (
+          <CategoryButton
+            category={category}
+            index={index}
+            categoryIndex={categoryIndex}
+            onSelect={onSelect}
+          />
+        ))}
       </div>
+      {description && (
+        <p className="text-sm text-gray-400 mb-2">{description}</p>
+      )}
     </div>
+  );
+}
+
+function CategoryButton({
+  categoryIndex,
+  category,
+  index,
+  onSelect,
+}: {
+  categoryIndex: number;
+  category: typeof CATEGORIES[number];
+  index: number;
+  onSelect(index: number): void;
+}) {
+  const isActive = categoryIndex === index + 1;
+  const cat = useCategory(category.id);
+
+  return (
+    <button
+      key={category.id}
+      onClick={() => onSelect(isActive ? 0 : index + 1)}
+      className={cls(
+        "relative rounded-lg px-2 py-1 font-semibold hover:shadow-md",
+        isActive
+          ? "text-rose-600 bg-rose-500/10"
+          : "text-gray-300 bg-gray-500/20 hover:bg-gray-500/50"
+      )}
+    >
+      {cat.name}
+    </button>
   );
 }
 
