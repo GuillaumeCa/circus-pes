@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CATEGORIES, categoriesSchema, LOCATIONS } from "../utils/constants";
+import { CATEGORIES, CategoryEnum, LOCATIONS } from "../utils/constants";
 import {
   getFileExtension,
   MAX_IMAGE_UPLOAD_SIZE,
@@ -32,7 +32,6 @@ function useItemFormSchema() {
     .object({
       isEdit: z.boolean().default(false),
       gameVersion: z.string(),
-      category: categoriesSchema,
       shardId: z.string().regex(
         /(US|EU|AP)(E|S|W|SE)[0-9][A-Z]-[0-9]{3}/,
         intl.formatMessage({
@@ -127,6 +126,8 @@ export function ItemForm({
 }: AddLocationFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [selectedCategory, setCategory] = useState(item?.category ?? "TEST");
+
   const intl = useIntl();
   const { data: patchVersions } = trpc.patchVersion.getPatchVersions.useQuery();
 
@@ -150,7 +151,7 @@ export function ItemForm({
     setValue,
     resetField,
     watch,
-    formState: { errors },
+    formState,
   } = useForm<LocationFormData>({
     resolver: zodResolver(itemFormSchema),
     defaultValues: item
@@ -160,17 +161,16 @@ export function ItemForm({
           shardId: item.shardId,
           description: item.description,
           location: item.location,
-          category: item.category,
           image: undefined,
         }
       : {
           image: undefined,
-          category: "TEST",
         },
   });
 
-  const image = watch("image");
+  const { errors } = formState;
 
+  const image = watch("image");
   const shardId = watch("shardId");
 
   const shardsFiltered = shardIds.filter(
@@ -214,7 +214,7 @@ export function ItemForm({
           location: formData.location,
           patchId: formData.gameVersion,
           shardId: formData.shardId,
-          category: formData.category,
+          category: selectedCategory,
         });
         const file = formData.image!.item(0)!;
         if (updatedItem && file) {
@@ -227,7 +227,7 @@ export function ItemForm({
           location: formData.location,
           patchId: formData.gameVersion,
           shardId: formData.shardId,
-          category: formData.category,
+          category: selectedCategory,
         });
         if (createdItem) {
           const file = formData.image!.item(0)!;
@@ -308,16 +308,19 @@ export function ItemForm({
           id: "filter.category.label",
           defaultMessage: "Categorie",
         })}
-        errorMessage={errors.category?.message}
       >
         {CATEGORIES.map((category) => {
           return (
             <div className="pl-2 mb-2" key={category.id}>
               <label className="flex items-center cursor-pointer">
                 <input
-                  {...register("category")}
+                  key={category.id}
+                  name="categoryFormInput"
                   value={category.id}
+                  checked={category.id === selectedCategory}
+                  onClick={() => setCategory(category.id as CategoryEnum)}
                   type="radio"
+                  defaultChecked={false}
                   className="form-checkbox cursor-pointer rounded text-rose-600 focus:ring-rose-600 bg-gray-500"
                 />
                 <span className="ml-2 font-semibold">

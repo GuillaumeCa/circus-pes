@@ -244,21 +244,23 @@ export function ItemRow({
 
   return (
     <li className="flex flex-col p-3 sm:p-4">
-      <Modal
-        open={showEditForm}
-        onClose={() => setShowEditForm(false)}
-        className="max-w-2xl"
-      >
-        <ItemForm
-          item={item}
-          shardIds={[]}
-          onCancel={() => setShowEditForm(false)}
-          onCreated={() => {
-            onUpdateItems();
-            setShowEditForm(false);
-          }}
-        />
-      </Modal>
+      {item && (
+        <Modal
+          open={showEditForm}
+          onClose={() => setShowEditForm(false)}
+          className="max-w-2xl"
+        >
+          <ItemForm
+            item={item}
+            shardIds={[]}
+            onCancel={() => setShowEditForm(false)}
+            onCreated={() => {
+              onUpdateItems();
+              setShowEditForm(false);
+            }}
+          />
+        </Modal>
+      )}
 
       <div className="flex justify-between">
         <div className="flex flex-col sm:flex-row">
