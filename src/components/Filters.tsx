@@ -140,6 +140,7 @@ export function CategoryFilterV2({
         </button>
         {CATEGORIES.map((category, index) => (
           <CategoryButton
+            key={category.id}
             category={category}
             index={index}
             categoryIndex={categoryIndex}
