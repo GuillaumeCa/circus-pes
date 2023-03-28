@@ -9,7 +9,7 @@ const nextConfig = withAxiom({
   i18n: {
     locales: ["fr", "en"],
     defaultLocale: "fr",
-    localeDetection: false,
+    localeDetection: true,
   },
 });
 
