@@ -9,7 +9,7 @@ import "dayjs/locale/fr"; // import locale
 
 export { reportWebVitals } from "next-axiom";
 
-import { Inter } from "@next/font/google";
+import { Inter } from "next/font/google";
 import { ErrorBoundary } from "../components/ui/ErrorBoundary";
 
 import { useRouter } from "next/router";

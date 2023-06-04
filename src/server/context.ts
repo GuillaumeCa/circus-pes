@@ -1,6 +1,6 @@
 import type { inferAsyncReturnType } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { unstable_getServerSession as getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 import { authOptions as nextAuthOptions } from "../pages/api/auth/[...nextauth]";
 import { prisma } from "./db/client";
 

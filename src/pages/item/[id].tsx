@@ -1,5 +1,5 @@
 import { HomeIcon } from "@heroicons/react/24/outline";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { createServerSideHelpers } from "@trpc/react-query/server";
 import { GetStaticPaths, GetStaticPropsContext } from "next";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
@@ -114,7 +114,7 @@ export default function Item() {
 export async function getStaticProps(
   context: GetStaticPropsContext<{ id: string }>
 ) {
-  const ssg = await createProxySSGHelpers({
+  const ssg = await createServerSideHelpers({
     router: appRouter,
     ctx: await createStaticContext(),
     transformer: SuperJSON, // optional - adds superjson serialization

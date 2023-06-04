@@ -4,13 +4,13 @@ import {
   FunnelIcon,
   HeartIcon,
 } from "@heroicons/react/24/outline";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import SuperJSON from "superjson";
 
+import { createServerSideHelpers } from "@trpc/react-query/server";
 import {
   CategoryFilterV2,
   FilterMessageDisplay,
@@ -27,8 +27,8 @@ import { AdminPageLink } from "../components/ui/LinkNavigation";
 import { Modal } from "../components/ui/Modal";
 import { TabBar } from "../components/ui/TabBar";
 import { createStaticContext } from "../server/context";
-import { ItemRouterInput } from "../server/routers/item";
 import { appRouter } from "../server/routers/_app";
+import { ItemRouterInput } from "../server/routers/item";
 import { cls } from "../utils/cls";
 import { CATEGORIES, REGIONS } from "../utils/constants";
 import { trpc } from "../utils/trpc";
@@ -385,7 +385,7 @@ export function ItemList({
 }
 
 export const getStaticProps: GetStaticProps = async (context) => {
-  const ssg = createProxySSGHelpers({
+  const ssg = createServerSideHelpers({
     router: appRouter,
     ctx: await createStaticContext(),
     transformer: SuperJSON,
