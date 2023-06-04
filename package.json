@@ -30,7 +30,7 @@
     "eslint": "8.30.0",
     "eslint-config-next": "13.1.0",
     "file-type": "^18.2.1",
-    "minio": "^7.0.33",
+    "minio": "^7.1.1",
     "next": "^13.3.1",
     "next-auth": "^4.22.1",
     "next-axiom": "^0.16.0",
