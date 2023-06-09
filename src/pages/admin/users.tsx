@@ -52,7 +52,9 @@ function UserRow({ user, onUpdateRole }: UserRowProps) {
         />
         <span className="font-bold">
           {user.name}
-          <span className="text-sm text-gray-500">#{user.discriminator}</span>
+          <span className="text-sm text-gray-500 ml-1">
+            {user.discriminator}
+          </span>
         </span>
         {user.id === data?.user.id && (
           <span className="font-bold text-rose-600">Moi</span>

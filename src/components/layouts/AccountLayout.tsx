@@ -31,7 +31,12 @@ export default function AccountLayout({
               src={data.user.image ?? ""}
               className="rounded-full w-16 h-16"
             />
-            <h2 className="text-3xl font-semibold ml-3">{data.user.name}</h2>
+            <div className="flex flex-col">
+              <h2 className="text-3xl font-semibold ml-3">{data.user.name}</h2>
+              <p className="text-sm font-semibold ml-3 text-gray-400">
+                {data.user.discriminator}
+              </p>
+            </div>
           </div>
           <div className="mt-3">
             <Button

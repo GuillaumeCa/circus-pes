@@ -12,19 +12,29 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.DISCORD_SECRET || "",
       profile: (profile: DiscordProfile) => {
         if (profile.avatar === null) {
-          const defaultAvatarNumber = parseInt(profile.discriminator) % 5;
+          const defaultAvatarNumber =
+            profile.discriminator === "0"
+              ? Number(BigInt(profile.id) >> BigInt(22)) % 5
+              : parseInt(profile.discriminator) % 5;
           profile.image_url = `https://cdn.discordapp.com/embed/avatars/${defaultAvatarNumber}.png`;
         } else {
           const format = profile.avatar.startsWith("a_") ? "gif" : "png";
           profile.image_url = `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.${format}`;
         }
 
+        const name = (profile.global_name as string) ?? profile.username;
+
+        console.log(profile);
+
         return {
           id: profile.id,
-          name: profile.username,
+          name,
           email: profile.email,
           image: profile.image_url,
-          discriminator: profile.discriminator,
+          discriminator:
+            profile.discriminator === "0"
+              ? profile.username
+              : profile.discriminator,
           emailVerified: null,
           role: UserRole.CONTRIBUTOR,
         };
@@ -46,11 +56,14 @@ export const authOptions: NextAuthOptions = {
           select: { id: true },
         });
         if (u) {
+          const name = (p.global_name as string) ?? p.username;
           await prisma.user.update({
             where: { email: user.email },
             data: {
               image: p.image_url,
-              name: p.username,
+              name,
+              discriminator:
+                p.discriminator === "0" ? p.username : p.discriminator,
             },
           });
         }
