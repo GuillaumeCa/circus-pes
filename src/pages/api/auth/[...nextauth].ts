@@ -24,8 +24,6 @@ export const authOptions: NextAuthOptions = {
 
         const name = (profile.global_name as string) ?? profile.username;
 
-        console.log(profile);
-
         return {
           id: profile.id,
           name,
