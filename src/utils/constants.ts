@@ -2,7 +2,16 @@ import { z } from "zod";
 
 export const LOCATIONS = [
   // Stanton
-  { name: "Stanton", children: ["Aaron Halo", "Stanton"] },
+  {
+    name: "Stanton",
+    children: [
+      "Aaron Halo",
+      "Stanton",
+      "Pyro Gateway",
+      "Terra Gateway",
+      "Magnus Gateway",
+    ],
+  },
   {
     name: "Crusader",
     children: [
