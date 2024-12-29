@@ -490,17 +490,12 @@ export function ItemRow({
           />
         </Modal>
 
-        <p className="ml-4 text-gray-400">
-          {avatarUrl && (
-            <img
-              alt="photo de profil"
-              className="inline w-5 h-5 rounded-full"
-              src={avatarUrl}
-            />
-          )}{" "}
-          <span className="italic font-bold text-gray-300">{author}</span>
-          <TimeFormatted className="ml-3 text-sm">{date}</TimeFormatted>
-        </p>
+        <AuthorInfos
+          avatarUrl={avatarUrl}
+          userName={author}
+          date={date}
+          className="ml-4"
+        />
       </div>
 
       {(history || pinnedResponses) && (
@@ -512,15 +507,48 @@ export function ItemRow({
   );
 }
 
+export function AuthorInfos({
+  avatarUrl,
+  userName,
+  date,
+  className,
+}: {
+  avatarUrl: string | null;
+  userName: string | null;
+  date: Date;
+  className: string;
+}) {
+  const [avatarError, setAvatarError] = useState(false);
+  return (
+    <div className={className}>
+      {!avatarError && avatarUrl && (
+        <Image
+          src={avatarUrl}
+          width={20}
+          height={20}
+          unoptimized={true}
+          onError={() => setAvatarError(true)}
+          alt="photo de profil"
+          className="inline rounded-full"
+        />
+      )}{" "}
+      <span className="italic font-bold text-gray-300">{userName}</span>
+      <TimeFormatted className="text-gray-400 ml-3 text-sm">
+        {date}
+      </TimeFormatted>
+    </div>
+  );
+}
+
 export function useCategory(id?: string) {
   const intl = useIntl();
 
   const category = CATEGORIES.find((c) => c.id === id);
   const name =
-    category?.name[intl.locale as keyof typeof CATEGORIES[number]["name"]];
+    category?.name[intl.locale as keyof (typeof CATEGORIES)[number]["name"]];
   const description: string | null = category?.description
     ? category?.description[
-        intl.locale as keyof typeof CATEGORIES[number]["description"]
+        intl.locale as keyof (typeof CATEGORIES)[number]["description"]
       ]
     : null;
 

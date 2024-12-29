@@ -7,7 +7,6 @@ import { useState } from "react";
 import { trpc } from "../utils/trpc";
 import { TrashIcon } from "./ui/Icons";
 import { ConfirmModal } from "./ui/Modal";
-import { TimeFormatted } from "./ui/TimeFormatted";
 
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -19,7 +18,11 @@ import {
   formatImageUrl,
   formatPreviewResponseImageUrl,
 } from "../utils/storage";
+import { getParagraphs } from "../utils/text";
 import { UserRole } from "../utils/user";
+import { AuthorInfos } from "./Items";
+
+type ResponseType = ResponseRouterOutput["getForItem"]["responses"][number];
 
 export function ResponsesList({
   itemId,
@@ -104,7 +107,7 @@ export function ResponseRow({
   response,
   onAnswer,
 }: {
-  response: ResponseRouterOutput["getForItem"]["responses"][number];
+  response: ResponseType;
   onAnswer(): void;
 }) {
   const { data: session } = useSession();
@@ -114,35 +117,57 @@ export function ResponseRow({
 
   return (
     <li className="py-2 flex flex-col md:flex-row items-start">
-      <div
-        className={cls(
-          "py-2 px-4 w-auto lg:w-40 flex items-center justify-center rounded-full",
-          response.isFound
-            ? "text-green-500 bg-green-400/10"
-            : "text-red-500 bg-red-400/10"
-        )}
-      >
-        {response.isFound ? (
-          <>
-            <HandThumbUpIcon className="h-7 w-7" />
-            <span className="font-semibold ml-2">
-              <FormattedMessage id="answer.found" defaultMessage="Trouvé" />
-            </span>
-          </>
-        ) : (
-          <>
-            <HandThumbDownIcon className="h-7 w-7" />
-            <span className="font-semibold ml-2">
-              <FormattedMessage
-                id="answer.notfound"
-                defaultMessage="Pas trouvé"
-              />
-            </span>
-          </>
-        )}
+      <div className="flex items-center">
+        <div
+          className={cls(
+            "py-2 px-4 w-auto lg:w-40 flex items-center justify-center rounded-full",
+            response.isFound
+              ? "text-green-500 bg-green-400/10"
+              : "text-red-500 bg-red-400/10"
+          )}
+        >
+          {response.isFound ? (
+            <>
+              <HandThumbUpIcon className="h-7 w-7" />
+              <span className="font-semibold ml-2">
+                <FormattedMessage id="answer.found" defaultMessage="Trouvé" />
+              </span>
+            </>
+          ) : (
+            <>
+              <HandThumbDownIcon className="h-7 w-7" />
+              <span className="font-semibold ml-2">
+                <FormattedMessage
+                  id="answer.notfound"
+                  defaultMessage="Pas trouvé"
+                />
+              </span>
+            </>
+          )}
+        </div>
+        <AuthorInfos
+          className="pl-4 block md:hidden"
+          avatarUrl={response.user.image}
+          userName={response.user.name}
+          date={response.createdAt}
+        />
       </div>
+
       <div className="flex flex-col px-3 mb-3">
-        {response.comment && <p className="p-2 mb-2">{response.comment}</p>}
+        <AuthorInfos
+          className="p-2 hidden md:block"
+          avatarUrl={response.user.image}
+          userName={response.user.name}
+          date={response.createdAt}
+        />
+
+        <div className="p-2 mb-2">
+          {getParagraphs(response.comment ?? "").map((paragraph, i) => (
+            <p key={i} className="w-full lg:w-auto">
+              {paragraph}
+            </p>
+          ))}
+        </div>
         {response.image && (
           <Link href={formatImageUrl(response.image)} target="_blank">
             <Image
@@ -195,21 +220,6 @@ export function ResponseRow({
       />
 
       <div className="ml-auto flex items-center">
-        <p className="text-gray-400 p-2">
-          {response.user.image && (
-            <img
-              alt="photo de profil"
-              className="inline w-5 h-5 rounded-full"
-              src={response.user.image}
-            />
-          )}{" "}
-          <span className="italic font-bold text-gray-300">
-            {response.user.name}
-          </span>
-          <TimeFormatted className="ml-3 text-sm">
-            {response.createdAt}
-          </TimeFormatted>
-        </p>
         {session &&
           (response.userId === session.user?.id ||
             session.user?.role === UserRole.ADMIN) && (
