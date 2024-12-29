@@ -25,7 +25,7 @@ interface AddLocationFormProps {
   onCreated(): void;
 }
 
-function useItemFormSchema() {
+function useItemFormSchema(isEditing = false) {
   const intl = useIntl();
 
   return z
@@ -76,6 +76,15 @@ function useItemFormSchema() {
                   defaultMessage: "Une image est requise",
                 }),
               })
+              .refine(
+                (f: FileList) => {
+                  return isEditing || f.length !== 0;
+                },
+                intl.formatMessage({
+                  id: "forms.item.image.error.required",
+                  defaultMessage: "Une image est requise",
+                })
+              )
               .refine(
                 (f: FileList) => {
                   return (
@@ -141,7 +150,7 @@ export function ItemForm({
 
   const isUpdateItem = !!item?.id;
 
-  const itemFormSchema = useItemFormSchema();
+  const itemFormSchema = useItemFormSchema(isUpdateItem);
   type LocationFormData = z.infer<typeof itemFormSchema>;
 
   const {
@@ -321,7 +330,7 @@ export function ItemForm({
                   onClick={() => setCategory(category.id as CategoryEnum)}
                   type="radio"
                   defaultChecked={false}
-                  className="form-checkbox cursor-pointer rounded text-rose-600 focus:ring-rose-600 bg-gray-500"
+                  className="form-checkbox cursor-pointer rounded text-rose-600 focus:ring-rose-700 focus:ring-offset-gray-600 bg-gray-500"
                 />
                 <span className="ml-2 font-semibold">
                   <CategoryLabel id={category.id} />

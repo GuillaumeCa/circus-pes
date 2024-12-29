@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const LOCATIONS = [
+  // Stanton
+  { name: "Stanton", children: ["Aaron Halo", "Stanton"] },
   {
     name: "Crusader",
     children: [
@@ -58,7 +60,94 @@ export const LOCATIONS = [
       "MIC-L5",
     ],
   },
-  { name: "Stanton", children: ["Aaron Halo", "Stanton"] },
+
+  // Pyro
+  {
+    name: "Pyro",
+    children: ["Pyro", "Stanton Gateway"],
+  },
+  {
+    name: "Pyro I",
+    children: ["Pyro I", "Akiro Cluster", "PYAM-FARSTAT-1-3"],
+  },
+  {
+    name: "Pyro II - Monox",
+    children: ["Monox", "Checkmate Station"],
+  },
+  {
+    name: "Pyro III - Bloom",
+    children: [
+      "Bloom",
+      "Orbituary",
+      "Patch City",
+      "Starlight Service Station",
+      "PYAM-SUPVISR-3-4",
+      "PYAM-FARSTAT-3-5",
+    ],
+  },
+  {
+    name: "Pyro V",
+    children: [
+      "Pyro V",
+      "Adir",
+      "Fairo",
+      "Fuego",
+      "Ignis",
+      "Pyro IV",
+      "Vatra",
+      "Vuur",
+      "Gaslight",
+      "Rat's Nest",
+      "Rod's Fuel 'N Supplies",
+      "PYAM-FARSTAT-5-1",
+      "PYAM-FARSTAT-5-3",
+    ],
+  },
+  {
+    name: "Pyro VI",
+    children: [
+      "Terminus",
+      "Ruin Station",
+      "Megumi Refueling",
+      "Endgame",
+      "PYAM-FARSTAT-6-2",
+    ],
+  },
+
+  {
+    name: "Pyro Asteroid Bases",
+    children: [
+      "RAB-Alpha",
+      "RAB-Bravo",
+      "RAB-Charlie",
+      "RAB-Cook",
+      "RAB-Delta",
+      "RAB-Echo",
+      "RAB-Foxtrot",
+      "RAB-Gulf",
+      "RAB-Helio",
+      "RAB-Ignition",
+      "RAB-Ion",
+      "RAB-Jak",
+      "RAB-Kilo",
+      "RAB-Lamda",
+      "RAB-Lynx",
+      "RAB-Mat",
+      "RAB-November",
+      "RAB-Over",
+      "RAB-Point",
+      "RAB-Roth",
+      "RAB-Tung",
+      "RAB-Quagmire",
+      "RAB-Sierra",
+      "RAB-Ultra",
+      "RAB-Victory",
+      "RAB-Whiskey",
+      "RAB-Xeno",
+      "RAB-York",
+      "RAB-Zeta",
+    ],
+  },
 ];
 
 export const REGIONS = [
